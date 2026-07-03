@@ -39,17 +39,17 @@
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-switch": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
-    "@radix-ui/react-checkbox": "^1.1.1"
+    "@radix-ui/react-checkbox": "^1.1.1",
+    "typescript": "^5.5.4",
+    "tailwindcss": "^3.4.11",
+    "postcss": "^8.4.45",
+    "autoprefixer": "^10.4.20"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",
     "@types/node": "^20.16.5",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
-    "typescript": "^5.5.4",
-    "tailwindcss": "^3.4.11",
-    "postcss": "^8.4.45",
-    "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.35"
   }

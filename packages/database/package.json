@@ -10,7 +10,7 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "studio": "prisma studio",
     "seed": "ts-node --transpile-only prisma/seed.ts",
-    "build": "npx prisma generate && npx tsc -p tsconfig.build.json"
+    "build": "npx --yes prisma@5.22.0 generate && npx --yes --package=typescript@5.5.4 -- tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "@prisma/client": "^5.19.1",

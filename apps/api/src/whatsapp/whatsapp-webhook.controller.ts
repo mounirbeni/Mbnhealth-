@@ -1,11 +1,9 @@
 import { Body, Controller, Get, Headers, Logger, Post, Query, Req, Res } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { InjectQueue } from "@nestjs/bullmq";
-import { Queue } from "bullmq";
 import type { Request, Response } from "express";
 import { createHmac, timingSafeEqual } from "crypto";
 import { Public } from "../common/decorators/public.decorator";
-import { WHATSAPP_INBOUND_QUEUE, WhatsAppInboundJobData } from "../queue/queue.constants";
+import { WhatsAppInboundService } from "./whatsapp-inbound.service";
 
 interface CloudApiWebhookPayload {
   entry?: {
@@ -28,7 +26,7 @@ export class WhatsAppWebhookController {
 
   constructor(
     private readonly config: ConfigService,
-    @InjectQueue(WHATSAPP_INBOUND_QUEUE) private readonly inboundQueue: Queue<WhatsAppInboundJobData>,
+    private readonly inboundService: WhatsAppInboundService,
   ) {}
 
   @Public()
@@ -71,18 +69,19 @@ export class WhatsAppWebhookController {
           // understood; media/location/interactive replies are ignored.
           if (message.type !== "text") continue;
 
-          await this.inboundQueue.add("process-message", {
+          // Processed inline (no background worker in a serverless
+          // deployment) before acking Meta; processMessage() is idempotent
+          // on waMessageId so a Meta retry of this same request is safe.
+          await this.inboundService.processMessage({
             phoneNumberId,
             from: message.from,
             body: message.text?.body ?? "",
             waMessageId: message.id,
-            contactName: value?.contacts?.[0]?.profile?.name,
           });
         }
       }
     }
 
-    // Meta requires a fast 200 ack; actual processing happens in the queue.
     return res.status(200).send("EVENT_RECEIVED");
   }
 

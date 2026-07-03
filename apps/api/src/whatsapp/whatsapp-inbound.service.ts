@@ -1,30 +1,52 @@
-import { Logger } from "@nestjs/common";
-import { Processor, WorkerHost } from "@nestjs/bullmq";
-import { Job } from "bullmq";
+import { Injectable, Logger } from "@nestjs/common";
 import { CommunicationChannel, CommunicationDirection } from "@mbn/database";
 import { PrismaService } from "../prisma/prisma.service";
-import { WhatsAppService } from "../whatsapp/whatsapp.service";
+import { WhatsAppService } from "./whatsapp.service";
 import { AiBotService } from "../ai-bot/ai-bot.service";
-import { WHATSAPP_INBOUND_QUEUE, WhatsAppInboundJobData } from "../queue/queue.constants";
+
+export interface InboundWhatsAppMessage {
+  phoneNumberId: string;
+  from: string;
+  body: string;
+  waMessageId: string;
+}
 
 function normalizePhone(raw: string): string {
   return raw.replace(/\D/g, "").slice(-9);
 }
 
-@Processor(WHATSAPP_INBOUND_QUEUE)
-export class WhatsAppInboundProcessor extends WorkerHost {
-  private readonly logger = new Logger("WhatsAppInboundProcessor");
+/**
+ * Processes one inbound WhatsApp message synchronously, called directly
+ * from the webhook controller. There's no background queue/worker here:
+ * a serverless function has nothing to consume a queue with between
+ * requests, so processing happens inline before the webhook responds to
+ * Meta (which allows a generous window before it considers the delivery
+ * failed and retries).
+ */
+@Injectable()
+export class WhatsAppInboundService {
+  private readonly logger = new Logger("WhatsAppInboundService");
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly whatsapp: WhatsAppService,
     private readonly aiBot: AiBotService,
-  ) {
-    super();
-  }
+  ) {}
 
-  async process(job: Job<WhatsAppInboundJobData>) {
-    const { phoneNumberId, from, body, waMessageId } = job.data;
+  async processMessage(data: InboundWhatsAppMessage): Promise<void> {
+    const { phoneNumberId, from, body, waMessageId } = data;
+
+    // Meta retries webhook delivery on a slow/failed ack; since there's no
+    // queue to naturally dedupe by job id anymore, guard against
+    // reprocessing (and double-replying to) the same message explicitly.
+    const alreadyProcessed = await this.prisma.communicationLog.findFirst({
+      where: { externalMessageId: waMessageId, direction: CommunicationDirection.INBOUND },
+      select: { id: true },
+    });
+    if (alreadyProcessed) {
+      this.logger.log(`Skipping already-processed inbound message ${waMessageId}`);
+      return;
+    }
 
     const config = await this.whatsapp.getConfigByPhoneNumberId(phoneNumberId);
     if (!config || !config.isActive) {

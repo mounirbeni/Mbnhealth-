@@ -24,19 +24,9 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
 
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mbn_health_test
-      REDIS_URL: redis://localhost:6379
       JWT_ACCESS_SECRET: ci-access-secret-please-override-in-prod-32ch
       JWT_REFRESH_SECRET: ci-refresh-secret-please-override-in-prod-32ch
       WHATSAPP_WEBHOOK_VERIFY_TOKEN: ci-webhook-verify-token
@@ -61,6 +51,9 @@ jobs:
 
       - name: Typecheck API
         run: npx tsc --noEmit -p apps/api/tsconfig.json
+
+      - name: Typecheck API (Vercel serverless entry point)
+        run: npx tsc --noEmit -p apps/api/tsconfig.vercel.json
 
       - name: Typecheck Web
         run: npx tsc --noEmit -p apps/web/tsconfig.json
@@ -97,19 +90,9 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
 
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mbn_health_test
-      REDIS_URL: redis://localhost:6379
       JWT_ACCESS_SECRET: ci-access-secret-please-override-in-prod-32ch
       JWT_REFRESH_SECRET: ci-refresh-secret-please-override-in-prod-32ch
       WHATSAPP_WEBHOOK_VERIFY_TOKEN: ci-webhook-verify-token

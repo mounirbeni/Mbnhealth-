@@ -5,9 +5,11 @@ export default () => ({
   database: {
     url: process.env.DATABASE_URL,
   },
-  redis: {
-    url: process.env.REDIS_URL ?? "redis://localhost:6379",
-  },
+  // Verifies that GET /cron/reminders is actually being called by Vercel
+  // Cron and not a random public request, since that route runs real
+  // sends. Vercel automatically sends `Authorization: Bearer <CRON_SECRET>`
+  // for its own invocations when this env var is set on the project.
+  cronSecret: process.env.CRON_SECRET ?? "",
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET ?? "dev-access-secret-change-me-please-32ch",
     refreshSecret: process.env.JWT_REFRESH_SECRET ?? "dev-refresh-secret-change-me-please-32ch",

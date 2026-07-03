@@ -13,10 +13,10 @@ Monorepo containing a NestJS API, a Next.js dashboard, and a shared Prisma/Postg
 | Database | PostgreSQL + Prisma ORM |
 | Auth | JWT access + rotating refresh tokens, TOTP MFA, RBAC, session management |
 | Messaging | WhatsApp Business Cloud API (real Graph API integration) + a limited-capability AI assistant (Claude) |
-| Jobs/Queue | Redis + BullMQ (appointment reminders, inbound WhatsApp message processing) |
+| Jobs | Vercel Cron (hourly appointment reminders) + inline synchronous processing of inbound WhatsApp messages — no background worker process, by design (see below) |
 | Billing | Stripe Checkout + Billing Portal + webhooks |
 | Storage | S3-compatible object storage (MinIO locally) |
-| Deployment | Docker, Docker Compose, Kubernetes manifests, GitHub Actions CI (backend + Playwright e2e) |
+| Deployment | Single Vercel project (both `apps/web` and `apps/api`, the latter as a serverless function). Docker Compose and Kubernetes manifests are also provided for self-hosting. GitHub Actions CI runs unit/e2e/Playwright tests either way. |
 
 ## Monorepo layout
 
@@ -42,7 +42,7 @@ UI wired to live data — "thin" just means the business logic and screen are si
 Auth & multi-tenancy, Dashboard/Analytics, Patients & EHR, Appointments (day/week/month calendar,
 drag-to-reschedule, status workflow, waitlist), Doctors, Departments, Medical Records (SOAP notes),
 Prescriptions, Billing (invoices, payments, insurance claims), **WhatsApp Business integration**
-(real Meta Cloud API webhook + send, background-job-driven appointment reminders, a
+(real Meta Cloud API webhook + send, Vercel-Cron-driven appointment reminders, a
 limited-capability AI assistant), **Stripe subscription billing** (Checkout, Billing Portal,
 webhooks).
 
@@ -64,10 +64,16 @@ SMS support was removed entirely (per product decision) in favor of a real Whats
   for a clinic (the seeded demo tenant ships with `isActive: false`), sends are logged as
   `SIMULATED` instead of silently failing, so the rest of the product works end-to-end without a
   live Meta account.
-- **Background jobs, not a hope-and-pray webhook handler.** Incoming messages are enqueued to a
-  BullMQ queue and processed by a worker (`apps/api/src/jobs/whatsapp-inbound.processor.ts`); an
-  hourly cron (`reminders.scheduler.ts`) finds appointments starting in the next 24h and enqueues
-  reminder jobs, deduplicated both by an `Appointment.reminderSentAt` flag and a BullMQ job id.
+- **Serverless-native, not a background-worker architecture.** The whole app (both `apps/web` and
+  `apps/api`) runs as a single Vercel project, and Vercel's Node.js functions can't host a
+  persistent process — so there's no BullMQ/Redis queue and no `@nestjs/schedule` cron job.
+  Instead: incoming WhatsApp messages are processed inline, synchronously, inside the webhook's
+  POST handler (`apps/api/src/whatsapp/whatsapp-inbound.service.ts`) before it acks Meta, guarded
+  against Meta's own delivery retries by a dedup check on the inbound message's WhatsApp message
+  id. Reminders run from `GET /cron/reminders` (`apps/api/src/reminders`), triggered hourly by
+  [Vercel Cron](https://vercel.com/docs/cron-jobs) (configured in `apps/api/vercel.json`) and
+  authenticated via a `CRON_SECRET` bearer token; each appointment's `reminderSentAt` is set
+  *before* the send so a re-triggered/overlapping run can't double-send.
 - **The AI assistant is deliberately limited**, per the product requirement: it can only (1)
   answer general clinic FAQ (hours/address/phone, pulled from the tenant record) and (2) look up
   the *matched* patient's own upcoming appointments — read-only, and only ever that one patient's
@@ -79,9 +85,9 @@ SMS support was removed entirely (per product decision) in favor of a real Whats
 - **Configure it** from the dashboard under Settings → WhatsApp Bot (or `PATCH /whatsapp/config`):
   phone number ID, access token, and an AI-bot on/off toggle. The webhook URL to paste into your
   Meta App is shown right there in the UI.
-- All of this was verified live in this repo's own dev environment: a real Postgres + Redis
-  instance, a simulated Meta webhook payload posted with `curl`, and confirmation that the
-  message was logged, the patient was matched by phone number, and the AI bot's graceful-degradation
+- All of this was verified live in this repo's own dev environment: a real Postgres instance, a
+  simulated Meta webhook payload posted with `curl`, and confirmation that the message was
+  logged, the patient was matched by phone number, and the AI bot's graceful-degradation
   path fired correctly with no API key configured (see `git log` for the session this was built in
   if you want the exact commands).
 
@@ -91,7 +97,6 @@ SMS support was removed entirely (per product decision) in favor of a real Whats
 
 - Node.js 20+
 - PostgreSQL 16 (or `docker compose up postgres`)
-- Redis 7 (or `docker compose up redis`) — required for the reminders/WhatsApp job queue
 - npm 10+
 
 ### 1. Install dependencies
@@ -172,7 +177,7 @@ Settings → Billing.
 docker compose up --build
 ```
 
-This starts Postgres, Redis, MinIO, the API (port 4000) and the web app (port 3000). Run
+This starts Postgres, MinIO, the API (port 4000) and the web app (port 3000). Run
 migrations once the API container is healthy:
 
 ```bash
@@ -204,8 +209,8 @@ All three suites pass against live infrastructure as of this build:
   authenticate once via a shared Playwright storage-state fixture (`apps/web/e2e/auth.setup.ts`)
   rather than logging in per test, both for speed and to avoid the login endpoint's own rate
   limiter. CI runs all three suites (`.github/workflows/ci.yml`), including a dedicated
-  `e2e-web` job that builds both apps, boots them against real Postgres/Redis service
-  containers, and runs Playwright against the live pages.
+  `e2e-web` job that builds both apps, boots them against a real Postgres service container,
+  and runs Playwright against the live pages.
 
 ## Security notes
 
@@ -229,12 +234,33 @@ All three suites pass against live infrastructure as of this build:
 
 ## Deployment
 
-- `docker-compose.yml` is meant for local/single-host use.
+**Primary target: Vercel, one project for both apps.**
+
+- `apps/web` is a standard Next.js app — Vercel builds and serves it with no special config.
+- `apps/api` deploys as a Vercel serverless function via `apps/api/api/index.ts`, which wraps the
+  Nest app in a cached Express handler (`app.listen()` in `src/main.ts` only runs outside Vercel —
+  a serverless function can't host a process that blocks on a port). `apps/api/vercel.json`
+  rewrites every request to that function and configures the hourly reminders cron.
+- If your Vercel project's Root Directory is set to `apps/api`, dependencies still install at the
+  monorepo root (respecting npm workspaces), and a root `postinstall` script builds
+  `packages/database` (Prisma client + compiled TS) first — required before anything importing
+  `@mbn/database` can resolve. Set the same for a second Vercel project pointed at `apps/web`.
+- Required env vars on the `apps/api` Vercel project: `DATABASE_URL`, `JWT_ACCESS_SECRET`,
+  `JWT_REFRESH_SECRET`, `CORS_ORIGIN` (your web app's URL), plus the WhatsApp/AI/Stripe/`CRON_SECRET`
+  vars documented above as needed. Use a pooled connection string for `DATABASE_URL` (e.g. Neon,
+  Supabase, or PgBouncer) — serverless functions open a new DB connection per cold start, and an
+  unpooled Postgres will run out of connections under real traffic.
+- There is deliberately no BullMQ/Redis queue and no in-process cron in this deployment target —
+  see "The WhatsApp bot and its AI assistant" above for how reminders and inbound messages are
+  handled instead.
+
+**Alternative: self-hosting**, if you'd rather run this on infrastructure you control instead of
+Vercel:
+- `docker-compose.yml` for a single host — see "Running with Docker" below. Note the comment on the
+  `api` service: without Vercel Cron, nothing calls `GET /cron/reminders` on a schedule, so add it
+  to the host's crontab if you rely on WhatsApp reminders.
 - `k8s/` contains Deployment/Service/HPA manifests for the API and web app, plus an example
   ConfigMap/Secret file and an Ingress with TLS via cert-manager. They assume you build and push
   `api`/`web` images to a registry the cluster can pull from, and manage secrets via your cluster's
-  secret store rather than the example file.
-- The API is stateless (JWT-based auth, no in-memory session state) so it scales horizontally
-  behind a load balancer without sticky sessions. The BullMQ workers run in-process with the API
-  in this build; at real scale, split them into a separate worker deployment so a slow AI-bot
-  reply can't back up HTTP request handling.
+  secret store rather than the example file. The same "nothing triggers `/cron/reminders`" caveat
+  applies — add a `CronJob` manifest hitting that endpoint if you go this route.

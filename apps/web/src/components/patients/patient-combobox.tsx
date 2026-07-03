@@ -24,7 +24,7 @@ export function PatientCombobox({ value, onChange }: { value?: string; onChange:
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-        <Command>
+        <Command shouldFilter={false}>
           <Command.Input
             value={search}
             onValueChange={setSearch}

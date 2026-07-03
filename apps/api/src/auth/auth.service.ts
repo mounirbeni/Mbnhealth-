@@ -50,16 +50,17 @@ export class AuthService {
   }
 
   async registerTenant(dto: RegisterTenantDto, meta: RequestMeta) {
-    const existing = await this.prisma.tenant.findUnique({ where: { slug: dto.slug } });
-    if (existing) throw new ConflictException("This clinic URL is already taken");
+    const existingEmail = await this.prisma.user.findUnique({ where: { email: dto.ownerEmail.toLowerCase() } });
+    if (existingEmail) throw new ConflictException("An account with this email already exists");
 
+    const slug = await this.generateUniqueSlug(dto.clinicName);
     const passwordHash = await argon2.hash(dto.password);
 
     const result = await this.prisma.$transaction(async (tx) => {
       const tenant = await tx.tenant.create({
         data: {
           name: dto.clinicName,
-          slug: dto.slug,
+          slug,
           city: dto.city,
           address: dto.address,
           phone: dto.phone,
@@ -126,13 +127,27 @@ export class AuthService {
     return this.issueSession(result.owner, meta);
   }
 
-  async login(dto: LoginDto, meta: RequestMeta) {
-    const where = dto.tenantSlug
-      ? { tenant: { slug: dto.tenantSlug }, email: dto.email.toLowerCase() }
-      : { tenantId: null, email: dto.email.toLowerCase() };
+  private async generateUniqueSlug(clinicName: string): Promise<string> {
+    const base =
+      clinicName
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 48) || "clinic";
 
-    const user = await this.prisma.user.findFirst({
-      where,
+    let slug = base;
+    let suffix = 1;
+    while (await this.prisma.tenant.findUnique({ where: { slug } })) {
+      suffix += 1;
+      slug = `${base}-${suffix}`;
+    }
+    return slug;
+  }
+
+  async login(dto: LoginDto, meta: RequestMeta) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase() },
       include: { role: true },
     });
 

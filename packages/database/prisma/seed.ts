@@ -130,7 +130,7 @@ async function main() {
 
   // ── Users & staff ───────────────────────────────────────────────────────────
   const clinicOwner = await prisma.user.upsert({
-    where: { tenantId_email: { tenantId: tenant.id, email: "owner@demo-clinic.com" } },
+    where: { email: "owner@demo-clinic.com" },
     update: {},
     create: {
       tenantId: tenant.id,
@@ -144,7 +144,7 @@ async function main() {
   });
 
   const manager = await prisma.user.upsert({
-    where: { tenantId_email: { tenantId: tenant.id, email: "manager@demo-clinic.com" } },
+    where: { email: "manager@demo-clinic.com" },
     update: {},
     create: {
       tenantId: tenant.id,
@@ -158,7 +158,7 @@ async function main() {
   });
 
   const receptionist = await prisma.user.upsert({
-    where: { tenantId_email: { tenantId: tenant.id, email: "reception@demo-clinic.com" } },
+    where: { email: "reception@demo-clinic.com" },
     update: {},
     create: {
       tenantId: tenant.id,
@@ -172,7 +172,7 @@ async function main() {
   });
 
   await prisma.user.upsert({
-    where: { tenantId_email: { tenantId: tenant.id, email: "accountant@demo-clinic.com" } },
+    where: { email: "accountant@demo-clinic.com" },
     update: {},
     create: {
       tenantId: tenant.id,
@@ -186,7 +186,7 @@ async function main() {
   });
 
   await prisma.user.upsert({
-    where: { tenantId_email: { tenantId: tenant.id, email: "lab@demo-clinic.com" } },
+    where: { email: "lab@demo-clinic.com" },
     update: {},
     create: {
       tenantId: tenant.id,
@@ -210,7 +210,7 @@ async function main() {
   for (const d of doctorUsersData) {
     const email = `dr.${d.first.toLowerCase().split(" ")[0]}@demo-clinic.com`;
     const user = await prisma.user.upsert({
-      where: { tenantId_email: { tenantId: tenant.id, email } },
+      where: { email },
       update: {},
       create: {
         tenantId: tenant.id,

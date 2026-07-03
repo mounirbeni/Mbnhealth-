@@ -8,7 +8,7 @@ import type { AuthenticatedUser, LoginResponse } from "@/types";
 interface AuthContextValue {
   user: AuthenticatedUser | null;
   isLoading: boolean;
-  login: (email: string, password: string, tenantSlug?: string) => Promise<LoginResponse>;
+  login: (email: string, password: string) => Promise<LoginResponse>;
   verifyMfa: (challengeToken: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
@@ -55,8 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const login = useCallback(async (email: string, password: string, tenantSlug?: string) => {
-    const res = await api.post<LoginResponse>("/auth/login", { email, password, tenantSlug }, { skipAuth: true });
+  const login = useCallback(async (email: string, password: string) => {
+    const res = await api.post<LoginResponse>("/auth/login", { email, password }, { skipAuth: true });
     if (res.accessToken && res.refreshToken) {
       setTokens(res.accessToken, res.refreshToken);
       setUser(res.user ?? null);

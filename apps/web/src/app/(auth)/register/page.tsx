@@ -29,10 +29,6 @@ const OWNER_ROLES = [
 
 const schema = z.object({
   clinicName: z.string().min(2, "Clinic name is required"),
-  slug: z
-    .string()
-    .min(2)
-    .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers and hyphens only"),
   city: z.string().min(1, "City is required"),
   address: z.string().min(1, "Address is required"),
   website: z.union([z.literal(""), z.string().url("Enter a valid website URL, e.g. https://example.com")]),
@@ -87,11 +83,6 @@ export default function RegisterPage() {
               {formState.errors.clinicName && (
                 <p className="text-xs text-destructive">{formState.errors.clinicName.message}</p>
               )}
-            </div>
-            <div className="col-span-2 space-y-2">
-              <Label htmlFor="slug">Clinic URL (a short ID for your workspace, not a real website)</Label>
-              <Input id="slug" placeholder="sunrise-medical" {...register("slug")} />
-              {formState.errors.slug && <p className="text-xs text-destructive">{formState.errors.slug.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>

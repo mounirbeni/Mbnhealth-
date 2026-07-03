@@ -4,7 +4,6 @@ const AUTH_FILE = "e2e/.auth/user.json";
 
 setup("authenticate as the seeded clinic owner", async ({ page }) => {
   await page.goto("/login");
-  await page.fill("#tenantSlug", "demo-clinic");
   await page.fill("#email", "owner@demo-clinic.com");
   await page.fill("#password", "Passw0rd!123");
   await page.click('button[type="submit"]');

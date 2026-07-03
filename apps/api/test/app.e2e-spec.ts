@@ -37,7 +37,7 @@ describe("MBN Health API (e2e)", () => {
   it("/api/v1/auth/login (POST) authenticates the seeded clinic owner", async () => {
     const res = await request(app.getHttpServer())
       .post("/api/v1/auth/login")
-      .send({ email: "owner@demo-clinic.com", password: "Passw0rd!123", tenantSlug: "demo-clinic" })
+      .send({ email: "owner@demo-clinic.com", password: "Passw0rd!123" })
       .expect(201);
 
     expect(res.body.accessToken).toBeDefined();
@@ -56,7 +56,7 @@ describe("MBN Health API (e2e)", () => {
   it("/api/v1/auth/login (POST) rejects wrong password", () => {
     return request(app.getHttpServer())
       .post("/api/v1/auth/login")
-      .send({ email: "owner@demo-clinic.com", password: "wrong-password", tenantSlug: "demo-clinic" })
+      .send({ email: "owner@demo-clinic.com", password: "wrong-password" })
       .expect(401);
   });
 });

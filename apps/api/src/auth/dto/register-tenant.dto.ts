@@ -7,12 +7,6 @@ export class RegisterTenantDto {
   clinicName!: string;
 
   @IsString()
-  @Matches(/^[a-z0-9-]+$/, {
-    message: "slug may only contain lowercase letters, numbers and hyphens",
-  })
-  slug!: string;
-
-  @IsString()
   city!: string;
 
   @IsString()

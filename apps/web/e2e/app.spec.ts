@@ -1,14 +1,12 @@
 import { test, expect } from "@playwright/test";
 
 const DEMO_CREDENTIALS = {
-  tenantSlug: "demo-clinic",
   email: "owner@demo-clinic.com",
   password: "Passw0rd!123",
 };
 
 async function login(page: import("@playwright/test").Page) {
   await page.goto("/login");
-  await page.fill("#tenantSlug", DEMO_CREDENTIALS.tenantSlug);
   await page.fill("#email", DEMO_CREDENTIALS.email);
   await page.fill("#password", DEMO_CREDENTIALS.password);
   await page.click('button[type="submit"]');
@@ -18,7 +16,6 @@ async function login(page: import("@playwright/test").Page) {
 test.describe("Authentication", () => {
   test("rejects an invalid password with an error toast", async ({ page }) => {
     await page.goto("/login");
-    await page.fill("#tenantSlug", DEMO_CREDENTIALS.tenantSlug);
     await page.fill("#email", DEMO_CREDENTIALS.email);
     await page.fill("#password", "wrong-password");
     await page.click('button[type="submit"]');

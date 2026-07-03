@@ -17,7 +17,6 @@ import { ApiError } from "@/lib/api-client";
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email"),
   password: z.string().min(1, "Password is required"),
-  tenantSlug: z.string().optional(),
 });
 type LoginForm = z.infer<typeof loginSchema>;
 
@@ -36,7 +35,7 @@ export default function LoginPage() {
   const onLogin = async (values: LoginForm) => {
     setIsSubmitting(true);
     try {
-      const res = await login(values.email, values.password, values.tenantSlug || undefined);
+      const res = await login(values.email, values.password);
       if (res.mfaRequired && res.challengeToken) {
         setChallengeToken(res.challengeToken);
       } else {
@@ -100,10 +99,6 @@ export default function LoginPage() {
       </CardHeader>
       <CardContent>
         <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="tenantSlug">Clinic URL (optional for Super Admin)</Label>
-            <Input id="tenantSlug" placeholder="demo-clinic" {...loginForm.register("tenantSlug")} />
-          </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" placeholder="you@clinic.com" {...loginForm.register("email")} />

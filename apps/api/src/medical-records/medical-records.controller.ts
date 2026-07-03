@@ -5,6 +5,7 @@ import { CreateMedicalRecordDto, UpdateMedicalRecordDto } from "./dto/medical-re
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("medical-records")
 @RequirePermissions(Permission.MEDICAL_RECORDS_READ)
@@ -23,12 +24,14 @@ export class MedicalRecordsController {
 
   @Post()
   @RequirePermissions(Permission.MEDICAL_RECORDS_WRITE)
+  @AuditLog("MedicalRecord")
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateMedicalRecordDto) {
     return this.medicalRecordsService.create(user.tenantId!, dto);
   }
 
   @Patch(":id")
   @RequirePermissions(Permission.MEDICAL_RECORDS_WRITE)
+  @AuditLog("MedicalRecord")
   update(
     @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,
@@ -39,12 +42,14 @@ export class MedicalRecordsController {
 
   @Patch(":id/finalize")
   @RequirePermissions(Permission.MEDICAL_RECORDS_WRITE)
+  @AuditLog("MedicalRecord")
   finalize(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.medicalRecordsService.finalize(user.tenantId!, id);
   }
 
   @Patch(":id/amend")
   @RequirePermissions(Permission.MEDICAL_RECORDS_WRITE)
+  @AuditLog("MedicalRecord")
   amend(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: UpdateMedicalRecordDto) {
     return this.medicalRecordsService.amend(user.tenantId!, id, dto);
   }

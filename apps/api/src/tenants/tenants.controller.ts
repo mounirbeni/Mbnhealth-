@@ -5,6 +5,7 @@ import { UpdateTenantDto } from "./dto/update-tenant.dto";
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("tenants")
 export class TenantsController {
@@ -17,6 +18,7 @@ export class TenantsController {
 
   @Patch("me")
   @RequirePermissions(Permission.SETTINGS_MANAGE)
+  @AuditLog("Tenant")
   updateOwn(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateTenantDto) {
     return this.tenantsService.updateOwn(user.tenantId!, dto);
   }

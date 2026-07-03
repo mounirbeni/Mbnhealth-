@@ -5,6 +5,7 @@ import { CreateInsuranceClaimDto, CreateInvoiceDto, RecordPaymentDto } from "./d
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("billing")
 @RequirePermissions(Permission.BILLING_READ)
@@ -39,18 +40,21 @@ export class BillingController {
 
   @Post("invoices")
   @RequirePermissions(Permission.BILLING_WRITE)
+  @AuditLog("Invoice")
   createInvoice(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateInvoiceDto) {
     return this.billingService.createInvoice(user.tenantId!, dto);
   }
 
   @Patch("invoices/:id/void")
   @RequirePermissions(Permission.BILLING_WRITE)
+  @AuditLog("Invoice")
   voidInvoice(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.billingService.voidInvoice(user.tenantId!, id);
   }
 
   @Post("invoices/:id/payments")
   @RequirePermissions(Permission.BILLING_WRITE)
+  @AuditLog("Payment")
   recordPayment(
     @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,
@@ -61,6 +65,7 @@ export class BillingController {
 
   @Patch("payments/:id/refund")
   @RequirePermissions(Permission.BILLING_WRITE)
+  @AuditLog("Payment")
   refundPayment(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.billingService.refundPayment(user.tenantId!, id);
   }
@@ -73,12 +78,14 @@ export class BillingController {
 
   @Post("insurance-claims")
   @RequirePermissions(Permission.INSURANCE_MANAGE)
+  @AuditLog("InsuranceClaim")
   createClaim(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateInsuranceClaimDto) {
     return this.billingService.createClaim(user.tenantId!, dto);
   }
 
   @Patch("insurance-claims/:id/status")
   @RequirePermissions(Permission.INSURANCE_MANAGE)
+  @AuditLog("InsuranceClaim")
   updateClaimStatus(
     @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,

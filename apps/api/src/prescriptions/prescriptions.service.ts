@@ -7,10 +7,14 @@ import { CreatePrescriptionDto } from "./dto/prescription.dto";
 export class PrescriptionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAllForPatient(tenantId: string, patientId: string) {
+  findAll(tenantId: string, params: { patientId?: string; status?: PrescriptionStatus }) {
     return this.prisma.prescription.findMany({
-      where: { tenantId, patientId },
-      include: { items: true, doctor: { include: { user: true } } },
+      where: { tenantId, patientId: params.patientId, status: params.status },
+      include: {
+        items: true,
+        doctor: { include: { user: { select: { firstName: true, lastName: true } } } },
+        patient: { select: { firstName: true, lastName: true, mrn: true } },
+      },
       orderBy: { issuedDate: "desc" },
     });
   }

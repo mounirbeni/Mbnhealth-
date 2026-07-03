@@ -20,6 +20,8 @@ export const STATUS_BADGE_VARIANT: Record<string, BadgeVariant> = {
   // Orders
   ORDERED: "secondary",
   IN_PROGRESS: "warning",
+  // Prescriptions
+  ACTIVE: "default",
   // Insurance claims
   SUBMITTED: "secondary",
   IN_REVIEW: "warning",

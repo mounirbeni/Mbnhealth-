@@ -5,6 +5,7 @@ import { UpsertWhatsAppConfigDto, SendWhatsAppMessageDto } from "./dto/whatsapp-
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("whatsapp")
 export class WhatsAppController {
@@ -18,6 +19,7 @@ export class WhatsAppController {
 
   @Post("config")
   @RequirePermissions(Permission.SETTINGS_MANAGE)
+  @AuditLog("WhatsAppConfig")
   upsertConfig(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpsertWhatsAppConfigDto) {
     return this.whatsAppService.upsertConfig(user.tenantId!, dto);
   }

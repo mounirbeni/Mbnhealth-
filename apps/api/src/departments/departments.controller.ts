@@ -5,6 +5,7 @@ import { CreateDepartmentDto, UpdateDepartmentDto } from "./dto/department.dto";
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("departments")
 export class DepartmentsController {
@@ -22,18 +23,21 @@ export class DepartmentsController {
 
   @Post()
   @RequirePermissions(Permission.DEPARTMENTS_MANAGE)
+  @AuditLog("Department")
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateDepartmentDto) {
     return this.departmentsService.create(user.tenantId!, dto);
   }
 
   @Patch(":id")
   @RequirePermissions(Permission.DEPARTMENTS_MANAGE)
+  @AuditLog("Department")
   update(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: UpdateDepartmentDto) {
     return this.departmentsService.update(user.tenantId!, id, dto);
   }
 
   @Delete(":id")
   @RequirePermissions(Permission.DEPARTMENTS_MANAGE)
+  @AuditLog("Department")
   remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.departmentsService.remove(user.tenantId!, id);
   }

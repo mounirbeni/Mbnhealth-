@@ -5,6 +5,7 @@ import { CreateDoctorDto, UpdateDoctorDto } from "./dto/doctor.dto";
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("doctors")
 export class DoctorsController {
@@ -39,18 +40,21 @@ export class DoctorsController {
 
   @Post()
   @RequirePermissions(Permission.DOCTORS_WRITE)
+  @AuditLog("Doctor")
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateDoctorDto) {
     return this.doctorsService.create(user.tenantId!, dto);
   }
 
   @Patch(":id")
   @RequirePermissions(Permission.DOCTORS_WRITE)
+  @AuditLog("Doctor")
   update(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: UpdateDoctorDto) {
     return this.doctorsService.update(user.tenantId!, id, dto);
   }
 
   @Delete(":id")
   @RequirePermissions(Permission.DOCTORS_WRITE)
+  @AuditLog("Doctor")
   remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.doctorsService.remove(user.tenantId!, id);
   }

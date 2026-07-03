@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { APP_GUARD, APP_FILTER, APP_PIPE } from "@nestjs/core";
+import { APP_GUARD, APP_FILTER, APP_PIPE, APP_INTERCEPTOR } from "@nestjs/core";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { ValidationPipe } from "@nestjs/common";
 import configuration from "./config/configuration";
@@ -8,6 +8,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
 import { PermissionsGuard } from "./common/guards/permissions.guard";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
+import { AuditLogInterceptor } from "./common/interceptors/audit-log.interceptor";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
 import { TenantsModule } from "./tenants/tenants.module";
@@ -79,6 +80,7 @@ import { RootController } from "./health/root.controller";
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
+    { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     {
       provide: APP_PIPE,

@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PatientCombobox } from "@/components/patients/patient-combobox";
 import { useDoctors } from "@/hooks/use-doctors";
-import { useCreateMedicalRecord, useCreatePrescription, useFinalizeMedicalRecord, useMedicalRecords } from "@/hooks/use-medical-records";
+import { useCreateMedicalRecord, useFinalizeMedicalRecord, useMedicalRecords } from "@/hooks/use-medical-records";
+import { useCreatePrescription } from "@/hooks/use-prescriptions";
 import { ApiError } from "@/lib/api-client";
 import { formatDateTime } from "@/lib/utils";
 

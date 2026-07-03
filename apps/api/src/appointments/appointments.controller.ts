@@ -10,6 +10,7 @@ import {
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("appointments")
 @RequirePermissions(Permission.APPOINTMENTS_READ)
@@ -41,12 +42,14 @@ export class AppointmentsController {
 
   @Post("waitlist")
   @RequirePermissions(Permission.APPOINTMENTS_WRITE)
+  @AuditLog("WaitlistEntry")
   addToWaitlist(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateWaitlistEntryDto) {
     return this.appointmentsService.addToWaitlist(user.tenantId!, dto);
   }
 
   @Delete("waitlist/:id")
   @RequirePermissions(Permission.APPOINTMENTS_WRITE)
+  @AuditLog("WaitlistEntry")
   removeFromWaitlist(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.appointmentsService.removeFromWaitlist(user.tenantId!, id);
   }
@@ -58,18 +61,21 @@ export class AppointmentsController {
 
   @Post()
   @RequirePermissions(Permission.APPOINTMENTS_WRITE)
+  @AuditLog("Appointment")
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateAppointmentDto) {
     return this.appointmentsService.create(user.tenantId!, dto, user.userId);
   }
 
   @Patch(":id")
   @RequirePermissions(Permission.APPOINTMENTS_WRITE)
+  @AuditLog("Appointment")
   update(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: UpdateAppointmentDto) {
     return this.appointmentsService.update(user.tenantId!, id, dto);
   }
 
   @Patch(":id/status")
   @RequirePermissions(Permission.APPOINTMENTS_WRITE)
+  @AuditLog("Appointment")
   updateStatus(
     @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,
@@ -80,6 +86,7 @@ export class AppointmentsController {
 
   @Delete(":id")
   @RequirePermissions(Permission.APPOINTMENTS_DELETE)
+  @AuditLog("Appointment")
   remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.appointmentsService.remove(user.tenantId!, id);
   }

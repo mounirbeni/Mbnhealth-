@@ -24,11 +24,3 @@ export function useFinalizeMedicalRecord() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["medical-records"] }),
   });
 }
-
-export function useCreatePrescription() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Record<string, unknown>) => api.post("/prescriptions", data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["prescriptions"] }),
-  });
-}

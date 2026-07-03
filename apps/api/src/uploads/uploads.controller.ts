@@ -3,6 +3,7 @@ import { UploadsService } from "./uploads.service";
 import { ConfirmUploadDto, RequestUploadUrlDto } from "./dto/uploads.dto";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("uploads")
 export class UploadsController {
@@ -14,6 +15,7 @@ export class UploadsController {
   }
 
   @Post("confirm")
+  @AuditLog("Attachment")
   confirmUpload(@CurrentUser() user: AuthenticatedUser, @Body() dto: ConfirmUploadDto) {
     return this.uploadsService.confirmUpload(user.tenantId!, dto, user.userId);
   }

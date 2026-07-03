@@ -5,6 +5,7 @@ import { CompleteRadiologyOrderDto, CreateRadiologyOrderDto } from "./dto/radiol
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("radiology-orders")
 @RequirePermissions(Permission.RADIOLOGY_READ)
@@ -27,18 +28,21 @@ export class RadiologyController {
 
   @Post()
   @RequirePermissions(Permission.RADIOLOGY_WRITE)
+  @AuditLog("RadiologyOrder")
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateRadiologyOrderDto) {
     return this.radiologyService.create(user.tenantId!, dto);
   }
 
   @Patch(":id/start")
   @RequirePermissions(Permission.RADIOLOGY_WRITE)
+  @AuditLog("RadiologyOrder")
   start(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.radiologyService.start(user.tenantId!, id);
   }
 
   @Patch(":id/complete")
   @RequirePermissions(Permission.RADIOLOGY_WRITE)
+  @AuditLog("RadiologyOrder")
   complete(
     @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,
@@ -49,6 +53,7 @@ export class RadiologyController {
 
   @Patch(":id/cancel")
   @RequirePermissions(Permission.RADIOLOGY_WRITE)
+  @AuditLog("RadiologyOrder")
   cancel(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.radiologyService.cancel(user.tenantId!, id);
   }

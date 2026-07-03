@@ -3,6 +3,7 @@ import { MessagesService } from "./messages.service";
 import { CreateTemplateDto, CreateThreadDto, SendEmailDto, SendMessageDto } from "./dto/messages.dto";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("messages")
 export class MessagesController {
@@ -34,11 +35,13 @@ export class MessagesController {
   }
 
   @Post("templates")
+  @AuditLog("MessageTemplate")
   createTemplate(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateTemplateDto) {
     return this.messagesService.createTemplate(user.tenantId!, dto);
   }
 
   @Delete("templates/:id")
+  @AuditLog("MessageTemplate")
   deleteTemplate(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.messagesService.deleteTemplate(user.tenantId!, id);
   }

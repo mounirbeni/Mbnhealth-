@@ -11,6 +11,7 @@ import {
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("patients")
 @RequirePermissions(Permission.PATIENTS_READ)
@@ -39,30 +40,35 @@ export class PatientsController {
 
   @Post()
   @RequirePermissions(Permission.PATIENTS_WRITE)
+  @AuditLog("Patient")
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreatePatientDto) {
     return this.patientsService.create(user.tenantId!, dto);
   }
 
   @Patch(":id")
   @RequirePermissions(Permission.PATIENTS_WRITE)
+  @AuditLog("Patient")
   update(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: UpdatePatientDto) {
     return this.patientsService.update(user.tenantId!, id, dto);
   }
 
   @Delete(":id")
   @RequirePermissions(Permission.PATIENTS_DELETE)
+  @AuditLog("Patient")
   remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.patientsService.remove(user.tenantId!, id);
   }
 
   @Post(":id/allergies")
   @RequirePermissions(Permission.PATIENTS_WRITE)
+  @AuditLog("Patient")
   addAllergy(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: AddAllergyDto) {
     return this.patientsService.addAllergy(user.tenantId!, id, dto);
   }
 
   @Delete(":id/allergies/:allergyId")
   @RequirePermissions(Permission.PATIENTS_WRITE)
+  @AuditLog("Patient")
   removeAllergy(
     @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,
@@ -73,6 +79,7 @@ export class PatientsController {
 
   @Post(":id/medications")
   @RequirePermissions(Permission.PATIENTS_WRITE)
+  @AuditLog("Patient")
   addMedication(
     @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,
@@ -83,6 +90,7 @@ export class PatientsController {
 
   @Patch(":id/medications/:medicationId/stop")
   @RequirePermissions(Permission.PATIENTS_WRITE)
+  @AuditLog("Patient")
   stopMedication(
     @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,
@@ -93,6 +101,7 @@ export class PatientsController {
 
   @Post(":id/vitals")
   @RequirePermissions(Permission.PATIENTS_WRITE)
+  @AuditLog("Patient")
   addVital(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: AddVitalDto) {
     return this.patientsService.addVital(user.tenantId!, id, dto, user.userId);
   }

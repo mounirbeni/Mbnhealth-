@@ -5,6 +5,7 @@ import { AdjustStockDto, CreateInventoryItemDto } from "./dto/inventory.dto";
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("inventory")
 @RequirePermissions(Permission.INVENTORY_READ)
@@ -28,12 +29,14 @@ export class InventoryController {
 
   @Post()
   @RequirePermissions(Permission.INVENTORY_WRITE)
+  @AuditLog("InventoryItem")
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateInventoryItemDto) {
     return this.inventoryService.create(user.tenantId!, dto);
   }
 
   @Patch(":id/adjust")
   @RequirePermissions(Permission.INVENTORY_WRITE)
+  @AuditLog("InventoryItem")
   adjustStock(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: AdjustStockDto) {
     return this.inventoryService.adjustStock(user.tenantId!, id, dto, user.userId);
   }

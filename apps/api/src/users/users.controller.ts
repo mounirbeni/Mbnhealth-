@@ -6,6 +6,7 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
+import { AuditLog } from "../common/decorators/audit-log.decorator";
 
 @Controller("users")
 export class UsersController {
@@ -30,18 +31,21 @@ export class UsersController {
 
   @Post()
   @RequirePermissions(Permission.STAFF_MANAGE)
+  @AuditLog("User")
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateUserDto) {
     return this.usersService.create(user.tenantId!, dto);
   }
 
   @Patch(":id")
   @RequirePermissions(Permission.STAFF_MANAGE)
+  @AuditLog("User")
   update(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(user.tenantId!, id, dto);
   }
 
   @Delete(":id")
   @RequirePermissions(Permission.STAFF_MANAGE)
+  @AuditLog("User")
   remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
     return this.usersService.remove(user.tenantId!, id);
   }

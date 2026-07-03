@@ -3,9 +3,8 @@ import { ConfigService } from "@nestjs/config";
 import helmet from "helmet";
 import compression from "compression";
 
-/** Shared between the persistent server entry point (main.ts, used by
- * Docker/local dev) and the Vercel serverless handler (api/index.ts), so
- * both expose the exact same middleware/prefix/CORS setup. */
+/** Middleware/CORS/prefix setup shared by main.ts, kept separate so it's
+ * easy to reuse from a second entry point later without duplicating it. */
 export function configureApp(app: INestApplication): ConfigService {
   const config = app.get(ConfigService);
 

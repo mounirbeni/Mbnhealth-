@@ -237,10 +237,12 @@ All three suites pass against live infrastructure as of this build:
 **Primary target: Vercel, one project for both apps.**
 
 - `apps/web` is a standard Next.js app — Vercel builds and serves it with no special config.
-- `apps/api` deploys as a Vercel serverless function via `apps/api/api/index.ts`, which wraps the
-  Nest app in a cached Express handler (`app.listen()` in `src/main.ts` only runs outside Vercel —
-  a serverless function can't host a process that blocks on a port). `apps/api/vercel.json`
-  rewrites every request to that function and configures the hourly reminders cron.
+- `apps/api` deploys with Vercel's `nestjs` framework preset, which detects the standard
+  `NestFactory.create(AppModule); await app.listen(process.env.PORT)` pattern in `src/main.ts` and
+  wraps it into a serverless function automatically — no custom handler file needed.
+  `src/config/configuration.ts` reads `process.env.PORT` first for exactly this reason (Vercel
+  injects it; `API_PORT` is only the Docker/local-dev fallback). `apps/api/vercel.json` configures
+  the hourly reminders cron.
 - If your Vercel project's Root Directory is set to `apps/api`, dependencies still install at the
   monorepo root (respecting npm workspaces), and a root `postinstall` script builds
   `packages/database` (Prisma client + compiled TS) first — required before anything importing

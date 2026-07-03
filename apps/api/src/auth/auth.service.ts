@@ -60,6 +60,9 @@ export class AuthService {
         data: {
           name: dto.clinicName,
           slug: dto.slug,
+          city: dto.city,
+          address: dto.address,
+          phone: dto.phone,
           subscription: {
             create: {
               plan: "TRIAL",
@@ -90,7 +93,8 @@ export class AuthService {
           }),
       );
 
-      const ownerRole = roleRecords.find((r) => r.systemRole === SystemRoleName.CLINIC_OWNER)!;
+      const ownerRole = roleRecords.find((r) => r.systemRole === dto.ownerRole);
+      if (!ownerRole) throw new BadRequestException("select a valid role");
 
       const owner = await tx.user.create({
         data: {
@@ -99,6 +103,7 @@ export class AuthService {
           passwordHash,
           firstName: dto.ownerFirstName,
           lastName: dto.ownerLastName,
+          phone: dto.phone,
           roleId: ownerRole.id,
         },
         include: { role: true },

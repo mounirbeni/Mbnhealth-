@@ -1,4 +1,5 @@
-import { IsEmail, IsString, Matches, MinLength } from "class-validator";
+import { IsEmail, IsEnum, IsString, Matches, MinLength } from "class-validator";
+import { SystemRoleName } from "@mbn/database";
 
 export class RegisterTenantDto {
   @IsString()
@@ -11,6 +12,18 @@ export class RegisterTenantDto {
   })
   slug!: string;
 
+  @IsString()
+  city!: string;
+
+  @IsString()
+  address!: string;
+
+  @IsString()
+  @Matches(/^\+?[0-9]{8,15}$/, {
+    message: "enter a valid mobile phone number",
+  })
+  phone!: string;
+
   @IsEmail()
   ownerEmail!: string;
 
@@ -19,6 +32,9 @@ export class RegisterTenantDto {
 
   @IsString()
   ownerLastName!: string;
+
+  @IsEnum(SystemRoleName, { message: "select a valid role" })
+  ownerRole!: Exclude<SystemRoleName, "SUPER_ADMIN">;
 
   @IsString()
   @MinLength(8, { message: "password must be at least 8 characters" })

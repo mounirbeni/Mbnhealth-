@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -11,9 +11,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api, setTokens } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
+
+const OWNER_ROLES = [
+  { value: "CLINIC_OWNER", label: "Clinic Owner" },
+  { value: "MANAGER", label: "Manager" },
+  { value: "RECEPTIONIST", label: "Receptionist" },
+  { value: "DOCTOR", label: "Doctor" },
+  { value: "ASSISTANT", label: "Assistant" },
+  { value: "LABORATORY", label: "Laboratory" },
+  { value: "RADIOLOGY", label: "Radiology" },
+  { value: "ACCOUNTANT", label: "Accountant" },
+] as const;
 
 const schema = z.object({
   clinicName: z.string().min(2, "Clinic name is required"),
@@ -21,8 +33,14 @@ const schema = z.object({
     .string()
     .min(2)
     .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers and hyphens only"),
+  city: z.string().min(1, "City is required"),
+  address: z.string().min(1, "Address is required"),
+  phone: z.string().regex(/^\+?[0-9]{8,15}$/, "Enter a valid mobile phone number"),
   ownerFirstName: z.string().min(1, "Required"),
   ownerLastName: z.string().min(1, "Required"),
+  ownerRole: z.enum(OWNER_ROLES.map((r) => r.value) as [string, ...string[]], {
+    errorMap: () => ({ message: "Select your role" }),
+  }),
   ownerEmail: z.string().email("Enter a valid email"),
   password: z.string().min(8, "At least 8 characters"),
 });
@@ -32,7 +50,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const { refreshMe } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, formState } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, control, formState } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
@@ -70,9 +88,21 @@ export default function RegisterPage() {
               )}
             </div>
             <div className="col-span-2 space-y-2">
-              <Label htmlFor="slug">Clinic URL</Label>
+              <Label htmlFor="slug">Clinic URL (a short ID for your workspace, not a real website)</Label>
               <Input id="slug" placeholder="sunrise-medical" {...register("slug")} />
               {formState.errors.slug && <p className="text-xs text-destructive">{formState.errors.slug.message}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="city">City</Label>
+              <Input id="city" placeholder="Cairo" {...register("city")} />
+              {formState.errors.city && <p className="text-xs text-destructive">{formState.errors.city.message}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="address">Address</Label>
+              <Input id="address" placeholder="12 Tahrir St." {...register("address")} />
+              {formState.errors.address && (
+                <p className="text-xs text-destructive">{formState.errors.address.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="ownerFirstName">First name</Label>
@@ -81,6 +111,37 @@ export default function RegisterPage() {
             <div className="space-y-2">
               <Label htmlFor="ownerLastName">Last name</Label>
               <Input id="ownerLastName" {...register("ownerLastName")} />
+            </div>
+            <div className="space-y-2">
+              <Label>Your role</Label>
+              <Controller
+                control={control}
+                name="ownerRole"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {OWNER_ROLES.map((r) => (
+                        <SelectItem key={r.value} value={r.value}>
+                          {r.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {formState.errors.ownerRole && (
+                <p className="text-xs text-destructive">{formState.errors.ownerRole.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Mobile phone</Label>
+              <Input id="phone" type="tel" placeholder="+201234567890" {...register("phone")} />
+              {formState.errors.phone && (
+                <p className="text-xs text-destructive">{formState.errors.phone.message}</p>
+              )}
             </div>
             <div className="col-span-2 space-y-2">
               <Label htmlFor="ownerEmail">Work email</Label>

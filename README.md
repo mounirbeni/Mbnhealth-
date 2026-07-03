@@ -13,7 +13,7 @@ Monorepo containing a NestJS API, a Next.js dashboard, and a shared Prisma/Postg
 | Database | PostgreSQL + Prisma ORM |
 | Auth | JWT access + rotating refresh tokens, TOTP MFA, RBAC, session management |
 | Messaging | WhatsApp Business Cloud API (real Graph API integration) + a limited-capability AI assistant (Claude) |
-| Jobs | Vercel Cron (hourly appointment reminders) + inline synchronous processing of inbound WhatsApp messages — no background worker process, by design (see below) |
+| Jobs | Vercel Cron (daily appointment reminders — Hobby plan caps cron frequency at once/day, see below) + inline synchronous processing of inbound WhatsApp messages — no background worker process, by design |
 | Billing | Stripe Checkout + Billing Portal + webhooks |
 | Storage | S3-compatible object storage (MinIO locally) |
 | Deployment | Single Vercel project (both `apps/web` and `apps/api`, the latter as a serverless function). Docker Compose and Kubernetes manifests are also provided for self-hosting. GitHub Actions CI runs unit/e2e/Playwright tests either way. |
@@ -70,10 +70,12 @@ SMS support was removed entirely (per product decision) in favor of a real Whats
   Instead: incoming WhatsApp messages are processed inline, synchronously, inside the webhook's
   POST handler (`apps/api/src/whatsapp/whatsapp-inbound.service.ts`) before it acks Meta, guarded
   against Meta's own delivery retries by a dedup check on the inbound message's WhatsApp message
-  id. Reminders run from `GET /cron/reminders` (`apps/api/src/reminders`), triggered hourly by
-  [Vercel Cron](https://vercel.com/docs/cron-jobs) (configured in `apps/api/vercel.json`) and
-  authenticated via a `CRON_SECRET` bearer token; each appointment's `reminderSentAt` is set
-  *before* the send so a re-triggered/overlapping run can't double-send.
+  id. Reminders run from `GET /cron/reminders` (`apps/api/src/reminders`), triggered daily at
+  08:00 UTC by [Vercel Cron](https://vercel.com/docs/cron-jobs) (configured in
+  `apps/api/vercel.json`) and authenticated via a `CRON_SECRET` bearer token; each appointment's
+  `reminderSentAt` is set *before* the send so a re-triggered/overlapping run can't double-send.
+  Once/day is a Hobby plan limit (Vercel rejects anything more frequent) — upgrade to Pro and
+  change the cron schedule in `vercel.json` for hourly reminders instead.
 - **The AI assistant is deliberately limited**, per the product requirement: it can only (1)
   answer general clinic FAQ (hours/address/phone, pulled from the tenant record) and (2) look up
   the *matched* patient's own upcoming appointments — read-only, and only ever that one patient's
@@ -242,7 +244,7 @@ All three suites pass against live infrastructure as of this build:
   wraps it into a serverless function automatically — no custom handler file needed.
   `src/config/configuration.ts` reads `process.env.PORT` first for exactly this reason (Vercel
   injects it; `API_PORT` is only the Docker/local-dev fallback). `apps/api/vercel.json` configures
-  the hourly reminders cron.
+  the daily reminders cron (Hobby plan limit — see above).
 - If your Vercel project's Root Directory is set to `apps/api`, dependencies still install at the
   monorepo root (respecting npm workspaces), and a root `postinstall` script builds
   `packages/database` (Prisma client + compiled TS) first — required before anything importing

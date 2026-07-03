@@ -63,6 +63,7 @@ export class AuthService {
           city: dto.city,
           address: dto.address,
           phone: dto.phone,
+          website: dto.website,
           subscription: {
             create: {
               plan: "TRIAL",

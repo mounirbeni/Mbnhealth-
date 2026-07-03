@@ -35,6 +35,7 @@ const schema = z.object({
     .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers and hyphens only"),
   city: z.string().min(1, "City is required"),
   address: z.string().min(1, "Address is required"),
+  website: z.union([z.literal(""), z.string().url("Enter a valid website URL, e.g. https://example.com")]),
   phone: z.string().regex(/^\+?[0-9]{8,15}$/, "Enter a valid mobile phone number"),
   ownerFirstName: z.string().min(1, "Required"),
   ownerLastName: z.string().min(1, "Required"),
@@ -57,7 +58,7 @@ export default function RegisterPage() {
     try {
       const res = await api.post<{ accessToken: string; refreshToken: string }>(
         "/auth/register-tenant",
-        values,
+        { ...values, website: values.website || undefined },
         { skipAuth: true },
       );
       setTokens(res.accessToken, res.refreshToken);
@@ -102,6 +103,13 @@ export default function RegisterPage() {
               <Input id="address" placeholder="12 Avenue Mohammed V" {...register("address")} />
               {formState.errors.address && (
                 <p className="text-xs text-destructive">{formState.errors.address.message}</p>
+              )}
+            </div>
+            <div className="col-span-2 space-y-2">
+              <Label htmlFor="website">Clinic website (optional)</Label>
+              <Input id="website" type="url" placeholder="https://sunrise-clinic.ma" {...register("website")} />
+              {formState.errors.website && (
+                <p className="text-xs text-destructive">{formState.errors.website.message}</p>
               )}
             </div>
             <div className="space-y-2">

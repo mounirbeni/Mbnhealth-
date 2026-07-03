@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsString, Matches, MinLength } from "class-validator";
+import { IsEmail, IsEnum, IsOptional, IsString, IsUrl, Matches, MinLength } from "class-validator";
 import { SystemRoleName } from "@mbn/database";
 
 export class RegisterTenantDto {
@@ -17,6 +17,10 @@ export class RegisterTenantDto {
 
   @IsString()
   address!: string;
+
+  @IsOptional()
+  @IsUrl({ require_protocol: true }, { message: "enter a valid website URL, e.g. https://example.com" })
+  website?: string;
 
   @IsString()
   @Matches(/^\+?[0-9]{8,15}$/, {

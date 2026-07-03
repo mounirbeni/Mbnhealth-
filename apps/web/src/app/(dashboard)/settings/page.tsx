@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/lib/auth-context";
 import { useTenant, useUpdateTenant } from "@/hooks/use-tenant";
 import { useUpsertWhatsAppConfig, useWhatsAppConfig } from "@/hooks/use-whatsapp";
-import { api } from "@/lib/api-client";
+import { API_URL, api } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-client";
 import { formatDateTime } from "@/lib/utils";
 
@@ -225,7 +225,7 @@ function WhatsAppTab() {
   const upsertConfig = useUpsertWhatsAppConfig();
   const { hasPermission } = useAuth();
   const canManage = hasPermission("SETTINGS_MANAGE");
-  const webhookUrl = `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/api/v1/whatsapp/webhook`;
+  const webhookUrl = `${API_URL}/api/v1/whatsapp/webhook`;
 
   const { register, handleSubmit, formState, watch, setValue } = useForm({
     values: config

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { api, getAccessToken } from "@/lib/api-client";
+import { API_URL, api, getAccessToken } from "@/lib/api-client";
 
 export function useRevenueReport() {
   return useQuery({ queryKey: ["reports", "revenue"], queryFn: () => api.get<any>("/reports/revenue") });
@@ -24,8 +24,6 @@ export function useFinancialReport() {
 export function useInventoryReport() {
   return useQuery({ queryKey: ["reports", "inventory"], queryFn: () => api.get<any>("/reports/inventory") });
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 export async function downloadReportCsv(report: "revenue" | "appointments" | "patients") {
   const token = getAccessToken();

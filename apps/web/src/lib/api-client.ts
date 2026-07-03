@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
 
 const ACCESS_TOKEN_KEY = "mbn_access_token";
 const REFRESH_TOKEN_KEY = "mbn_refresh_token";

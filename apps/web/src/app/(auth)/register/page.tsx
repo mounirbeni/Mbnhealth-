@@ -94,12 +94,12 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="Cairo" {...register("city")} />
+              <Input id="city" placeholder="Casablanca" {...register("city")} />
               {formState.errors.city && <p className="text-xs text-destructive">{formState.errors.city.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="address">Address</Label>
-              <Input id="address" placeholder="12 Tahrir St." {...register("address")} />
+              <Input id="address" placeholder="12 Avenue Mohammed V" {...register("address")} />
               {formState.errors.address && (
                 <p className="text-xs text-destructive">{formState.errors.address.message}</p>
               )}
@@ -138,7 +138,7 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Mobile phone</Label>
-              <Input id="phone" type="tel" placeholder="+201234567890" {...register("phone")} />
+              <Input id="phone" type="tel" placeholder="+212612345678" {...register("phone")} />
               {formState.errors.phone && (
                 <p className="text-xs text-destructive">{formState.errors.phone.message}</p>
               )}

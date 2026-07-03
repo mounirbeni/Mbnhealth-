@@ -14,7 +14,7 @@ export function configureApp(app: INestApplication): ConfigService {
     origin: config.get<string>("corsOrigin"),
     credentials: true,
   });
-  app.setGlobalPrefix("api/v1", { exclude: ["health"] });
+  app.setGlobalPrefix("api/v1", { exclude: ["health", "/"] });
 
   return config;
 }

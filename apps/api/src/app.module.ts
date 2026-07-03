@@ -32,6 +32,7 @@ import { AiBotModule } from "./ai-bot/ai-bot.module";
 import { RemindersModule } from "./reminders/reminders.module";
 import { BillingSubscriptionModule } from "./billing-subscription/billing-subscription.module";
 import { HealthController } from "./health/health.controller";
+import { RootController } from "./health/root.controller";
 
 @Module({
   imports: [
@@ -73,7 +74,7 @@ import { HealthController } from "./health/health.controller";
     RemindersModule,
     BillingSubscriptionModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, RootController],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },

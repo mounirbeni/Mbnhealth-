@@ -13,12 +13,12 @@
     "build": "prisma generate && tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@prisma/client": "^5.19.1"
+    "@prisma/client": "^5.19.1",
+    "prisma": "^5.19.1",
+    "typescript": "^5.5.4"
   },
   "devDependencies": {
-    "prisma": "^5.19.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4",
     "argon2": "^0.41.1"
   },
   "prisma": {

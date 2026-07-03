@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mbn_health_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mbn_health_test
+      JWT_ACCESS_SECRET: ci-access-secret-please-override-in-prod-32ch
+      JWT_REFRESH_SECRET: ci-refresh-secret-please-override-in-prod-32ch
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run build --workspace=packages/database
+
+      - name: Run database migrations
+        run: npm run prisma:migrate:deploy --workspace=packages/database
+
+      - name: Typecheck API
+        run: npx tsc --noEmit -p apps/api/tsconfig.json
+
+      - name: Typecheck Web
+        run: npx tsc --noEmit -p apps/web/tsconfig.json
+
+      - name: Run API unit tests
+        run: npm run test --workspace=apps/api
+
+      - name: Run API e2e tests
+        run: npm run test:e2e --workspace=apps/api
+
+      - name: Build API
+        run: npm run build --workspace=apps/api
+
+      - name: Build Web
+        run: npm run build --workspace=apps/web
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000

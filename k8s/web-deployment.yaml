@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mbn-web
+  labels:
+    app: mbn-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mbn-web
+  template:
+    metadata:
+      labels:
+        app: mbn-web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/mbnhealth/web:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: mbn-web-config
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mbn-web
+spec:
+  selector:
+    app: mbn-web
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mbn-health-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - app.mbnhealth.com
+        - api.mbnhealth.com
+      secretName: mbn-health-tls
+  rules:
+    - host: app.mbnhealth.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mbn-web
+                port:
+                  number: 80
+    - host: api.mbnhealth.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mbn-api
+                port:
+                  number: 80

@@ -1,7 +1,8 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { CommunicationChannel, CommunicationDirection } from "@mbn/database";
 import { PrismaService } from "../prisma/prisma.service";
-import { CreateTemplateDto, CreateThreadDto, SendCommunicationDto } from "./dto/messages.dto";
+import { CreateTemplateDto, CreateThreadDto, SendEmailDto } from "./dto/messages.dto";
 
 @Injectable()
 export class MessagesService {
@@ -66,30 +67,26 @@ export class MessagesService {
     return { success: true };
   }
 
-  // ── Outbound communications (SMS / WhatsApp / Email reminders) ────────────
-  // Providers are pluggable via env config; with no provider configured this
-  // logs the intended send and records it, so the feature is fully wired end
-  // to end and ready for a real Twilio/Meta/SMTP integration to be dropped in.
-  async send(tenantId: string, dto: SendCommunicationDto) {
-    const providerKey =
-      dto.channel === "SMS"
-        ? "messaging.smsProvider"
-        : dto.channel === "WHATSAPP"
-          ? "messaging.whatsappProvider"
-          : "messaging.emailProvider";
-    const provider = this.config.get<string>(providerKey);
+  // ── Outbound email ─────────────────────────────────────────────────────────
+  // No real SMTP provider is wired in yet: with EMAIL_PROVIDER=console (the
+  // default) this logs the intended send and records it, so the feature is
+  // fully wired end to end and ready for a real SMTP/SES integration to be
+  // dropped into this one method.
+  async sendEmail(tenantId: string, dto: SendEmailDto) {
+    const provider = this.config.get<string>("messaging.emailProvider");
 
-    this.logger.log(
-      `[${dto.channel}] provider=${provider ?? "none"} to=${dto.recipient}: ${dto.message.slice(0, 120)}`,
-    );
+    this.logger.log(`[EMAIL] provider=${provider ?? "console"} to=${dto.recipient}: ${dto.message.slice(0, 120)}`);
 
     return this.prisma.communicationLog.create({
       data: {
         tenantId,
         patientId: dto.patientId,
-        channel: dto.channel,
+        channel: CommunicationChannel.EMAIL,
+        direction: CommunicationDirection.OUTBOUND,
         templateId: dto.templateId,
-        status: provider && provider !== "none" && provider !== "console" ? "SENT" : "SIMULATED",
+        externalContact: dto.recipient,
+        content: dto.message,
+        status: provider && provider !== "console" ? "SENT" : "SIMULATED",
       },
     });
   }

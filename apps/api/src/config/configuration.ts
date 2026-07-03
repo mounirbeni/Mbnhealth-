@@ -27,12 +27,29 @@ export default () => ({
     max: parseInt(process.env.RATE_LIMIT_MAX ?? "100", 10),
   },
   messaging: {
-    smsProvider: process.env.SMS_PROVIDER ?? "none",
-    whatsappProvider: process.env.WHATSAPP_PROVIDER ?? "none",
     emailProvider: process.env.EMAIL_PROVIDER ?? "console",
     emailFrom: process.env.EMAIL_FROM ?? "MBN Health <no-reply@mbnhealth.com>",
   },
+  // Platform-level Meta App credentials, shared across all tenants: the
+  // webhook URL and verify token are configured once in the Meta App
+  // dashboard. Each clinic's own phone number / access token lives in the
+  // per-tenant WhatsAppConfig database row (see whatsapp module).
+  whatsapp: {
+    webhookVerifyToken: process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN ?? "",
+    appSecret: process.env.WHATSAPP_APP_SECRET ?? "",
+    graphApiVersion: process.env.WHATSAPP_GRAPH_API_VERSION ?? "v21.0",
+  },
   ai: {
     anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? "",
+    model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5",
+  },
+  stripe: {
+    secretKey: process.env.STRIPE_SECRET_KEY ?? "",
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+    priceIdStarter: process.env.STRIPE_PRICE_ID_STARTER ?? "",
+    priceIdProfessional: process.env.STRIPE_PRICE_ID_PROFESSIONAL ?? "",
+    priceIdEnterprise: process.env.STRIPE_PRICE_ID_ENTERPRISE ?? "",
+    checkoutSuccessUrl: process.env.STRIPE_CHECKOUT_SUCCESS_URL ?? "http://localhost:3000/settings?checkout=success",
+    checkoutCancelUrl: process.env.STRIPE_CHECKOUT_CANCEL_URL ?? "http://localhost:3000/settings?checkout=cancelled",
   },
 });

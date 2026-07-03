@@ -49,10 +49,10 @@ export function useCommunicationLogs() {
   return useQuery({ queryKey: ["communication-logs"], queryFn: () => api.get<any[]>("/messages/logs") });
 }
 
-export function useSendCommunication() {
+export function useSendEmail() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) => api.post("/messages/send", data),
+    mutationFn: (data: Record<string, unknown>) => api.post("/messages/send-email", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["communication-logs"] }),
   });
 }

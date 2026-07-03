@@ -24,11 +24,22 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mbn_health_test
+      REDIS_URL: redis://localhost:6379
       JWT_ACCESS_SECRET: ci-access-secret-please-override-in-prod-32ch
       JWT_REFRESH_SECRET: ci-refresh-secret-please-override-in-prod-32ch
+      WHATSAPP_WEBHOOK_VERIFY_TOKEN: ci-webhook-verify-token
       NODE_ENV: test
 
     steps:
@@ -67,3 +78,84 @@ jobs:
         run: npm run build --workspace=apps/web
         env:
           NEXT_PUBLIC_API_URL: http://localhost:4000
+
+  e2e-web:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mbn_health_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mbn_health_test
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: ci-access-secret-please-override-in-prod-32ch
+      JWT_REFRESH_SECRET: ci-refresh-secret-please-override-in-prod-32ch
+      WHATSAPP_WEBHOOK_VERIFY_TOKEN: ci-webhook-verify-token
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      NODE_ENV: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright's Chromium
+        run: npx --workspace=apps/web playwright install --with-deps chromium
+
+      - name: Generate Prisma client and run migrations
+        run: |
+          npm run build --workspace=packages/database
+          npm run prisma:migrate:deploy --workspace=packages/database
+          npm run prisma:seed --workspace=packages/database
+
+      - name: Build API and Web
+        run: |
+          npm run build --workspace=apps/api
+          npm run build --workspace=apps/web
+
+      - name: Start API and Web servers
+        run: |
+          node apps/api/dist/main.js &
+          npx --workspace=apps/web next start -p 3000 &
+          npx wait-on http://localhost:4000/health http://localhost:3000/login --timeout 60000
+
+      - name: Run Playwright e2e tests
+        run: npx --workspace=apps/web playwright test
+        env:
+          E2E_BASE_URL: http://localhost:3000
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7

@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Query } from "@nestjs/common";
 import { MessagesService } from "./messages.service";
-import { CreateTemplateDto, CreateThreadDto, SendCommunicationDto, SendMessageDto } from "./dto/messages.dto";
+import { CreateTemplateDto, CreateThreadDto, SendEmailDto, SendMessageDto } from "./dto/messages.dto";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
 
@@ -48,8 +48,8 @@ export class MessagesController {
     return this.messagesService.findAllLogs(user.tenantId!, patientId);
   }
 
-  @Post("send")
-  send(@CurrentUser() user: AuthenticatedUser, @Body() dto: SendCommunicationDto) {
-    return this.messagesService.send(user.tenantId!, dto);
+  @Post("send-email")
+  sendEmail(@CurrentUser() user: AuthenticatedUser, @Body() dto: SendEmailDto) {
+    return this.messagesService.sendEmail(user.tenantId!, dto);
   }
 }

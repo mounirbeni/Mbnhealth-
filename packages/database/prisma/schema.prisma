@@ -78,24 +78,28 @@ model Tenant {
   waitlistEntries   WaitlistEntry[]
   refreshTokens     RefreshToken[]
   sessions          Session[]
+  whatsAppConfig    WhatsAppConfig?
 
   @@map("tenants")
 }
 
 model Subscription {
-  id                 String             @id @default(cuid())
-  tenantId           String             @unique
-  tenant             Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  plan               SubscriptionPlan   @default(TRIAL)
-  status             SubscriptionStatus @default(TRIALING)
-  seats              Int                @default(5)
-  trialEndsAt        DateTime?
-  currentPeriodStart DateTime           @default(now())
-  currentPeriodEnd   DateTime?
-  cancelAtPeriodEnd  Boolean            @default(false)
-  billingEmail       String?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  id                   String             @id @default(cuid())
+  tenantId             String             @unique
+  tenant               Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan                 SubscriptionPlan   @default(TRIAL)
+  status               SubscriptionStatus @default(TRIALING)
+  seats                Int                @default(5)
+  trialEndsAt          DateTime?
+  currentPeriodStart   DateTime           @default(now())
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  billingEmail         String?
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 
   @@map("subscriptions")
 }
@@ -475,17 +479,20 @@ model Appointment {
   checkedInAt         DateTime?
   cancelledAt         DateTime?
   cancelReason        String?
+  reminderSentAt      DateTime?
   createdById         String?
   createdBy           User?             @relation("AppointmentCreatedBy", fields: [createdById], references: [id])
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 
-  medicalRecord   MedicalRecord?
-  labOrders       LabOrder[]
-  radiologyOrders RadiologyOrder[]
+  medicalRecord     MedicalRecord?
+  labOrders         LabOrder[]
+  radiologyOrders   RadiologyOrder[]
+  communicationLogs CommunicationLog[]
 
   @@index([tenantId, startTime])
   @@index([doctorId, startTime])
+  @@index([reminderSentAt, startTime])
   @@map("appointments")
 }
 
@@ -900,10 +907,14 @@ model Message {
 }
 
 enum CommunicationChannel {
-  SMS
   EMAIL
   WHATSAPP
   PUSH
+}
+
+enum CommunicationDirection {
+  OUTBOUND
+  INBOUND
 }
 
 model MessageTemplate {
@@ -921,16 +932,46 @@ model MessageTemplate {
 }
 
 model CommunicationLog {
-  id         String               @id @default(cuid())
-  tenantId   String
-  tenant     Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  patientId  String?
-  patient    Patient?             @relation(fields: [patientId], references: [id])
-  channel    CommunicationChannel
-  templateId String?
-  status     String               @default("SENT")
-  sentAt     DateTime             @default(now())
+  id                String                 @id @default(cuid())
+  tenantId          String
+  tenant            Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  patientId         String?
+  patient           Patient?               @relation(fields: [patientId], references: [id])
+  appointmentId     String?
+  appointment       Appointment?           @relation(fields: [appointmentId], references: [id])
+  channel           CommunicationChannel
+  direction         CommunicationDirection @default(OUTBOUND)
+  templateId        String?
+  externalContact   String?
+  externalMessageId String?
+  content           String?
+  respondedByAi     Boolean                @default(false)
+  status            String                 @default("SENT")
+  sentAt            DateTime               @default(now())
 
   @@index([tenantId, sentAt])
+  @@index([appointmentId])
   @@map("communication_logs")
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// WHATSAPP BUSINESS INTEGRATION
+// ────────────────────────────────────────────────────────────────────────────
+
+model WhatsAppConfig {
+  id                 String   @id @default(cuid())
+  tenantId           String   @unique
+  tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  phoneNumberId      String   @unique
+  businessAccountId  String?
+  displayPhoneNumber String?
+  // Stored as plain text here for simplicity; production deployments should
+  // pull this from a secrets manager (see README) rather than the database.
+  accessToken        String
+  isActive           Boolean  @default(true)
+  aiBotEnabled       Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("whatsapp_configs")
 }

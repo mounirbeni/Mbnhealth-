@@ -27,6 +27,11 @@ import { NotificationsModule } from "./notifications/notifications.module";
 import { MessagesModule } from "./messages/messages.module";
 import { ReportsModule } from "./reports/reports.module";
 import { UploadsModule } from "./uploads/uploads.module";
+import { QueueModule } from "./queue/queue.module";
+import { WhatsAppModule } from "./whatsapp/whatsapp.module";
+import { AiBotModule } from "./ai-bot/ai-bot.module";
+import { JobsModule } from "./jobs/jobs.module";
+import { BillingSubscriptionModule } from "./billing-subscription/billing-subscription.module";
 import { HealthController } from "./health/health.controller";
 
 @Module({
@@ -64,6 +69,11 @@ import { HealthController } from "./health/health.controller";
     MessagesModule,
     ReportsModule,
     UploadsModule,
+    QueueModule,
+    WhatsAppModule,
+    AiBotModule,
+    JobsModule,
+    BillingSubscriptionModule,
   ],
   controllers: [HealthController],
   providers: [

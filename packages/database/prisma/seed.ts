@@ -484,12 +484,6 @@ async function main() {
     data: [
       {
         tenantId: tenant.id,
-        name: "Appointment Reminder (SMS)",
-        channel: CommunicationChannel.SMS,
-        body: "Hi {{patientName}}, reminder for your appointment with Dr. {{doctorName}} on {{date}} at {{time}}.",
-      },
-      {
-        tenantId: tenant.id,
         name: "Appointment Confirmation (Email)",
         channel: CommunicationChannel.EMAIL,
         subject: "Your appointment is confirmed",
@@ -499,10 +493,25 @@ async function main() {
         tenantId: tenant.id,
         name: "Appointment Reminder (WhatsApp)",
         channel: CommunicationChannel.WHATSAPP,
-        body: "Reminder: appointment with Dr. {{doctorName}} tomorrow at {{time}}. Reply CONFIRM to confirm.",
+        body: "Hi {{patientName}}, this is a reminder for your appointment with Dr. {{doctorName}} on {{date}} at {{time}}. Reply to this message if you have any questions.",
       },
     ],
     skipDuplicates: true,
+  });
+
+  // Demo WhatsApp Business config (inactive placeholder — no real Meta
+  // credentials in this environment; the clinic owner fills these in from
+  // Settings > WhatsApp Bot once they have a real Meta Business account).
+  await prisma.whatsAppConfig.upsert({
+    where: { tenantId: tenant.id },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      phoneNumberId: `demo-phone-number-id-${tenant.id.slice(-6)}`,
+      accessToken: "REPLACE_WITH_REAL_META_ACCESS_TOKEN",
+      isActive: false,
+      aiBotEnabled: true,
+    },
   });
 
   await prisma.notification.createMany({

@@ -6,7 +6,9 @@ import compression from "compression";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: false });
+  // rawBody: true exposes req.rawBody, needed to verify the
+  // X-Hub-Signature-256 header on incoming WhatsApp webhook payloads.
+  const app = await NestFactory.create(AppModule, { cors: false, rawBody: true });
   const config = app.get(ConfigService);
 
   app.use(helmet());

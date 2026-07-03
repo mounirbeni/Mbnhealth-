@@ -31,13 +31,13 @@ export class CreateTemplateDto {
   body!: string;
 }
 
-export class SendCommunicationDto {
+/** Manual email send from Messages > Templates. WhatsApp sends go through
+ * the dedicated /whatsapp/send endpoint (see whatsapp module) since that
+ * channel needs a real Meta Graph API call, not a generic log entry. */
+export class SendEmailDto {
   @IsOptional()
   @IsString()
   patientId?: string;
-
-  @IsEnum(CommunicationChannel)
-  channel!: CommunicationChannel;
 
   @IsOptional()
   @IsString()

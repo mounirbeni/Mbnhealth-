@@ -4,18 +4,53 @@ import { useState } from "react";
 import Link from "next/link";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
-import { Building2, Plus } from "lucide-react";
+import { Building2, Plus, Users, UserRound } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useAdminTenants, useCreateTenant, useSetTenantStatus, type CreateTenantInput } from "@/hooks/use-admin-tenants";
+import {
+  useAdminTenants,
+  useAdminTenantStats,
+  useCreateTenant,
+  useSetTenantStatus,
+  type CreateTenantInput,
+} from "@/hooks/use-admin-tenants";
 import { STATUS_BADGE_VARIANT } from "@/lib/status-styles";
 import { ApiError } from "@/lib/api-client";
 import { formatDate } from "@/lib/utils";
+
+function StatsRow() {
+  const { data: stats } = useAdminTenantStats();
+
+  const cards = [
+    { label: "Total clinics", value: stats?.totalClinics, icon: Building2 },
+    { label: "Active", value: stats?.activeClinics, icon: Building2 },
+    { label: "Suspended", value: stats?.suspendedClinics, icon: Building2 },
+    { label: "Total users", value: stats?.totalUsers, icon: Users },
+    { label: "Total patients", value: stats?.totalPatients, icon: UserRound },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      {cards.map((c) => (
+        <Card key={c.label}>
+          <CardContent className="flex items-center gap-3 p-4">
+            <c.icon className="h-5 w-5 shrink-0 text-primary" />
+            <div>
+              <p className="text-xl font-semibold tabular-nums">{c.value ?? "—"}</p>
+              <p className="text-xs text-muted-foreground">{c.label}</p>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
 
 function NewClinicDialog() {
   const [open, setOpen] = useState(false);
@@ -136,6 +171,8 @@ export default function AdminTenantsPage() {
         </div>
         <NewClinicDialog />
       </div>
+
+      <StatsRow />
 
       <Input
         placeholder="Search clinics..."

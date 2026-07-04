@@ -6,12 +6,14 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import * as argon2 from "argon2";
+import { createHash, randomBytes } from "crypto";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { AuditAction, SubscriptionPlan, SubscriptionStatus, User, Role } from "@mbn/database";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { TenantProvisioningService } from "../tenants/tenant-provisioning.service";
+import { EmailService } from "../email/email.service";
 import { TokensService } from "./services/tokens.service";
 import { MfaService } from "./services/mfa.service";
 import { RegisterTenantDto } from "./dto/register-tenant.dto";
@@ -35,6 +37,7 @@ export class AuthService {
     private readonly mfa: MfaService,
     private readonly auditLog: AuditLogService,
     private readonly provisioning: TenantProvisioningService,
+    private readonly email: EmailService,
   ) {}
 
   private toAuthenticatedUser(user: UserWithRole): AuthenticatedUser {
@@ -249,6 +252,97 @@ export class AuthService {
     await this.prisma.user.update({
       where: { id: userId },
       data: { mfaEnabled: false, mfaSecret: null, mfaRecoveryCodes: [] },
+    });
+    return { success: true };
+  }
+
+  async regenerateRecoveryCodes(userId: string, currentPassword: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    if (!user.mfaEnabled) throw new BadRequestException("Two-factor authentication is not enabled");
+    const valid = await argon2.verify(user.passwordHash, currentPassword);
+    if (!valid) throw new UnauthorizedException("Current password is incorrect");
+
+    const recoveryCodes = this.mfa.generateRecoveryCodes();
+    await this.prisma.user.update({ where: { id: userId }, data: { mfaRecoveryCodes: recoveryCodes } });
+    return { recoveryCodes };
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string, meta: RequestMeta) {
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    const valid = await argon2.verify(user.passwordHash, currentPassword);
+    if (!valid) throw new UnauthorizedException("Current password is incorrect");
+
+    const passwordHash = await argon2.hash(newPassword);
+    await this.prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+    await this.tokens.revokeAllUserTokens(userId);
+    await this.auditLog.record({
+      tenantId: user.tenantId,
+      userId,
+      action: AuditAction.UPDATE,
+      entityType: "User",
+      entityId: userId,
+      ipAddress: meta.ipAddress,
+      userAgent: meta.userAgent,
+    });
+    return { success: true };
+  }
+
+  // Always responds the same way regardless of whether the email matches an
+  // account, so this endpoint can't be used to enumerate registered emails.
+  async forgotPassword(email: string, meta: RequestMeta) {
+    const user = await this.prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    if (user && user.isActive) {
+      const rawToken = randomBytes(32).toString("hex");
+      const tokenHash = createHash("sha256").update(rawToken).digest("hex");
+      await this.prisma.passwordResetToken.create({
+        data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 1000 * 60 * 30) },
+      });
+
+      const resetUrl = `${this.config.get<string>("webUrl")}/reset-password?token=${rawToken}`;
+      await this.email.send(
+        user.email,
+        "Reset your MBN Health password",
+        `We received a request to reset your password. This link expires in 30 minutes:\n\n${resetUrl}\n\nIf you didn't request this, you can ignore this email.`,
+      );
+
+      await this.auditLog.record({
+        tenantId: user.tenantId,
+        userId: user.id,
+        action: AuditAction.UPDATE,
+        entityType: "User",
+        entityId: user.id,
+        metadata: { event: "password_reset_requested" },
+        ipAddress: meta.ipAddress,
+        userAgent: meta.userAgent,
+      });
+    }
+    return { success: true };
+  }
+
+  async resetPassword(rawToken: string, newPassword: string, meta: RequestMeta) {
+    const tokenHash = createHash("sha256").update(rawToken).digest("hex");
+    const record = await this.prisma.passwordResetToken.findUnique({ where: { tokenHash } });
+    if (!record || record.usedAt || record.expiresAt < new Date()) {
+      throw new BadRequestException("This reset link is invalid or has expired");
+    }
+
+    const passwordHash = await argon2.hash(newPassword);
+    const user = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({ where: { id: record.userId }, data: { passwordHash } });
+      await tx.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } });
+      return updated;
+    });
+
+    await this.tokens.revokeAllUserTokens(user.id);
+    await this.auditLog.record({
+      tenantId: user.tenantId,
+      userId: user.id,
+      action: AuditAction.UPDATE,
+      entityType: "User",
+      entityId: user.id,
+      metadata: { event: "password_reset_completed" },
+      ipAddress: meta.ipAddress,
+      userAgent: meta.userAgent,
     });
     return { success: true };
   }

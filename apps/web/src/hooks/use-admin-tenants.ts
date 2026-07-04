@@ -29,6 +29,41 @@ export function useAdminTenantAuditLogs(id: string, page = 1) {
   });
 }
 
+export function useAdminTenantStats() {
+  return useQuery({
+    queryKey: ["admin-tenants", "stats"],
+    queryFn: () =>
+      api.get<{
+        totalClinics: number;
+        activeClinics: number;
+        suspendedClinics: number;
+        archivedClinics: number;
+        totalUsers: number;
+        totalPatients: number;
+      }>("/tenants/stats"),
+  });
+}
+
+export function useAdminTenantUsers(id: string) {
+  return useQuery({
+    queryKey: ["admin-tenants", id, "users"],
+    queryFn: () => api.get<any[]>(`/tenants/${id}/users`),
+    enabled: !!id,
+  });
+}
+
+export function useSetAdminTenantUserStatus(tenantId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, isActive }: { userId: string; isActive: boolean }) =>
+      api.patch(`/tenants/${tenantId}/users/${userId}/status`, { isActive }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-tenants", tenantId, "users"] });
+      qc.invalidateQueries({ queryKey: ["admin-tenants", tenantId, "audit-logs"] });
+    },
+  });
+}
+
 export function useSetTenantStatus() {
   const qc = useQueryClient();
   return useMutation({

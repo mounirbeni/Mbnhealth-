@@ -9,12 +9,14 @@ import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
 import { AuditLog, AuditTenantFromParam, AuditTenantFromResult } from "../common/decorators/audit-log.decorator";
 import { AuditLogService } from "../audit-log/audit-log.service";
+import { UsersService } from "../users/users.service";
 
 @Controller("tenants")
 export class TenantsController {
   constructor(
     private readonly tenantsService: TenantsService,
     private readonly auditLogService: AuditLogService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Get("me")
@@ -42,6 +44,12 @@ export class TenantsController {
   @AuditTenantFromResult()
   create(@Body() dto: CreateTenantDto) {
     return this.tenantsService.createByAdmin(dto);
+  }
+
+  @Get("stats")
+  @RequirePermissions(Permission.SYSTEM_MANAGE_TENANTS)
+  getStats() {
+    return this.tenantsService.getPlatformStats();
   }
 
   @Get(":id")
@@ -75,5 +83,19 @@ export class TenantsController {
   @AuditTenantFromParam("id")
   setStatus(@Param("id") id: string, @Body("status") status: "ACTIVE" | "SUSPENDED" | "ARCHIVED") {
     return this.tenantsService.setStatus(id, status);
+  }
+
+  @Get(":id/users")
+  @RequirePermissions(Permission.SYSTEM_MANAGE_TENANTS)
+  listUsers(@Param("id") id: string, @Query("search") search?: string) {
+    return this.usersService.findAll(id, { search });
+  }
+
+  @Patch(":id/users/:userId/status")
+  @RequirePermissions(Permission.SYSTEM_MANAGE_TENANTS)
+  @AuditLog("User")
+  @AuditTenantFromParam("id")
+  setUserStatus(@Param("id") id: string, @Param("userId") userId: string, @Body("isActive") isActive: boolean) {
+    return this.usersService.update(id, userId, { isActive });
   }
 }

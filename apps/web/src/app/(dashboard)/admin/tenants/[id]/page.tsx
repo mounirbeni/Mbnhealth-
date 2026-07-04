@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ShieldCheck, UserX, UserCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,12 +16,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   useAdminTenant,
   useAdminTenantAuditLogs,
+  useAdminTenantUsers,
+  useSetAdminTenantUserStatus,
   useSetTenantStatus,
   useUpdateTenantDetails,
 } from "@/hooks/use-admin-tenants";
 import { STATUS_BADGE_VARIANT } from "@/lib/status-styles";
 import { ApiError } from "@/lib/api-client";
-import { formatDate, formatDateTime } from "@/lib/utils";
+import { formatDate, formatDateTime, initials } from "@/lib/utils";
 
 const ACTION_VARIANT: Record<string, "default" | "secondary" | "destructive" | "success" | "warning" | "outline"> = {
   CREATE: "success",
@@ -164,6 +167,91 @@ function SubscriptionCard({ tenant }: { tenant: any }) {
   );
 }
 
+function StaffCard({ tenantId }: { tenantId: string }) {
+  const { data: users, isLoading } = useAdminTenantUsers(tenantId);
+  const setUserStatus = useSetAdminTenantUserStatus(tenantId);
+
+  const toggleStatus = async (userId: string, isActive: boolean) => {
+    try {
+      await setUserStatus.mutateAsync({ userId, isActive: !isActive });
+      toast.success(!isActive ? "Staff member reactivated" : "Staff member deactivated");
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Failed to update staff member");
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Staff</CardTitle>
+        <CardDescription>Everyone with an account at this clinic</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="rounded-xl border border-border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : users && users.length > 0 ? (
+                users.map((u: any) => (
+                  <TableRow key={u.id}>
+                    <TableCell className="flex items-center gap-2 font-medium">
+                      <Avatar className="h-7 w-7">
+                        <AvatarFallback>{initials(u.firstName, u.lastName)}</AvatarFallback>
+                      </Avatar>
+                      {u.firstName} {u.lastName}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{u.role?.name}</Badge>
+                    </TableCell>
+                    <TableCell>{u.email}</TableCell>
+                    <TableCell>
+                      <Badge variant={u.isActive ? "success" : "secondary"}>{u.isActive ? "Active" : "Inactive"}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => toggleStatus(u.id, u.isActive)}
+                        title={u.isActive ? "Deactivate" : "Reactivate"}
+                      >
+                        {u.isActive ? (
+                          <UserX className="h-4 w-4 text-destructive" />
+                        ) : (
+                          <UserCheck className="h-4 w-4 text-success" />
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                    No staff members found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function AuditLogCard({ tenantId }: { tenantId: string }) {
   const [page, setPage] = useState(1);
   const { data, isLoading } = useAdminTenantAuditLogs(tenantId, page);
@@ -301,6 +389,7 @@ export default function AdminTenantDetailPage() {
         <SubscriptionCard tenant={tenant} />
       </div>
 
+      <StaffCard tenantId={id} />
       <AuditLogCard tenantId={id} />
     </div>
   );

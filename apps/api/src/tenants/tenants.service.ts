@@ -47,6 +47,26 @@ export class TenantsService {
     return { items, total, page: params.page, pageSize: params.pageSize };
   }
 
+  async getPlatformStats() {
+    const [statusCounts, totalUsers, totalPatients] = await Promise.all([
+      this.prisma.tenant.groupBy({ by: ["status"], _count: { _all: true } }),
+      this.prisma.user.count({ where: { tenantId: { not: null } } }),
+      this.prisma.patient.count(),
+    ]);
+
+    const byStatus: Record<string, number> = { ACTIVE: 0, SUSPENDED: 0, ARCHIVED: 0 };
+    for (const row of statusCounts) byStatus[row.status] = row._count._all;
+
+    return {
+      totalClinics: byStatus.ACTIVE + byStatus.SUSPENDED + byStatus.ARCHIVED,
+      activeClinics: byStatus.ACTIVE,
+      suspendedClinics: byStatus.SUSPENDED,
+      archivedClinics: byStatus.ARCHIVED,
+      totalUsers,
+      totalPatients,
+    };
+  }
+
   async findOne(id: string) {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id },

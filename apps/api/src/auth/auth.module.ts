@@ -9,12 +9,14 @@ import { TokensService } from "./services/tokens.service";
 import { MfaService } from "./services/mfa.service";
 import { AuditLogModule } from "../audit-log/audit-log.module";
 import { TenantsModule } from "../tenants/tenants.module";
+import { EmailModule } from "../email/email.module";
 
 @Module({
   imports: [
     PassportModule,
     AuditLogModule,
     TenantsModule,
+    EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

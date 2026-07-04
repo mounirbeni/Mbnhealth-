@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth-context";
 import { useTenant, useUpdateTenant } from "@/hooks/use-tenant";
 import { useUpsertWhatsAppConfig, useWhatsAppConfig } from "@/hooks/use-whatsapp";
@@ -109,11 +110,133 @@ function ClinicTab() {
   );
 }
 
+function ChangePasswordCard() {
+  const { register, handleSubmit, reset, formState } = useForm<{
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }>();
+
+  const onSubmit = handleSubmit(async (v) => {
+    if (v.newPassword !== v.confirmPassword) {
+      toast.error("New passwords don't match");
+      return;
+    }
+    try {
+      await api.post("/auth/change-password", { currentPassword: v.currentPassword, newPassword: v.newPassword });
+      toast.success("Password changed");
+      reset();
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Failed to change password");
+    }
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Change password</CardTitle>
+        <CardDescription>Update the password you use to sign in.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={onSubmit} className="grid grid-cols-2 gap-4">
+          <div className="col-span-2 space-y-1.5">
+            <Label>Current password</Label>
+            <Input type="password" {...register("currentPassword", { required: true })} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>New password</Label>
+            <Input type="password" {...register("newPassword", { required: true, minLength: 8 })} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Confirm new password</Label>
+            <Input type="password" {...register("confirmPassword", { required: true, minLength: 8 })} />
+          </div>
+          <div className="col-span-2">
+            <Button type="submit" disabled={formState.isSubmitting}>
+              Change password
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function RegenerateRecoveryCodesDialog() {
+  const [open, setOpen] = useState(false);
+  const [codes, setCodes] = useState<string[] | null>(null);
+  const { register, handleSubmit, reset, formState } = useForm<{ currentPassword: string }>();
+
+  const onSubmit = handleSubmit(async (v) => {
+    try {
+      const data = await api.post<{ recoveryCodes: string[] }>("/auth/mfa/recovery-codes/regenerate", v);
+      setCodes(data.recoveryCodes);
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Failed to regenerate recovery codes");
+    }
+  });
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) {
+          reset();
+          setCodes(null);
+        }
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button variant="outline">Regenerate recovery codes</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Regenerate recovery codes</DialogTitle>
+        </DialogHeader>
+        {codes ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Save these codes somewhere safe. Each one can be used once if you lose access to your authenticator
+              app. Your old codes no longer work.
+            </p>
+            <div className="grid grid-cols-2 gap-2 rounded-lg border border-border bg-muted/40 p-3 font-mono text-sm">
+              {codes.map((c) => (
+                <span key={c}>{c}</span>
+              ))}
+            </div>
+            <Button className="w-full" onClick={() => setOpen(false)}>
+              Done
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Confirm your password</Label>
+              <Input type="password" {...register("currentPassword", { required: true })} />
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={formState.isSubmitting}>
+                Generate new codes
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function SecurityTab() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [setupData, setSetupData] = useState<{ qrCodeDataUrl: string; secret: string } | null>(null);
   const [code, setCode] = useState("");
+
+  const { data: me, refetch: refetchMe } = useQuery({
+    queryKey: ["auth-me"],
+    queryFn: () => api.get<{ mfaEnabled: boolean }>("/auth/me"),
+  });
 
   const { data: sessions } = useQuery({
     queryKey: ["sessions"],
@@ -135,6 +258,7 @@ function SecurityTab() {
       toast.success("Two-factor authentication enabled");
       setSetupData(null);
       setCode("");
+      refetchMe();
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Invalid code");
     }
@@ -144,6 +268,7 @@ function SecurityTab() {
     try {
       await api.post("/auth/mfa/disable");
       toast.success("Two-factor authentication disabled");
+      refetchMe();
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Failed");
     }
@@ -162,7 +287,7 @@ function SecurityTab() {
             <CardTitle>Two-factor authentication</CardTitle>
             <CardDescription>Add an extra layer of security using an authenticator app.</CardDescription>
           </div>
-          <Switch checked={!!user} disabled />
+          <Switch checked={!!me?.mfaEnabled} disabled />
         </CardHeader>
         <CardContent>
           {setupData ? (
@@ -175,18 +300,22 @@ function SecurityTab() {
                 <Button onClick={confirmMfa}>Confirm</Button>
               </div>
             </div>
-          ) : (
+          ) : me?.mfaEnabled ? (
             <div className="flex gap-2">
-              <Button onClick={startMfaSetup}>
-                <ShieldCheck className="h-4 w-4" /> Enable 2FA
-              </Button>
+              <RegenerateRecoveryCodesDialog />
               <Button variant="outline" onClick={disableMfa}>
                 Disable 2FA
               </Button>
             </div>
+          ) : (
+            <Button onClick={startMfaSetup}>
+              <ShieldCheck className="h-4 w-4" /> Enable 2FA
+            </Button>
           )}
         </CardContent>
       </Card>
+
+      <ChangePasswordCard />
 
       <Card>
         <CardHeader>

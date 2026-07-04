@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 const mfaSchema = z.object({ code: z.string().length(6, "Enter the 6-digit code") });
 type MfaForm = z.infer<typeof mfaSchema>;
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
   const { login, verifyMfa, logout } = useAuth();
   const [challengeToken, setChallengeToken] = useState<string | null>(null);
@@ -38,12 +38,12 @@ export default function LoginPage() {
       const res = await login(values.email, values.password);
       if (res.mfaRequired && res.challengeToken) {
         setChallengeToken(res.challengeToken);
-      } else if (res.user && !res.user.tenantId) {
-        toast.error("This is an admin account. Please sign in from the Admin portal.");
-        await logout("/admin/login");
+      } else if (res.user && res.user.tenantId) {
+        toast.error("This is a clinic account. Please sign in from the Clinic portal.");
+        await logout("/login");
       } else {
         toast.success("Welcome back!");
-        router.push("/dashboard");
+        router.push("/admin/tenants");
       }
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Login failed");
@@ -57,13 +57,13 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       const res = await verifyMfa(challengeToken, values.code);
-      if (res.user && !res.user.tenantId) {
-        toast.error("This is an admin account. Please sign in from the Admin portal.");
-        await logout("/admin/login");
+      if (res.user && res.user.tenantId) {
+        toast.error("This is a clinic account. Please sign in from the Clinic portal.");
+        await logout("/login");
         return;
       }
       toast.success("Welcome back!");
-      router.push("/dashboard");
+      router.push("/admin/tenants");
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Invalid code");
     } finally {
@@ -102,25 +102,23 @@ export default function LoginPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Sign in</CardTitle>
-        <CardDescription>Sign in to your clinic&apos;s MBN Health workspace.</CardDescription>
+        <div className="mb-1 flex items-center gap-2">
+          <ShieldCheck className="h-5 w-5 text-primary" />
+          <CardTitle>Admin sign in</CardTitle>
+        </div>
+        <CardDescription>Platform administration — clinic accounts should sign in separately.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@clinic.com" {...loginForm.register("email")} />
+            <Input id="email" type="email" placeholder="admin@mbnhealth.com" {...loginForm.register("email")} />
             {loginForm.formState.errors.email && (
               <p className="text-xs text-destructive">{loginForm.formState.errors.email.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link href="/forgot-password" className="text-xs font-medium text-primary hover:underline">
-                Forgot password?
-              </Link>
-            </div>
+            <Label htmlFor="password">Password</Label>
             <Input id="password" type="password" placeholder="••••••••" {...loginForm.register("password")} />
             {loginForm.formState.errors.password && (
               <p className="text-xs text-destructive">{loginForm.formState.errors.password.message}</p>
@@ -130,18 +128,6 @@ export default function LoginPage() {
             {isSubmitting ? "Signing in..." : "Sign in"}
           </Button>
         </form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          New clinic?{" "}
-          <Link href="/register" className="font-medium text-primary hover:underline">
-            Start your free trial
-          </Link>
-        </p>
-        <p className="mt-2 text-center text-sm text-muted-foreground">
-          Patient?{" "}
-          <Link href="/portal/login" className="font-medium text-primary hover:underline">
-            Go to your patient portal
-          </Link>
-        </p>
       </CardContent>
     </Card>
   );

@@ -14,22 +14,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const isAdminSection = pathname?.startsWith("/admin");
+
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
-      router.replace("/login");
+      router.replace(isAdminSection ? "/admin/login" : "/login");
       return;
     }
     // Super Admins have no tenant of their own, so the tenant-scoped
     // /dashboard has nothing to show them — send them to the platform panel.
     if (!user.tenantId && pathname === "/dashboard") {
       router.replace("/admin/tenants");
+      return;
     }
-  }, [isLoading, user, pathname, router]);
+    // Conversely, a clinic account has no business in the platform-admin
+    // section — keep the two gates from bleeding into each other.
+    if (user.tenantId && isAdminSection) {
+      router.replace("/dashboard");
+    }
+  }, [isLoading, user, pathname, isAdminSection, router]);
 
   const redirectingToTenants = !!user && !user.tenantId && pathname === "/dashboard";
+  const redirectingToDashboard = !!user && !!user.tenantId && isAdminSection;
 
-  if (isLoading || redirectingToTenants) {
+  if (isLoading || redirectingToTenants || redirectingToDashboard) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />

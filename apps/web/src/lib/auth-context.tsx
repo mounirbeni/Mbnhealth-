@@ -9,8 +9,8 @@ interface AuthContextValue {
   user: AuthenticatedUser | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<LoginResponse>;
-  verifyMfa: (challengeToken: string, code: string) => Promise<void>;
-  logout: () => Promise<void>;
+  verifyMfa: (challengeToken: string, code: string) => Promise<LoginResponse>;
+  logout: (redirectTo?: string) => Promise<void>;
   hasPermission: (permission: string) => boolean;
   refreshMe: () => Promise<void>;
 }
@@ -70,19 +70,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setTokens(res.accessToken, res.refreshToken);
       setUser(res.user ?? null);
     }
+    return res;
   }, []);
 
-  const logout = useCallback(async () => {
-    const refreshToken = localStorage.getItem("mbn_refresh_token");
-    try {
-      if (refreshToken) await api.post("/auth/logout", { refreshToken });
-    } catch {
-      // ignore network errors on logout
-    }
-    clearTokens();
-    setUser(null);
-    router.push("/login");
-  }, [router]);
+  const logout = useCallback(
+    async (redirectTo: string = "/login") => {
+      const refreshToken = localStorage.getItem("mbn_refresh_token");
+      try {
+        if (refreshToken) await api.post("/auth/logout", { refreshToken });
+      } catch {
+        // ignore network errors on logout
+      }
+      clearTokens();
+      setUser(null);
+      router.push(redirectTo);
+    },
+    [router],
+  );
 
   const hasPermission = useCallback((permission: string) => user?.permissions.includes(permission as any) ?? false, [user]);
 

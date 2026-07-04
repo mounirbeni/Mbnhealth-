@@ -29,12 +29,14 @@ export function middleware(request: NextRequest) {
 
   if (isPatientHost) {
     // The patient subdomain only ever serves the patient portal — staff
-    // routes (dashboard, login, settings...) simply don't exist here.
+    // routes (dashboard, login, settings...) simply don't exist here. The
+    // root path rewrites (not redirects) to the landing page so the browser
+    // URL stays a clean "/" instead of visibly jumping to /find-a-clinic.
     if (pathname === "/") {
-      return NextResponse.redirect(new URL("/find-a-clinic", request.url));
+      return NextResponse.rewrite(new URL("/patient-landing", request.url));
     }
     if (!isPatientOnlyPath(pathname)) {
-      return NextResponse.redirect(new URL("/find-a-clinic", request.url));
+      return NextResponse.redirect(new URL("/", request.url));
     }
     return NextResponse.next();
   }

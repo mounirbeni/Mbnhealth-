@@ -7,14 +7,18 @@ import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
+  // Super Admins act at the platform level and have no tenant of their own,
+  // so there is no tenant-scoped notification feed to query for them.
   @Get()
   findAll(@CurrentUser() user: AuthenticatedUser, @Query("unreadOnly") unreadOnly?: string) {
-    return this.notificationsService.findAllForUser(user.tenantId!, user.userId, unreadOnly === "true");
+    if (!user.tenantId) return [];
+    return this.notificationsService.findAllForUser(user.tenantId, user.userId, unreadOnly === "true");
   }
 
   @Get("unread-count")
   unreadCount(@CurrentUser() user: AuthenticatedUser) {
-    return this.notificationsService.unreadCount(user.tenantId!, user.userId);
+    if (!user.tenantId) return { count: 0 };
+    return this.notificationsService.unreadCount(user.tenantId, user.userId);
   }
 
   @Patch(":id/read")
@@ -24,6 +28,7 @@ export class NotificationsController {
 
   @Patch("read-all")
   markAllRead(@CurrentUser() user: AuthenticatedUser) {
-    return this.notificationsService.markAllRead(user.tenantId!, user.userId);
+    if (!user.tenantId) return { success: true };
+    return this.notificationsService.markAllRead(user.tenantId, user.userId);
   }
 }

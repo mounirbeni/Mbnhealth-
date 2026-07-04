@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { CommandPalette } from "@/components/layout/command-palette";
@@ -11,15 +11,25 @@ import { X } from "lucide-react";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (isLoading) return;
+    if (!user) {
       router.replace("/login");
+      return;
     }
-  }, [isLoading, user, router]);
+    // Super Admins have no tenant of their own, so the tenant-scoped
+    // /dashboard has nothing to show them — send them to the platform panel.
+    if (!user.tenantId && pathname === "/dashboard") {
+      router.replace("/admin/tenants");
+    }
+  }, [isLoading, user, pathname, router]);
 
-  if (isLoading) {
+  const redirectingToTenants = !!user && !user.tenantId && pathname === "/dashboard";
+
+  if (isLoading || redirectingToTenants) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />

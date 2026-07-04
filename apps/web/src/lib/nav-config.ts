@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Settings,
   FileText,
+  Building,
   type LucideIcon,
 } from "lucide-react";
 import type { Permission } from "@/types";
@@ -27,6 +28,7 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
+  { label: "Clinics", href: "/admin/tenants", icon: Building, permission: "SYSTEM_MANAGE_TENANTS" },
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: "DASHBOARD_VIEW" },
   { label: "Appointments", href: "/appointments", icon: CalendarDays, permission: "APPOINTMENTS_READ" },
   { label: "Patients", href: "/patients", icon: Users, permission: "PATIENTS_READ" },

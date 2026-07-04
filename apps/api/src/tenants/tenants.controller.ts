@@ -5,7 +5,7 @@ import { UpdateTenantDto } from "./dto/update-tenant.dto";
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/types/authenticated-user.interface";
-import { AuditLog } from "../common/decorators/audit-log.decorator";
+import { AuditLog, AuditTenantFromParam } from "../common/decorators/audit-log.decorator";
 
 @Controller("tenants")
 export class TenantsController {
@@ -32,6 +32,8 @@ export class TenantsController {
 
   @Patch(":id/status")
   @RequirePermissions(Permission.SYSTEM_MANAGE_TENANTS)
+  @AuditLog("Tenant")
+  @AuditTenantFromParam("id")
   setStatus(@Param("id") id: string, @Body("status") status: "ACTIVE" | "SUSPENDED" | "ARCHIVED") {
     return this.tenantsService.setStatus(id, status);
   }

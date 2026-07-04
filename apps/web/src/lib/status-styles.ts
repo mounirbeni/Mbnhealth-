@@ -22,6 +22,9 @@ export const STATUS_BADGE_VARIANT: Record<string, BadgeVariant> = {
   IN_PROGRESS: "warning",
   // Prescriptions
   ACTIVE: "default",
+  // Tenants
+  SUSPENDED: "destructive",
+  ARCHIVED: "outline",
   // Insurance claims
   SUBMITTED: "secondary",
   IN_REVIEW: "warning",

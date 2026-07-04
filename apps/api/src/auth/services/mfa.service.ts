@@ -3,6 +3,13 @@ import { authenticator } from "otplib";
 import * as QRCode from "qrcode";
 import { randomBytes } from "crypto";
 
+// otplib defaults to window: 0 — zero tolerance for clock drift or the
+// few seconds it naturally takes a person to read a code and type it in,
+// so a genuinely correct code can fail if it's checked a moment after the
+// 30s step boundary. window: 1 accepts the previous/current/next step
+// (~90s total), the standard tolerance recommended by TOTP implementations.
+authenticator.options = { window: 1 };
+
 @Injectable()
 export class MfaService {
   generateSecret(email: string) {

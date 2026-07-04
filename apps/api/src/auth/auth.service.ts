@@ -8,9 +8,10 @@ import {
 import * as argon2 from "argon2";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
-import { AuditAction, SystemRoleName, User, Role, DEFAULT_ROLE_PERMISSIONS } from "@mbn/database";
+import { AuditAction, SubscriptionPlan, SubscriptionStatus, User, Role } from "@mbn/database";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
+import { TenantProvisioningService } from "../tenants/tenant-provisioning.service";
 import { TokensService } from "./services/tokens.service";
 import { MfaService } from "./services/mfa.service";
 import { RegisterTenantDto } from "./dto/register-tenant.dto";
@@ -33,6 +34,7 @@ export class AuthService {
     private readonly tokens: TokensService,
     private readonly mfa: MfaService,
     private readonly auditLog: AuditLogService,
+    private readonly provisioning: TenantProvisioningService,
   ) {}
 
   private toAuthenticatedUser(user: UserWithRole): AuthenticatedUser {
@@ -53,65 +55,22 @@ export class AuthService {
     const existingEmail = await this.prisma.user.findUnique({ where: { email: dto.ownerEmail.toLowerCase() } });
     if (existingEmail) throw new ConflictException("An account with this email already exists");
 
-    const slug = await this.generateUniqueSlug(dto.clinicName);
     const passwordHash = await argon2.hash(dto.password);
 
-    const result = await this.prisma.$transaction(async (tx) => {
-      const tenant = await tx.tenant.create({
-        data: {
-          name: dto.clinicName,
-          slug,
-          city: dto.city,
-          address: dto.address,
-          phone: dto.phone,
-          website: dto.website,
-          subscription: {
-            create: {
-              plan: "TRIAL",
-              status: "TRIALING",
-              trialEndsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
-            },
-          },
-        },
-      });
-
-      const roleRecords = await Promise.all(
-        (Object.keys(DEFAULT_ROLE_PERMISSIONS) as SystemRoleName[])
-          .filter((r) => r !== SystemRoleName.SUPER_ADMIN)
-          .map((systemRole) => {
-            const name = systemRole
-              .split("_")
-              .map((w) => w[0] + w.slice(1).toLowerCase())
-              .join(" ");
-            return tx.role.create({
-              data: {
-                tenantId: tenant.id,
-                name,
-                systemRole,
-                isSystem: true,
-                permissions: DEFAULT_ROLE_PERMISSIONS[systemRole],
-              },
-            });
-          }),
-      );
-
-      const ownerRole = roleRecords.find((r) => r.systemRole === dto.ownerRole);
-      if (!ownerRole) throw new BadRequestException("select a valid role");
-
-      const owner = await tx.user.create({
-        data: {
-          tenantId: tenant.id,
-          email: dto.ownerEmail.toLowerCase(),
-          passwordHash,
-          firstName: dto.ownerFirstName,
-          lastName: dto.ownerLastName,
-          phone: dto.phone,
-          roleId: ownerRole.id,
-        },
-        include: { role: true },
-      });
-
-      return { tenant, owner };
+    const result = await this.provisioning.provision({
+      clinicName: dto.clinicName,
+      city: dto.city,
+      address: dto.address,
+      phone: dto.phone,
+      website: dto.website,
+      plan: SubscriptionPlan.TRIAL,
+      subscriptionStatus: SubscriptionStatus.TRIALING,
+      trialEndsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+      ownerEmail: dto.ownerEmail,
+      ownerFirstName: dto.ownerFirstName,
+      ownerLastName: dto.ownerLastName,
+      passwordHash,
+      ownerRole: dto.ownerRole,
     });
 
     await this.auditLog.record({
@@ -125,24 +84,6 @@ export class AuthService {
     });
 
     return this.issueSession(result.owner, meta);
-  }
-
-  private async generateUniqueSlug(clinicName: string): Promise<string> {
-    const base =
-      clinicName
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 48) || "clinic";
-
-    let slug = base;
-    let suffix = 1;
-    while (await this.prisma.tenant.findUnique({ where: { slug } })) {
-      suffix += 1;
-      slug = `${base}-${suffix}`;
-    }
-    return slug;
   }
 
   async login(dto: LoginDto, meta: RequestMeta) {

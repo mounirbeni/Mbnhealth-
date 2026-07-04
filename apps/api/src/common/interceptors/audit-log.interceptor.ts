@@ -4,7 +4,7 @@ import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
 import { AuditAction } from "@mbn/database";
 import { AuditLogService } from "../../audit-log/audit-log.service";
-import { AUDIT_ENTITY_KEY, AUDIT_TENANT_PARAM_KEY } from "../decorators/audit-log.decorator";
+import { AUDIT_ENTITY_KEY, AUDIT_TENANT_FROM_RESULT_KEY, AUDIT_TENANT_PARAM_KEY } from "../decorators/audit-log.decorator";
 import { AuthenticatedUser } from "../../auth/types/authenticated-user.interface";
 
 const METHOD_ACTION: Partial<Record<string, AuditAction>> = {
@@ -38,12 +38,16 @@ export class AuditLogInterceptor implements NestInterceptor {
     if (!action) return next.handle();
 
     const user: AuthenticatedUser | undefined = request.user;
+    if (!user) return next.handle();
+
     const tenantParam = this.reflector.getAllAndOverride<string | undefined>(AUDIT_TENANT_PARAM_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
-    const tenantId = user?.tenantId ?? (tenantParam ? request.params?.[tenantParam] : undefined);
-    if (!user || !tenantId) return next.handle();
+    const tenantFromResult = this.reflector.getAllAndOverride<boolean | undefined>(AUDIT_TENANT_FROM_RESULT_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     return next.handle().pipe(
       tap((result) => {
@@ -53,6 +57,12 @@ export class AuditLogInterceptor implements NestInterceptor {
             : undefined) ??
           request.params?.id ??
           null;
+
+        const tenantId =
+          user.tenantId ??
+          (tenantParam ? request.params?.[tenantParam] : undefined) ??
+          (tenantFromResult ? entityId : undefined);
+        if (!tenantId) return;
 
         this.auditLog
           .record({

@@ -8,11 +8,13 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
 import { TokensService } from "./services/tokens.service";
 import { MfaService } from "./services/mfa.service";
 import { AuditLogModule } from "../audit-log/audit-log.module";
+import { TenantsModule } from "../tenants/tenants.module";
 
 @Module({
   imports: [
     PassportModule,
     AuditLogModule,
+    TenantsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

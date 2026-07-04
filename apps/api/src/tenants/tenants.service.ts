@@ -1,10 +1,18 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import * as argon2 from "argon2";
+import { SystemRoleName } from "@mbn/database";
 import { PrismaService } from "../prisma/prisma.service";
+import { TenantProvisioningService } from "./tenant-provisioning.service";
 import { UpdateTenantDto } from "./dto/update-tenant.dto";
+import { CreateTenantDto } from "./dto/create-tenant.dto";
+import { AdminUpdateTenantDto } from "./dto/admin-update-tenant.dto";
 
 @Injectable()
 export class TenantsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly provisioning: TenantProvisioningService,
+  ) {}
 
   async getOwn(tenantId: string) {
     const tenant = await this.prisma.tenant.findUnique({
@@ -20,7 +28,8 @@ export class TenantsService {
     return this.prisma.tenant.update({ where: { id: tenantId }, data: dto });
   }
 
-  // Super Admin: platform-wide tenant management
+  // ── Platform (Super Admin) ────────────────────────────────────────────────
+
   async findAll(params: { search?: string; page: number; pageSize: number }) {
     const where = params.search
       ? { name: { contains: params.search, mode: "insensitive" as const } }
@@ -38,7 +47,63 @@ export class TenantsService {
     return { items, total, page: params.page, pageSize: params.pageSize };
   }
 
+  async findOne(id: string) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id },
+      include: { subscription: true, _count: { select: { users: true, patients: true } } },
+    });
+    if (!tenant) throw new NotFoundException("Tenant not found");
+    return tenant;
+  }
+
   async setStatus(tenantId: string, status: "ACTIVE" | "SUSPENDED" | "ARCHIVED") {
+    await this.findOne(tenantId);
     return this.prisma.tenant.update({ where: { id: tenantId }, data: { status } });
+  }
+
+  async createByAdmin(dto: CreateTenantDto) {
+    const existingEmail = await this.prisma.user.findUnique({ where: { email: dto.ownerEmail.toLowerCase() } });
+    if (existingEmail) throw new ConflictException("An account with this email already exists");
+
+    const passwordHash = await argon2.hash(dto.password);
+    const { tenant } = await this.provisioning.provision({
+      clinicName: dto.name,
+      city: dto.city,
+      address: dto.address,
+      phone: dto.phone,
+      email: dto.email,
+      website: dto.website,
+      plan: dto.plan,
+      subscriptionStatus: "ACTIVE",
+      ownerEmail: dto.ownerEmail,
+      ownerFirstName: dto.ownerFirstName,
+      ownerLastName: dto.ownerLastName,
+      passwordHash,
+      ownerRole: SystemRoleName.CLINIC_OWNER,
+    });
+
+    return this.findOne(tenant.id);
+  }
+
+  async updateByAdmin(id: string, dto: AdminUpdateTenantDto) {
+    await this.findOne(id);
+    const { plan, seats, ...tenantFields } = dto;
+
+    await this.prisma.$transaction(async (tx) => {
+      if (Object.keys(tenantFields).length > 0) {
+        await tx.tenant.update({ where: { id }, data: tenantFields });
+      }
+      if (plan !== undefined || seats !== undefined) {
+        await tx.subscription.update({
+          where: { tenantId: id },
+          data: {
+            ...(plan !== undefined ? { plan } : {}),
+            ...(seats !== undefined ? { seats } : {}),
+          },
+        });
+      }
+    });
+
+    return this.findOne(id);
   }
 }

@@ -9,6 +9,9 @@ import { AuditLogService } from "./audit-log.service";
 export class AuditLogController {
   constructor(private readonly auditLogService: AuditLogService) {}
 
+  // Super Admins have no tenant of their own, so there is no tenant-scoped
+  // audit trail to show them here — they use the per-clinic audit log on
+  // each clinic's admin detail page instead.
   @Get()
   @RequirePermissions(Permission.AUDIT_LOG_VIEW)
   findAll(
@@ -18,7 +21,8 @@ export class AuditLogController {
     @Query("entityType") entityType?: string,
     @Query("userId") userId?: string,
   ) {
-    return this.auditLogService.findForTenant(user.tenantId!, {
+    if (!user.tenantId) return { items: [], total: 0, page: 1, pageSize: parseInt(pageSize, 10) };
+    return this.auditLogService.findForTenant(user.tenantId, {
       page: parseInt(page, 10),
       pageSize: parseInt(pageSize, 10),
       entityType,

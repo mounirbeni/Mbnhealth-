@@ -47,6 +47,10 @@ model Tenant {
   primaryColor String?      @default("#0EA5E9")
   timezone     String       @default("UTC")
   address      String?
+  // Structured separately from the freeform `address` so the public patient
+  // directory can offer a real city filter/dropdown instead of substring-
+  // matching an address string.
+  city         String?
   phone        String?
   email        String?
   website      String?

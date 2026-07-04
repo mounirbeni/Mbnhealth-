@@ -13,6 +13,11 @@ export class ClinicDirectoryController {
     return this.directory.search(query);
   }
 
+  @Get("filters")
+  getFilters() {
+    return this.directory.getFilters();
+  }
+
   @Get(":slug")
   getProfile(@Param("slug") slug: string) {
     return this.directory.getProfile(slug);

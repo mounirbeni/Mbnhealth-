@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ArrowLeft, CalendarClock, CalendarX2, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,10 @@ interface Slot {
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function formatSlotTime(iso: string) {
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
 }
 
 export default function BookAppointmentPage({ params }: { params: { slug: string; doctorId: string } }) {
@@ -84,29 +89,51 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Book an appointment</h1>
-        <Link href={`/clinics/${params.slug}`} className="text-sm text-primary hover:underline">
-          &larr; Back to clinic
+        <Link
+          href={`/clinics/${params.slug}`}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to clinic
         </Link>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight">Book an appointment</h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Pick a date</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+              1
+            </span>
+            Choose a date & time
+          </CardTitle>
           <CardDescription>Available 30-minute slots for this doctor.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Input type="date" min={todayIso()} value={date} onChange={(e) => { setDate(e.target.value); setSelectedSlot(null); }} />
+          <Input
+            type="date"
+            min={todayIso()}
+            value={date}
+            onChange={(e) => {
+              setDate(e.target.value);
+              setSelectedSlot(null);
+            }}
+          />
 
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading availability...</p>
+            <div className="grid grid-cols-3 gap-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-8 animate-pulse rounded-md bg-muted" />
+              ))}
+            </div>
           ) : !data || data.slots.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No availability on this date — try another day.</p>
+            <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-8 text-center">
+              <CalendarX2 className="h-6 w-6 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">No availability on this date — try another day.</p>
+            </div>
           ) : (
             <div className="grid grid-cols-3 gap-2">
               {data.slots.map((slot) => {
                 const isSelected = selectedSlot?.start === slot.start;
-                const label = new Date(slot.start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
                 return (
                   <Button
                     key={slot.start}
@@ -115,7 +142,7 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
                     variant={isSelected ? "default" : "outline"}
                     onClick={() => setSelectedSlot(slot)}
                   >
-                    {label}
+                    {formatSlotTime(slot.start)}
                   </Button>
                 );
               })}
@@ -125,9 +152,20 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
       </Card>
 
       {selectedSlot && (
-        <Card>
+        <Card className="border-primary/40">
           <CardHeader>
-            <CardTitle className="text-base">Confirm your appointment</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+                2
+              </span>
+              Confirm your appointment
+            </CardTitle>
+            <CardDescription className="flex items-center gap-1.5">
+              <CalendarClock className="h-3.5 w-3.5" />
+              {new Date(selectedSlot.start).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" })}
+              {" · "}
+              {formatSlotTime(selectedSlot.start)}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {!authLoading && !patient && (
@@ -153,11 +191,10 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
             <div className="space-y-2">
               <Label htmlFor="dob">Date of birth</Label>
               <Input id="dob" type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
-              <p className="text-xs text-muted-foreground">
-                Only needed the first time you book with this clinic.
-              </p>
+              <p className="text-xs text-muted-foreground">Only needed the first time you book with this clinic.</p>
             </div>
             <Button className="w-full" disabled={!patient || submitting} onClick={confirmBooking}>
+              <CheckCircle2 className="h-4 w-4" />
               {submitting ? "Booking..." : "Confirm appointment"}
             </Button>
           </CardContent>

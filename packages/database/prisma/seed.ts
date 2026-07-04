@@ -77,6 +77,7 @@ async function main() {
       primaryColor: "#0EA5E9",
       timezone: "Africa/Casablanca",
       address: "123 Boulevard Zerktouni, Casablanca, Morocco",
+      city: "Casablanca",
       phone: "+212 522 000 000",
       email: "contact@demo-clinic.mbnhealth.com",
       subscription: {
@@ -669,6 +670,120 @@ async function main() {
       },
     ],
   });
+
+  // ── A second, smaller clinic in a different city ──────────────────────────
+  // Exists purely so the public patient-portal search/city/specialty filters
+  // have real variety to demonstrate — not a full operational demo like
+  // demo-clinic above (no receptionist/accountant/lab staff, no patients).
+  const rabatTenant = await prisma.tenant.upsert({
+    where: { slug: "clinique-atlas-rabat" },
+    update: {},
+    create: {
+      name: "Clinique Atlas Rabat",
+      slug: "clinique-atlas-rabat",
+      primaryColor: "#8B5CF6",
+      timezone: "Africa/Casablanca",
+      address: "45 Avenue Fal Ould Oumeir, Rabat, Morocco",
+      city: "Rabat",
+      phone: "+212 537 000 111",
+      email: "contact@clinique-atlas.mbnhealth.com",
+      subscription: {
+        create: {
+          plan: "STARTER",
+          status: "ACTIVE",
+          seats: 5,
+          currentPeriodEnd: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        },
+      },
+    },
+  });
+
+  const rabatOwnerRole = await prisma.role.upsert({
+    where: { tenantId_name: { tenantId: rabatTenant.id, name: "Clinic Owner" } },
+    update: {},
+    create: {
+      tenantId: rabatTenant.id,
+      name: "Clinic Owner",
+      systemRole: SystemRoleName.CLINIC_OWNER,
+      isSystem: true,
+      permissions: DEFAULT_ROLE_PERMISSIONS.CLINIC_OWNER,
+    },
+  });
+  const rabatDoctorRole = await prisma.role.upsert({
+    where: { tenantId_name: { tenantId: rabatTenant.id, name: "Doctor" } },
+    update: {},
+    create: {
+      tenantId: rabatTenant.id,
+      name: "Doctor",
+      systemRole: SystemRoleName.DOCTOR,
+      isSystem: true,
+      permissions: DEFAULT_ROLE_PERMISSIONS.DOCTOR,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { tenantId_email: { tenantId: rabatTenant.id, email: "owner@clinique-atlas.com" } },
+    update: {},
+    create: {
+      tenantId: rabatTenant.id,
+      email: "owner@clinique-atlas.com",
+      passwordHash,
+      firstName: "Youssef",
+      lastName: "Bennis",
+      roleId: rabatOwnerRole.id,
+      emailVerifiedAt: new Date(),
+    },
+  });
+
+  const rabatDepartments = await Promise.all(
+    ["Orthopedics", "Ophthalmology"].map((name, i) =>
+      prisma.department.upsert({
+        where: { tenantId_name: { tenantId: rabatTenant.id, name } },
+        update: {},
+        create: { tenantId: rabatTenant.id, name, color: ["#8B5CF6", "#0EA5E9"][i] },
+      }),
+    ),
+  );
+
+  const rabatDoctorsData = [
+    { first: "Amine", last: "Chraibi", dept: rabatDepartments[0], spec: "Orthopedics" },
+    { first: "Sanaa", last: "Belhaj", dept: rabatDepartments[1], spec: "Ophthalmology" },
+  ];
+  for (const d of rabatDoctorsData) {
+    const email = `dr.${d.first.toLowerCase()}@clinique-atlas.com`;
+    const user = await prisma.user.upsert({
+      where: { tenantId_email: { tenantId: rabatTenant.id, email } },
+      update: {},
+      create: {
+        tenantId: rabatTenant.id,
+        email,
+        passwordHash,
+        firstName: d.first,
+        lastName: d.last,
+        roleId: rabatDoctorRole.id,
+        emailVerifiedAt: new Date(),
+      },
+    });
+    await prisma.doctor.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: {
+        tenantId: rabatTenant.id,
+        userId: user.id,
+        departmentId: d.dept.id,
+        specialization: d.spec,
+        licenseNumber: `MED-${Math.floor(10000 + Math.random() * 89999)}`,
+        consultationFee: 300,
+        workingHours: {
+          mon: ["09:00", "17:00"],
+          tue: ["09:00", "17:00"],
+          wed: ["09:00", "17:00"],
+          thu: ["09:00", "17:00"],
+          fri: ["09:00", "13:00"],
+        },
+      },
+    });
+  }
 
   console.log("Seed complete.");
   console.log("─────────────────────────────────────────");

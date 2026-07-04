@@ -8,6 +8,10 @@ export class SearchClinicsDto {
   @IsOptional()
   @IsString()
   specialty?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
 }
 
 export class AvailabilityQueryDto {

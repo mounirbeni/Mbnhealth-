@@ -9,6 +9,12 @@ export class UpdateTenantDto {
   @IsString()
   address?: string;
 
+  // Separate from `address` on purpose — the public patient directory
+  // filters by city, and can't reliably parse one out of a freeform address.
+  @IsOptional()
+  @IsString()
+  city?: string;
+
   @IsOptional()
   @IsString()
   phone?: string;

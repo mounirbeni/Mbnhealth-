@@ -57,7 +57,13 @@ function ClinicTab() {
   const { hasPermission } = useAuth();
   const { register, handleSubmit, formState } = useForm({
     values: tenant
-      ? { name: tenant.name, address: tenant.address ?? "", phone: tenant.phone ?? "", email: tenant.email ?? "" }
+      ? {
+          name: tenant.name,
+          address: tenant.address ?? "",
+          city: tenant.city ?? "",
+          phone: tenant.phone ?? "",
+          email: tenant.email ?? "",
+        }
       : undefined,
   });
 
@@ -88,6 +94,15 @@ function ClinicTab() {
           <div className="col-span-2 space-y-1.5">
             <Label>Address</Label>
             <Input {...register("address")} disabled={!hasPermission("SETTINGS_MANAGE")} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>City</Label>
+            <Input
+              {...register("city")}
+              placeholder="e.g. Casablanca"
+              disabled={!hasPermission("SETTINGS_MANAGE")}
+            />
+            <p className="text-xs text-muted-foreground">Used so patients can filter by city in the public directory.</p>
           </div>
           <div className="space-y-1.5">
             <Label>Phone</Label>

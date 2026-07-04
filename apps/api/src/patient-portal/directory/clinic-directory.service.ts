@@ -10,7 +10,7 @@ export class ClinicDirectoryService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Public clinic search — only ever returns ACTIVE clinics and safe, non-sensitive fields. */
-  async search(params: { query?: string; specialty?: string }) {
+  async search(params: { query?: string; specialty?: string; city?: string }) {
     const tenants = await this.prisma.tenant.findMany({
       where: {
         status: "ACTIVE",
@@ -25,11 +25,13 @@ export class ClinicDirectoryService {
         ...(params.specialty
           ? { doctors: { some: { specialization: { contains: params.specialty, mode: "insensitive" as const } } } }
           : {}),
+        ...(params.city ? { city: { equals: params.city, mode: "insensitive" as const } } : {}),
       },
       select: {
         slug: true,
         name: true,
         address: true,
+        city: true,
         phone: true,
         logoUrl: true,
         primaryColor: true,
@@ -44,12 +46,36 @@ export class ClinicDirectoryService {
       slug: t.slug,
       name: t.name,
       address: t.address,
+      city: t.city,
       phone: t.phone,
       logoUrl: t.logoUrl,
       primaryColor: t.primaryColor,
       doctorCount: t._count.doctors,
       specialties: [...new Set(t.doctors.map((d) => d.specialization))],
     }));
+  }
+
+  /** Distinct cities/specialties across all active clinics, for search filter dropdowns. */
+  async getFilters() {
+    const [cities, specialties] = await Promise.all([
+      this.prisma.tenant.findMany({
+        where: { status: "ACTIVE", city: { not: null } },
+        select: { city: true },
+        distinct: ["city"],
+        orderBy: { city: "asc" },
+      }),
+      this.prisma.doctor.findMany({
+        where: { tenant: { status: "ACTIVE" } },
+        select: { specialization: true },
+        distinct: ["specialization"],
+        orderBy: { specialization: "asc" },
+      }),
+    ]);
+
+    return {
+      cities: cities.map((c) => c.city!).filter(Boolean),
+      specialties: [...new Set(specialties.map((s) => s.specialization))].sort(),
+    };
   }
 
   /** Public clinic profile — doctors' names/specialties only, never staff emails/phones. */
@@ -69,6 +95,7 @@ export class ClinicDirectoryService {
       slug: tenant.slug,
       name: tenant.name,
       address: tenant.address,
+      city: tenant.city,
       phone: tenant.phone,
       email: tenant.email,
       website: tenant.website,

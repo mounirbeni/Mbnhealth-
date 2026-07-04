@@ -11,7 +11,7 @@ export function configureApp(app: INestApplication): ConfigService {
   app.use(helmet());
   app.use(compression());
   app.enableCors({
-    origin: config.get<string>("corsOrigin"),
+    origin: config.get<string[]>("corsOrigin"),
     credentials: true,
   });
   app.setGlobalPrefix("api/v1", { exclude: ["health", "/"] });

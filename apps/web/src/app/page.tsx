@@ -18,6 +18,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+// The patient portal is a deliberately separate product on its own
+// subdomain (see apps/web/src/middleware.ts + README "Patient portal") —
+// this is the one intentional cross-link into it from the clinic-facing
+// marketing site, so it always points off-domain rather than rendering
+// patient content inline here.
+const PATIENT_HOST = process.env.NEXT_PUBLIC_PATIENT_HOST ?? "care.localhost:3000";
+const PATIENT_PORTAL_URL = `${PATIENT_HOST.includes("localhost") ? "http" : "https"}://${PATIENT_HOST}/find-a-clinic`;
 import { PRICING_PLANS, formatPlanPrice } from "@/lib/pricing";
 
 const FEATURES = [
@@ -128,9 +136,6 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>
-              <Link href="/find-a-clinic">Find a clinic</Link>
-            </Button>
-            <Button variant="ghost" asChild>
               <Link href="/login">Login</Link>
             </Button>
             <Button asChild>
@@ -165,9 +170,9 @@ export default function LandingPage() {
             <p className="mt-3 text-xs text-muted-foreground">No install. No credit card. Click straight into a seeded demo clinic.</p>
             <p className="mt-4 text-sm text-muted-foreground">
               Looking for a doctor instead?{" "}
-              <Link href="/find-a-clinic" className="font-medium text-primary hover:underline">
-                Find a clinic and book an appointment
-              </Link>
+              <a href={PATIENT_PORTAL_URL} className="font-medium text-primary hover:underline">
+                Visit our patient portal
+              </a>
               .
             </p>
           </div>

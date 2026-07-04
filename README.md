@@ -126,6 +126,26 @@ A second, deliberately separate front door into the platform for patients (not c
   `apps/web/src/app/(patient)`, with their own auth context/token storage
   (`lib/patient-auth-context.tsx`, `lib/patient-api-client.ts`) kept separate from the staff
   dashboard's.
+- **Served from its own subdomain, not folded into the clinic-facing site.** The patient portal
+  and the clinic app/marketing site are the same Next.js deployment but are kept on separate hosts
+  by `apps/web/src/middleware.ts`, which routes purely on the `Host` header: the patient subdomain
+  (`NEXT_PUBLIC_PATIENT_HOST`, e.g. `care.mbnhealth.com`) only ever serves `/find-a-clinic`,
+  `/clinics/*` and `/patient/*` — any other path there redirects to `/find-a-clinic` — while the
+  main app domain redirects those same paths *away* to the patient subdomain instead of rendering
+  them inline. The two products never appear on the same page or even the same domain.
+  - **Local dev**: visit `http://care.localhost:3000` — Chromium/Firefox resolve any `*.localhost`
+    host to `127.0.0.1` automatically, no `/etc/hosts` edit needed. `next.config.mjs`'s
+    `allowedDevOrigins` has to explicitly list `care.localhost`, otherwise `next dev`'s
+    cross-origin asset protection 404s every `_next/static` request from that host (a dev-only
+    restriction — production builds aren't affected).
+  - **Production**: point a real subdomain's DNS at the same Vercel project as the main app and
+    add it as a Domain in that Vercel project's settings (Vercel supports multiple domains per
+    project, so this does **not** require a second Vercel project or deployment) — provisioning
+    that DNS record is outside what this environment can do; see the "demo.mbnhealth.com" caveat
+    earlier in this README for the same reason. Set `NEXT_PUBLIC_PATIENT_HOST` to that subdomain
+    on the `apps/web` project, and make sure `CORS_ORIGIN` on the `apps/api` project lists **both**
+    the main app origin and the patient-portal origin (comma-separated) — the patient portal calls
+    the same API cross-origin.
 - Verified end-to-end in this repo's dev environment: searched for a clinic, opened its profile,
   picked an available slot, created a patient account mid-flow (the slot selection survives the
   register-and-return trip via the URL, not component state), confirmed the booking, and checked
@@ -288,10 +308,12 @@ All three suites pass against live infrastructure as of this build:
   `packages/database` (Prisma client + compiled TS) first — required before anything importing
   `@mbn/database` can resolve. Set the same for a second Vercel project pointed at `apps/web`.
 - Required env vars on the `apps/api` Vercel project: `DATABASE_URL`, `JWT_ACCESS_SECRET`,
-  `JWT_REFRESH_SECRET`, `CORS_ORIGIN` (your web app's URL), plus the WhatsApp/AI/Stripe/`CRON_SECRET`
-  vars documented above as needed. Use a pooled connection string for `DATABASE_URL` (e.g. Neon,
-  Supabase, or PgBouncer) — serverless functions open a new DB connection per cold start, and an
-  unpooled Postgres will run out of connections under real traffic.
+  `JWT_REFRESH_SECRET`, `JWT_PATIENT_SECRET`, `CORS_ORIGIN` (comma-separated: the web app's URL
+  **and** the patient-portal subdomain's URL — see "Patient portal" below), plus the
+  WhatsApp/AI/Stripe/`CRON_SECRET` vars documented above as needed. Use a pooled connection string
+  for `DATABASE_URL` (e.g. Neon, Supabase, or PgBouncer) — serverless functions open a new DB
+  connection per cold start, and an unpooled Postgres will run out of connections under real
+  traffic.
 - There is deliberately no BullMQ/Redis queue and no in-process cron in this deployment target —
   see "The WhatsApp bot and its AI assistant" above for how reminders and inbound messages are
   handled instead.

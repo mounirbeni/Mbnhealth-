@@ -4,7 +4,13 @@ export default () => ({
   // expect app.listen() to bind; API_PORT is our own Docker/local-dev
   // knob. PORT must win whenever both are present.
   port: parseInt(process.env.PORT ?? process.env.API_PORT ?? "4000", 10),
-  corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
+  // Comma-separated so both the clinic app and the patient-portal subdomain
+  // (a different origin — see apps/web/src/middleware.ts) can be allowed
+  // without allowing arbitrary origins.
+  corsOrigin: (process.env.CORS_ORIGIN ?? "http://localhost:3000,http://care.localhost:3000")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
   database: {
     url: process.env.DATABASE_URL,
   },

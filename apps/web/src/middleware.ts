@@ -1,0 +1,56 @@
+import { NextRequest, NextResponse } from "next/server";
+
+// The patient portal and the clinic app are the same Next.js deployment but
+// must never feel like the same product on the same page — this middleware
+// is the actual host-based wall between them. Configure PATIENT_HOST /
+// NEXT_PUBLIC_PATIENT_HOST to the real subdomain in production (see README
+// "Patient portal" section); for local dev, Chromium/Firefox resolve any
+// `*.localhost` hostname to 127.0.0.1 automatically, so no /etc/hosts entry
+// is needed — just visit http://care.localhost:3000.
+const PATIENT_HOST = process.env.PATIENT_HOST ?? process.env.NEXT_PUBLIC_PATIENT_HOST ?? "care.localhost:3000";
+
+const PATIENT_PATH_PREFIXES = ["/find-a-clinic", "/clinics", "/patient"];
+
+function isPatientOnlyPath(pathname: string): boolean {
+  return PATIENT_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
+function isAssetOrApiPath(pathname: string): boolean {
+  return pathname.startsWith("/_next") || pathname.startsWith("/api") || pathname === "/favicon.ico";
+}
+
+export function middleware(request: NextRequest) {
+  const host = request.headers.get("host") ?? "";
+  const { pathname } = request.nextUrl;
+
+  if (isAssetOrApiPath(pathname)) return NextResponse.next();
+
+  const isPatientHost = host === PATIENT_HOST;
+
+  if (isPatientHost) {
+    // The patient subdomain only ever serves the patient portal — staff
+    // routes (dashboard, login, settings...) simply don't exist here.
+    if (pathname === "/") {
+      return NextResponse.redirect(new URL("/find-a-clinic", request.url));
+    }
+    if (!isPatientOnlyPath(pathname)) {
+      return NextResponse.redirect(new URL("/find-a-clinic", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Conversely, the main app/marketing domain never serves patient-portal
+  // pages — send any such request to the correct subdomain instead of
+  // rendering it inline next to the clinic-facing product.
+  if (isPatientOnlyPath(pathname)) {
+    const target = new URL(request.url);
+    target.host = PATIENT_HOST;
+    return NextResponse.redirect(target);
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image).*)"],
+};

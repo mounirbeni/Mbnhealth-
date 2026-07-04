@@ -128,6 +128,12 @@ export default function LoginPage() {
             Start your free trial
           </Link>
         </p>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
+          Patient?{" "}
+          <Link href="/portal/login" className="font-medium text-primary hover:underline">
+            Go to your patient portal
+          </Link>
+        </p>
       </CardContent>
     </Card>
   );

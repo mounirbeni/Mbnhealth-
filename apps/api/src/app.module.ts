@@ -32,6 +32,7 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
 import { AiBotModule } from "./ai-bot/ai-bot.module";
 import { RemindersModule } from "./reminders/reminders.module";
 import { BillingSubscriptionModule } from "./billing-subscription/billing-subscription.module";
+import { PatientPortalModule } from "./patient-portal/patient-portal.module";
 import { HealthController } from "./health/health.controller";
 import { RootController } from "./health/root.controller";
 
@@ -74,6 +75,7 @@ import { RootController } from "./health/root.controller";
     AiBotModule,
     RemindersModule,
     BillingSubscriptionModule,
+    PatientPortalModule,
   ],
   controllers: [HealthController, RootController],
   providers: [

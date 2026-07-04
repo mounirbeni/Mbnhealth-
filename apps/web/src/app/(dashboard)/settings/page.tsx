@@ -398,7 +398,11 @@ function BillingTab() {
 
 export default function SettingsPage() {
   const searchParams = useSearchParams();
-  const defaultTab = searchParams.get("tab") ?? "profile";
+  const { user } = useAuth();
+  // Super Admins have no clinic of their own — Clinic/WhatsApp/Billing are
+  // clinic-scoped and would error for them, so only Profile and Security apply.
+  const hasTenant = !!user?.tenantId;
+  const defaultTab = (hasTenant && searchParams.get("tab")) || "profile";
 
   return (
     <div className="space-y-4">
@@ -409,25 +413,33 @@ export default function SettingsPage() {
       <Tabs defaultValue={defaultTab}>
         <TabsList className="flex-wrap">
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="clinic">Clinic</TabsTrigger>
-          <TabsTrigger value="whatsapp">
-            <MessageCircle className="h-3.5 w-3.5" /> WhatsApp Bot
-          </TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
+          {hasTenant && <TabsTrigger value="clinic">Clinic</TabsTrigger>}
+          {hasTenant && (
+            <TabsTrigger value="whatsapp">
+              <MessageCircle className="h-3.5 w-3.5" /> WhatsApp Bot
+            </TabsTrigger>
+          )}
+          {hasTenant && <TabsTrigger value="billing">Billing</TabsTrigger>}
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
         <TabsContent value="profile">
           <ProfileTab />
         </TabsContent>
-        <TabsContent value="clinic">
-          <ClinicTab />
-        </TabsContent>
-        <TabsContent value="whatsapp">
-          <WhatsAppTab />
-        </TabsContent>
-        <TabsContent value="billing">
-          <BillingTab />
-        </TabsContent>
+        {hasTenant && (
+          <TabsContent value="clinic">
+            <ClinicTab />
+          </TabsContent>
+        )}
+        {hasTenant && (
+          <TabsContent value="whatsapp">
+            <WhatsAppTab />
+          </TabsContent>
+        )}
+        {hasTenant && (
+          <TabsContent value="billing">
+            <BillingTab />
+          </TabsContent>
+        )}
         <TabsContent value="security">
           <SecurityTab />
         </TabsContent>

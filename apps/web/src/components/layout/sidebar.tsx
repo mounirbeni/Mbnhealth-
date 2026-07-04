@@ -9,9 +9,14 @@ import { useAuth } from "@/lib/auth-context";
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { hasPermission } = useAuth();
+  const { user, hasPermission } = useAuth();
 
-  const items = NAV_ITEMS.filter((item) => hasPermission(item.permission));
+  // Super Admins (no tenantId) have every permission by design, but every
+  // non-/admin page is scoped to a clinic they don't have — hide those
+  // instead of linking to pages that error for them.
+  const items = NAV_ITEMS.filter(
+    (item) => hasPermission(item.permission) && (user?.tenantId || item.href.startsWith("/admin")),
+  );
 
   return (
     <div className="flex h-full w-64 flex-col border-r border-border bg-card">

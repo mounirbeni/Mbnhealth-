@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export function CommandPalette() {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
-  const { hasPermission, logout } = useAuth();
+  const { user, hasPermission, logout } = useAuth();
   const { setTheme } = useTheme();
 
   React.useEffect(() => {
@@ -50,7 +50,9 @@ export function CommandPalette() {
           <Command.List className="max-h-80 overflow-y-auto p-2">
             <Command.Empty className="py-6 text-center text-sm text-muted-foreground">No results found.</Command.Empty>
             <Command.Group heading="Navigate" className="px-2 py-1 text-xs font-medium text-muted-foreground">
-              {NAV_ITEMS.filter((item) => hasPermission(item.permission)).map((item) => (
+              {NAV_ITEMS.filter(
+                (item) => hasPermission(item.permission) && (user?.tenantId || item.href.startsWith("/admin")),
+              ).map((item) => (
                 <Command.Item
                   key={item.href}
                   onSelect={() => go(item.href)}

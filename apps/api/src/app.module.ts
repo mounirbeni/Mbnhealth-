@@ -5,6 +5,7 @@ import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { ValidationPipe } from "@nestjs/common";
 import configuration from "./config/configuration";
 import { PrismaModule } from "./prisma/prisma.module";
+import { MailerModule } from "./common/mailer/mailer.module";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
 import { PermissionsGuard } from "./common/guards/permissions.guard";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
@@ -51,6 +52,7 @@ import { RootController } from "./health/root.controller";
       }),
     }),
     PrismaModule,
+    MailerModule,
     AuthModule,
     UsersModule,
     TenantsModule,

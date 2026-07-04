@@ -292,6 +292,34 @@ All three suites pass against live infrastructure as of this build:
   WhatsApp access token and Stripe keys (currently plain environment variables / a DB column)
   before treating it as GDPR/HIPAA-ready.
 
+## Password reset
+
+Both staff (`/forgot-password`, `/reset-password`) and patients
+(`/patient/forgot-password`, `/patient/reset-password`) can reset a forgotten password. The flow:
+a one-hour, single-use, SHA-256-hashed token (`PasswordResetToken` / `PatientPasswordResetToken`) is
+emailed via `MailerService` (`apps/api/src/common/mailer`); resetting revokes all of that user's
+existing refresh tokens/sessions. Both endpoints return the same generic response whether or not the
+email is registered, so they can't be used to enumerate accounts. `MailerService` is a thin
+nodemailer/SMTP wrapper — with `SMTP_HOST` unset (the default) it logs the intended send instead of
+transmitting it, so the whole flow works end to end in local dev without any email provider.
+
+## Platform admin panel
+
+The `SUPER_ADMIN` system role (seeded as `superadmin@mbnhealth.com`, no `tenantId`) manages every
+clinic on the platform from `/admin` — search tenants, review plan/subscription status, and
+suspend/reactivate/archive a clinic (`GET /tenants`, `PATCH /tenants/:id/status`, both gated behind
+`Permission.SYSTEM_MANAGE_TENANTS`). Logging in without a "Clinic URL" routes here automatically
+instead of to the regular tenant-scoped dashboard, since a platform admin has no clinic of their own.
+
+## Error monitoring
+
+Sentry is wired into both apps but fully optional — leaving `SENTRY_DSN` /
+`NEXT_PUBLIC_SENTRY_DSN` unset means it never initializes, so this has zero effect until configured.
+Set them on the respective Vercel projects to start capturing unhandled exceptions (API: via the
+global `AllExceptionsFilter`; web: via `instrumentation.ts` and `global-error.tsx`). `SENTRY_ORG` /
+`SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` are only needed if you also want source-map upload during
+`next build`.
+
 ## Deployment
 
 **Primary target: Vercel, one project for both apps.**
@@ -309,8 +337,9 @@ All three suites pass against live infrastructure as of this build:
   `@mbn/database` can resolve. Set the same for a second Vercel project pointed at `apps/web`.
 - Required env vars on the `apps/api` Vercel project: `DATABASE_URL`, `JWT_ACCESS_SECRET`,
   `JWT_REFRESH_SECRET`, `JWT_PATIENT_SECRET`, `CORS_ORIGIN` (comma-separated: the web app's URL
-  **and** the patient-portal subdomain's URL — see "Patient portal" below), plus the
-  WhatsApp/AI/Stripe/`CRON_SECRET` vars documented above as needed. Use a pooled connection string
+  **and** the patient-portal subdomain's URL — see "Patient portal" below), `WEB_APP_URL` and
+  `PATIENT_PORTAL_URL` (real `https://` URLs, so password-reset emails link back correctly), plus
+  the WhatsApp/AI/Stripe/SMTP/Sentry/`CRON_SECRET` vars documented above as needed. Use a pooled connection string
   for `DATABASE_URL` (e.g. Neon, Supabase, or PgBouncer) — serverless functions open a new DB
   connection per cold start, and an unpooled Postgres will run out of connections under real
   traffic.

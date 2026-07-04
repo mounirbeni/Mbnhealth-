@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import * as argon2 from "argon2";
+import { createHash, randomBytes } from "crypto";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { AuditAction, SystemRoleName, User, Role, DEFAULT_ROLE_PERMISSIONS } from "@mbn/database";
@@ -13,8 +14,10 @@ import { PrismaService } from "../prisma/prisma.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { TokensService } from "./services/tokens.service";
 import { MfaService } from "./services/mfa.service";
+import { MailerService } from "../common/mailer/mailer.service";
 import { RegisterTenantDto } from "./dto/register-tenant.dto";
 import { LoginDto } from "./dto/login.dto";
+import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { AuthenticatedUser } from "./types/authenticated-user.interface";
 
 type UserWithRole = User & { role: Role };
@@ -33,6 +36,7 @@ export class AuthService {
     private readonly tokens: TokensService,
     private readonly mfa: MfaService,
     private readonly auditLog: AuditLogService,
+    private readonly mailer: MailerService,
   ) {}
 
   private toAuthenticatedUser(user: UserWithRole): AuthenticatedUser {
@@ -258,6 +262,52 @@ export class AuthService {
 
   async logout(rawRefreshToken: string) {
     await this.tokens.revokeRefreshToken(rawRefreshToken);
+    return { success: true };
+  }
+
+  // Always returns the same generic response whether or not the account
+  // exists, so this endpoint can't be used to enumerate registered emails.
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const where = dto.tenantSlug
+      ? { tenant: { slug: dto.tenantSlug }, email: dto.email.toLowerCase() }
+      : { tenantId: null, email: dto.email.toLowerCase() };
+    const user = await this.prisma.user.findFirst({ where });
+
+    if (user && user.isActive) {
+      const rawToken = randomBytes(32).toString("hex");
+      const tokenHash = createHash("sha256").update(rawToken).digest("hex");
+      await this.prisma.passwordResetToken.create({
+        data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 1000 * 60 * 60) },
+      });
+
+      const webUrl = this.config.get<string>("appUrls.web");
+      const resetUrl = `${webUrl}/reset-password?token=${rawToken}`;
+      await this.mailer.send({
+        to: user.email,
+        subject: "Reset your MBN Health password",
+        text: `Reset your password: ${resetUrl} (expires in 1 hour)`,
+        html: `<p>Someone requested a password reset for your MBN Health account.</p><p><a href="${resetUrl}">Reset your password</a> — this link expires in 1 hour.</p><p>If you didn't request this, you can safely ignore this email.</p>`,
+      });
+    }
+
+    return { success: true };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+    const record = await this.prisma.passwordResetToken.findUnique({ where: { tokenHash } });
+
+    if (!record || record.usedAt || record.expiresAt < new Date()) {
+      throw new BadRequestException("This reset link is invalid or has expired");
+    }
+
+    const passwordHash = await argon2.hash(newPassword);
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: record.userId }, data: { passwordHash } }),
+      this.prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
+    ]);
+    await this.tokens.revokeAllUserTokens(record.userId);
+
     return { success: true };
   }
 

@@ -46,6 +46,23 @@ export default () => ({
     emailProvider: process.env.EMAIL_PROVIDER ?? "console",
     emailFrom: process.env.EMAIL_FROM ?? "MBN Health <no-reply@mbnhealth.com>",
   },
+  // Transactional email (password resets, account notices) — reuses the same
+  // SMTP_* vars as `messaging.*` above so there's one email config, not two.
+  // Any SMTP-speaking provider works (Gmail, SendGrid, Postmark, Resend,
+  // SES...); leaving SMTP_HOST unset logs the send instead of transmitting it.
+  smtp: {
+    host: process.env.SMTP_HOST ?? "",
+    port: parseInt(process.env.SMTP_PORT ?? "587", 10),
+    secure: process.env.SMTP_SECURE === "true",
+    user: process.env.SMTP_USER ?? "",
+    pass: process.env.SMTP_PASSWORD ?? "",
+    from: process.env.EMAIL_FROM ?? "MBN Health <no-reply@mbnhealth.com>",
+  },
+  appUrls: {
+    // Where password-reset / account links should point the user back to.
+    web: process.env.WEB_APP_URL ?? "http://localhost:3000",
+    patientPortal: process.env.PATIENT_PORTAL_URL ?? "http://care.localhost:3000",
+  },
   // Platform-level Meta App credentials, shared across all tenants: the
   // webhook URL and verify token are configured once in the Meta App
   // dashboard. Each clinic's own phone number / access token lives in the

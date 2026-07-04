@@ -25,3 +25,17 @@ export class LoginPatientDto {
   @IsString()
   password!: string;
 }
+
+export class ForgotPatientPasswordDto {
+  @IsEmail()
+  email!: string;
+}
+
+export class ResetPatientPasswordDto {
+  @IsString()
+  token!: string;
+
+  @IsString()
+  @MinLength(8)
+  newPassword!: string;
+}

@@ -64,6 +64,14 @@ function PatientFooter() {
           <span>MBN Health Patient Portal</span>
         </div>
         <p>Booking with a clinic on MBN Health? Your data stays with that clinic, never shared with others.</p>
+        <div className="flex items-center gap-3">
+          <Link href="/privacy" className="hover:text-foreground">
+            Privacy
+          </Link>
+          <Link href="/terms" className="hover:text-foreground">
+            Terms
+          </Link>
+        </div>
       </div>
     </footer>
   );

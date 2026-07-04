@@ -455,6 +455,8 @@ export default function LandingPage() {
           <p>© {new Date().getFullYear()} MBN Health. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <a href="mailto:sales@mbnhealth.com" className="hover:text-foreground">Contact</a>
+            <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link href="/terms" className="hover:text-foreground">Terms</Link>
             <Link href="/login" className="hover:text-foreground">Login</Link>
           </div>
         </div>

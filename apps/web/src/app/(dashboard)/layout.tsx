@@ -14,8 +14,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (isLoading) return;
+    if (!user) {
       router.replace("/login");
+    } else if (user.systemRole === "SUPER_ADMIN") {
+      // The regular dashboard assumes a tenant-scoped user throughout
+      // (branding, billing, staff...); a platform super admin has no tenant
+      // of their own and belongs in the platform admin panel instead.
+      router.replace("/admin");
     }
   }, [isLoading, user, router]);
 
@@ -27,7 +33,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  if (!user) return null;
+  if (!user || user.systemRole === "SUPER_ADMIN") return null;
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">

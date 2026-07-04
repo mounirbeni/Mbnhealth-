@@ -2,6 +2,9 @@ import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { configureApp } from "./configure-app";
+import { initSentry } from "./common/monitoring/sentry";
+
+initSentry();
 
 /**
  * Entry point for every deployment target, including Vercel: its "nestjs"

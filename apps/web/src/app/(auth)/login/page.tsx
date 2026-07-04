@@ -68,7 +68,7 @@ function LoginForm() {
         setChallengeToken(res.challengeToken);
       } else {
         toast.success("Welcome back!");
-        router.push("/dashboard");
+        router.push(res.user?.systemRole === "SUPER_ADMIN" ? "/admin" : "/dashboard");
       }
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Login failed");
@@ -81,9 +81,9 @@ function LoginForm() {
     if (!challengeToken) return;
     setIsSubmitting(true);
     try {
-      await verifyMfa(challengeToken, values.code);
+      const res = await verifyMfa(challengeToken, values.code);
       toast.success("Welcome back!");
-      router.push("/dashboard");
+      router.push(res.user?.systemRole === "SUPER_ADMIN" ? "/admin" : "/dashboard");
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Invalid code");
     } finally {
@@ -157,7 +157,12 @@ function LoginForm() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link href="/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <Input id="password" type="password" placeholder="••••••••" {...loginForm.register("password")} />
             {loginForm.formState.errors.password && (
               <p className="text-xs text-destructive">{loginForm.formState.errors.password.message}</p>

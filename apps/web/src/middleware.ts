@@ -11,8 +11,16 @@ const PATIENT_HOST = process.env.PATIENT_HOST ?? process.env.NEXT_PUBLIC_PATIENT
 
 const PATIENT_PATH_PREFIXES = ["/find-a-clinic", "/clinics", "/patient"];
 
+// Legal pages make sense on both the clinic app and the patient portal, so
+// they're exempt from the host-based wall in both directions.
+const SHARED_PATH_PREFIXES = ["/privacy", "/terms"];
+
 function isPatientOnlyPath(pathname: string): boolean {
   return PATIENT_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
+function isSharedPath(pathname: string): boolean {
+  return SHARED_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
 function isAssetOrApiPath(pathname: string): boolean {
@@ -23,7 +31,7 @@ export function middleware(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const { pathname } = request.nextUrl;
 
-  if (isAssetOrApiPath(pathname)) return NextResponse.next();
+  if (isAssetOrApiPath(pathname) || isSharedPath(pathname)) return NextResponse.next();
 
   const isPatientHost = host === PATIENT_HOST;
 

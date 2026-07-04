@@ -9,7 +9,7 @@ interface AuthContextValue {
   user: AuthenticatedUser | null;
   isLoading: boolean;
   login: (email: string, password: string, tenantSlug?: string) => Promise<LoginResponse>;
-  verifyMfa: (challengeToken: string, code: string) => Promise<void>;
+  verifyMfa: (challengeToken: string, code: string) => Promise<LoginResponse>;
   logout: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
   refreshMe: () => Promise<void>;
@@ -70,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setTokens(res.accessToken, res.refreshToken);
       setUser(res.user ?? null);
     }
+    return res;
   }, []);
 
   const logout = useCallback(async () => {

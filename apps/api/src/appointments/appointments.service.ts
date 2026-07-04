@@ -8,7 +8,7 @@ import {
   UpdateAppointmentStatusDto,
 } from "./dto/appointment.dto";
 
-const ACTIVE_STATUSES: AppointmentStatus[] = [
+export const ACTIVE_APPOINTMENT_STATUSES: AppointmentStatus[] = [
   AppointmentStatus.CONFIRMED,
   AppointmentStatus.WAITING,
   AppointmentStatus.CHECKED_IN,
@@ -88,7 +88,7 @@ export class AppointmentsService {
         tenantId,
         doctorId,
         id: excludeId ? { not: excludeId } : undefined,
-        status: { in: ACTIVE_STATUSES },
+        status: { in: ACTIVE_APPOINTMENT_STATUSES },
         AND: [{ startTime: { lt: endTime } }, { endTime: { gt: startTime } }],
       },
     });
@@ -97,7 +97,7 @@ export class AppointmentsService {
     }
   }
 
-  async create(tenantId: string, dto: CreateAppointmentDto, createdById: string) {
+  async create(tenantId: string, dto: CreateAppointmentDto, createdById?: string) {
     const startTime = new Date(dto.startTime);
     const endTime = new Date(dto.endTime);
     await this.assertNoConflict(tenantId, dto.doctorId, startTime, endTime);

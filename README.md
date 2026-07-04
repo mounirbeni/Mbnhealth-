@@ -93,6 +93,44 @@ SMS support was removed entirely (per product decision) in favor of a real Whats
   path fired correctly with no API key configured (see `git log` for the session this was built in
   if you want the exact commands).
 
+## Patient portal (public clinic search + self-service booking)
+
+A second, deliberately separate front door into the platform for patients (not clinic staff):
+
+- **Public clinic directory** (`GET /public/clinics`, `/public/clinics/:slug`, `/public/clinics/:slug/doctors/:id/availability`)
+  — unauthenticated, cross-tenant search by clinic name/address/specialty. Only ever returns
+  `ACTIVE` tenants and a hand-picked set of safe fields (never a doctor's email, phone, or
+  password hash) — this is the one deliberate exception to the "always scope by tenantId" rule
+  everywhere else in the API, so it's implemented in its own module
+  (`apps/api/src/patient-portal`) rather than bolted onto the staff-facing controllers.
+- **Patient accounts are a separate identity from staff `User`s and from clinic-scoped `Patient`
+  records.** A `PatientAccount` (`packages/database` schema) is global — the same person can
+  search and book with several different clinics — and a `PatientAccountLink` joins it to the
+  normal tenant-scoped `Patient` row created the first time they book with a given clinic. Staff
+  never see anything different: a portal-originated patient looks exactly like any other patient
+  in the clinic's UI.
+- **A completely separate JWT.** `PatientJwtStrategy`/`PatientJwtAuthGuard` use their own secret
+  (`JWT_PATIENT_SECRET`) — a patient token is rejected by every staff endpoint and a staff token
+  is rejected by every patient endpoint, verified by an actual cross-token test, not just code
+  review.
+- **Booking reuses `AppointmentsService.create()`** (the same conflict-checking staff booking
+  goes through) rather than duplicating slot-conflict logic, but never returns that method's
+  staff-shaped result directly — the public response is re-selected down to a safe subset of
+  fields before going back over the wire.
+- **Self-service bookings still respect the clinic's plan limits**: booking with a new clinic for
+  the first time creates a `Patient` row, which still counts against that clinic's Starter/
+  Professional/Enterprise patient cap (see "Pricing & plan limits" below).
+- **Frontend**: `/find-a-clinic` (search), `/clinics/[slug]` (profile + doctor list),
+  `/clinics/[slug]/book/[doctorId]` (date/slot picker), `/patient/login` + `/patient/register`,
+  `/patient/appointments` ("my bookings" across every clinic) — all under
+  `apps/web/src/app/(patient)`, with their own auth context/token storage
+  (`lib/patient-auth-context.tsx`, `lib/patient-api-client.ts`) kept separate from the staff
+  dashboard's.
+- Verified end-to-end in this repo's dev environment: searched for a clinic, opened its profile,
+  picked an available slot, created a patient account mid-flow (the slot selection survives the
+  register-and-return trip via the URL, not component state), confirmed the booking, and checked
+  it appears correctly in the clinic staff's own Appointments calendar via the staff API.
+
 ## Getting started (local development)
 
 ### Prerequisites

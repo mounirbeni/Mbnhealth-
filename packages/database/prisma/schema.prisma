@@ -54,31 +54,32 @@ model Tenant {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  subscription      Subscription?
-  users             User[]
-  roles             Role[]
-  departments       Department[]
-  doctors           Doctor[]
-  patients          Patient[]
-  appointments      Appointment[]
-  medicalRecords    MedicalRecord[]
-  prescriptions     Prescription[]
-  invoices          Invoice[]
-  payments          Payment[]
-  insuranceClaims   InsuranceClaim[]
-  labOrders         LabOrder[]
-  radiologyOrders   RadiologyOrder[]
-  inventoryItems    InventoryItem[]
-  notifications     Notification[]
-  messageThreads    MessageThread[]
-  messageTemplates  MessageTemplate[]
-  communicationLogs CommunicationLog[]
-  auditLogs         AuditLog[]
-  attachments       Attachment[]
-  waitlistEntries   WaitlistEntry[]
-  refreshTokens     RefreshToken[]
-  sessions          Session[]
-  whatsAppConfig    WhatsAppConfig?
+  subscription        Subscription?
+  users               User[]
+  roles               Role[]
+  departments         Department[]
+  doctors             Doctor[]
+  patients            Patient[]
+  appointments        Appointment[]
+  medicalRecords      MedicalRecord[]
+  prescriptions       Prescription[]
+  invoices            Invoice[]
+  payments            Payment[]
+  insuranceClaims     InsuranceClaim[]
+  labOrders           LabOrder[]
+  radiologyOrders     RadiologyOrder[]
+  inventoryItems      InventoryItem[]
+  notifications       Notification[]
+  messageThreads      MessageThread[]
+  messageTemplates    MessageTemplate[]
+  communicationLogs   CommunicationLog[]
+  auditLogs           AuditLog[]
+  attachments         Attachment[]
+  waitlistEntries     WaitlistEntry[]
+  refreshTokens       RefreshToken[]
+  sessions            Session[]
+  whatsAppConfig      WhatsAppConfig?
+  patientAccountLinks PatientAccountLink[]
 
   @@map("tenants")
 }
@@ -375,6 +376,7 @@ model Patient {
   consentForms      ConsentForm[]
   waitlistEntries   WaitlistEntry[]
   communicationLogs CommunicationLog[]
+  accountLink       PatientAccountLink?
 
   @@unique([tenantId, mrn])
   @@index([tenantId, lastName, firstName])
@@ -974,4 +976,43 @@ model WhatsAppConfig {
   updatedAt          DateTime @updatedAt
 
   @@map("whatsapp_configs")
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// PATIENT PORTAL (public clinic search + self-service booking)
+// ────────────────────────────────────────────────────────────────────────────
+
+// A patient's identity for the public portal, deliberately NOT tenant-scoped:
+// the same person can search across, and book with, several different
+// clinics. Each clinic-side booking creates/reuses a normal (tenant-scoped)
+// Patient row, joined back to this account via PatientAccountLink — the
+// clinic staff's view of a patient is completely unaffected.
+model PatientAccount {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  phone        String?
+  passwordHash String
+  firstName    String
+  lastName     String
+  dob          DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  links PatientAccountLink[]
+
+  @@map("patient_accounts")
+}
+
+model PatientAccountLink {
+  id               String         @id @default(cuid())
+  patientAccountId String
+  patientAccount   PatientAccount @relation(fields: [patientAccountId], references: [id], onDelete: Cascade)
+  tenantId         String
+  tenant           Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  patientId        String         @unique
+  patient          Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdAt        DateTime       @default(now())
+
+  @@unique([patientAccountId, tenantId])
+  @@map("patient_account_links")
 }

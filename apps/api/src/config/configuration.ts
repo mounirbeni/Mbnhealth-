@@ -18,6 +18,11 @@ export default () => ({
     refreshSecret: process.env.JWT_REFRESH_SECRET ?? "dev-refresh-secret-change-me-please-32ch",
     accessTtl: process.env.JWT_ACCESS_TTL ?? "15m",
     refreshTtl: process.env.JWT_REFRESH_TTL ?? "30d",
+    // Deliberately a separate secret from the staff accessSecret above: a
+    // patient-portal token must never be accepted by any staff endpoint
+    // (and vice versa) even if a guard's strategy check were ever missed.
+    patientSecret: process.env.JWT_PATIENT_SECRET ?? "dev-patient-secret-change-me-please-32ch",
+    patientTtl: process.env.JWT_PATIENT_TTL ?? "30d",
   },
   s3: {
     endpoint: process.env.S3_ENDPOINT,

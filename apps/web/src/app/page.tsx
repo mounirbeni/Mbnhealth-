@@ -128,6 +128,9 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>
+              <Link href="/find-a-clinic">Find a clinic</Link>
+            </Button>
+            <Button variant="ghost" asChild>
               <Link href="/login">Login</Link>
             </Button>
             <Button asChild>
@@ -160,6 +163,13 @@ export default function LandingPage() {
               </Button>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">No install. No credit card. Click straight into a seeded demo clinic.</p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Looking for a doctor instead?{" "}
+              <Link href="/find-a-clinic" className="font-medium text-primary hover:underline">
+                Find a clinic and book an appointment
+              </Link>
+              .
+            </p>
           </div>
         </div>
       </section>

@@ -8,6 +8,14 @@ import compression from "compression";
 export function configureApp(app: INestApplication): ConfigService {
   const config = app.get(ConfigService);
 
+  // Vercel puts every request through its edge network before it reaches
+  // this serverless function, so without this Express sees Vercel's proxy
+  // address as req.ip for every single request — collapsing all visitors
+  // into one shared rate-limit bucket (ThrottlerGuard trackers by IP) and
+  // making "Too Many Requests" trip almost immediately under real traffic.
+  // Trusting the first hop makes req.ip resolve from X-Forwarded-For.
+  app.getHttpAdapter().getInstance().set("trust proxy", 1);
+
   app.use(helmet());
   app.use(compression());
   app.enableCors({

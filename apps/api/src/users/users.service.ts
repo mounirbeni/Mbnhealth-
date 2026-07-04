@@ -1,12 +1,16 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import * as argon2 from "argon2";
 import { PrismaService } from "../prisma/prisma.service";
+import { PlanLimitsService } from "../common/plan-limits/plan-limits.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly planLimits: PlanLimitsService,
+  ) {}
 
   async findAll(tenantId: string, params: { search?: string; roleId?: string }) {
     return this.prisma.user.findMany({
@@ -39,6 +43,10 @@ export class UsersService {
       where: { tenantId, email: dto.email.toLowerCase() },
     });
     if (existing) throw new ConflictException("A user with this email already exists");
+
+    const role = await this.prisma.role.findFirst({ where: { id: dto.roleId, tenantId } });
+    if (!role) throw new NotFoundException("Role not found");
+    await this.planLimits.assertWithinLimit(tenantId, role.systemRole === "DOCTOR" ? "doctors" : "staff");
 
     const passwordHash = await argon2.hash(dto.password);
     const { password, ...rest } = dto;

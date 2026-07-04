@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { AllergySeverity } from "@mbn/database";
 import { PrismaService } from "../prisma/prisma.service";
+import { PlanLimitsService } from "../common/plan-limits/plan-limits.service";
 import {
   AddAllergyDto,
   AddMedicationDto,
@@ -11,7 +12,10 @@ import {
 
 @Injectable()
 export class PatientsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly planLimits: PlanLimitsService,
+  ) {}
 
   async findAll(tenantId: string, params: { search?: string; page: number; pageSize: number }) {
     const where = {
@@ -60,6 +64,7 @@ export class PatientsService {
   }
 
   async create(tenantId: string, dto: CreatePatientDto) {
+    await this.planLimits.assertWithinLimit(tenantId, "patients");
     const mrn = await this.generateMrn(tenantId);
     return this.prisma.patient.create({
       data: { ...dto, tenantId, mrn, dob: new Date(dto.dob) },

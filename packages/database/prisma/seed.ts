@@ -14,6 +14,11 @@ import {
   OrderStatus,
   InventoryTransactionType,
   CommunicationChannel,
+  CommunicationDirection,
+  InsuranceClaimStatus,
+  AuditAction,
+  type Doctor,
+  type Invoice,
 } from "../generated/client";
 import { DEFAULT_ROLE_PERMISSIONS } from "../src/permissions";
 
@@ -206,7 +211,7 @@ async function main() {
     { first: "Laila", last: "Squalli", dept: dermatology, spec: "Dermatology" },
   ];
 
-  const doctors = [];
+  const doctors: Doctor[] = [];
   for (const d of doctorUsersData) {
     const email = `dr.${d.first.toLowerCase().split(" ")[0]}@demo-clinic.com`;
     const user = await prisma.user.upsert({
@@ -252,6 +257,14 @@ async function main() {
     { first: "Nour", last: "Bakkali", dob: "2001-08-19", gender: Gender.FEMALE, blood: "AB+" },
     { first: "Mehdi", last: "Ouazzani", dob: "1990-06-30", gender: Gender.MALE, blood: "O-" },
     { first: "Imane", last: "Slaoui", dob: "1983-02-14", gender: Gender.FEMALE, blood: "A-" },
+    { first: "Adil", last: "Berrada", dob: "1979-09-05", gender: Gender.MALE, blood: "AB-" },
+    { first: "Hafsa", last: "Naciri", dob: "1998-12-22", gender: Gender.FEMALE, blood: "O+" },
+    { first: "Rachid", last: "Lahlou", dob: "1965-03-17", gender: Gender.MALE, blood: "A+" },
+    { first: "Meryem", last: "Kabbaj", dob: "1992-07-08", gender: Gender.FEMALE, blood: "B+" },
+    { first: "Anas", last: "Filali", dob: "1986-10-29", gender: Gender.MALE, blood: "O+" },
+    { first: "Zineb", last: "Bouzidi", dob: "2004-05-16", gender: Gender.FEMALE, blood: "A-" },
+    { first: "Hamza", last: "Sefrioui", dob: "1975-01-11", gender: Gender.MALE, blood: "B-" },
+    { first: "Ghita", last: "El Fassi", dob: "1989-08-24", gender: Gender.FEMALE, blood: "AB+" },
   ];
 
   const patients = [];
@@ -322,7 +335,7 @@ async function main() {
   ];
 
   const appointments = [];
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 30; i++) {
     const patient = patients[i % patients.length];
     const doctor = doctors[i % doctors.length];
     const dayOffset = i - 10;
@@ -350,7 +363,8 @@ async function main() {
 
   // ── Medical records, diagnoses, prescriptions for completed appointments ──
   const completed = appointments.filter((a) => a.status === AppointmentStatus.COMPLETED);
-  for (const appt of completed) {
+  const invoices: Invoice[] = [];
+  for (const [invoiceIndex, appt] of completed.entries()) {
     const record = await prisma.medicalRecord.create({
       data: {
         tenantId: tenant.id,
@@ -391,17 +405,21 @@ async function main() {
       },
     });
 
-    await prisma.invoice.create({
+    const invoiceStatus = [InvoiceStatus.PAID, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE][
+      invoiceIndex % 3
+    ];
+    const paidAmount = invoiceStatus === "PAID" ? 350 : invoiceStatus === "PARTIALLY_PAID" ? 150 : 0;
+    const invoice = await prisma.invoice.create({
       data: {
         tenantId: tenant.id,
         patientId: appt.patientId,
         invoiceNumber: `INV-${appt.id.slice(-6).toUpperCase()}`,
-        status: InvoiceStatus.PAID,
-        dueDate: new Date(),
+        status: invoiceStatus,
+        dueDate: invoiceStatus === "OVERDUE" ? new Date(Date.now() - 1000 * 60 * 60 * 24 * 10) : new Date(),
         subtotal: 350,
         taxAmount: 0,
         totalAmount: 350,
-        paidAmount: 350,
+        paidAmount,
         items: {
           create: [
             {
@@ -413,16 +431,35 @@ async function main() {
             },
           ],
         },
-        payments: {
-          create: [
-            {
-              tenantId: tenant.id,
-              amount: 350,
-              method: PaymentMethod.CARD,
-              status: PaymentStatus.COMPLETED,
-            },
-          ],
-        },
+        payments: paidAmount
+          ? {
+              create: [
+                {
+                  tenantId: tenant.id,
+                  amount: paidAmount,
+                  method: PaymentMethod.CARD,
+                  status: PaymentStatus.COMPLETED,
+                },
+              ],
+            }
+          : undefined,
+      },
+    });
+    invoices.push(invoice);
+  }
+
+  // ── Insurance claims for a couple of invoices ─────────────────────────────
+  for (const invoice of invoices.slice(0, 2)) {
+    await prisma.insuranceClaim.create({
+      data: {
+        tenantId: tenant.id,
+        patientId: invoice.patientId,
+        invoiceId: invoice.id,
+        provider: "CNSS",
+        policyNumber: `CNSS-${Math.floor(100000 + Math.random() * 899999)}`,
+        claimAmount: invoice.totalAmount,
+        approvedAmount: invoice.status === "PAID" ? invoice.totalAmount : null,
+        status: invoice.status === "PAID" ? InsuranceClaimStatus.APPROVED : InsuranceClaimStatus.IN_REVIEW,
       },
     });
   }
@@ -536,6 +573,99 @@ async function main() {
         title: "New appointment booked",
         body: "A new appointment was booked for today.",
         type: "SUCCESS",
+      },
+    ],
+  });
+
+  // ── Internal staff chat (thin module) ─────────────────────────────────────
+  const staffThread = await prisma.messageThread.create({
+    data: {
+      tenantId: tenant.id,
+      subject: "Front desk — this week",
+      participants: {
+        create: [{ userId: clinicOwner.id }, { userId: manager.id }, { userId: receptionist.id }],
+      },
+    },
+  });
+  await prisma.message.createMany({
+    data: [
+      { threadId: staffThread.id, senderId: manager.id, body: "Can someone confirm the 9am slots for tomorrow?" },
+      { threadId: staffThread.id, senderId: receptionist.id, body: "Done — all confirmed except Mr. Ziani, still trying to reach him." },
+      { threadId: staffThread.id, senderId: clinicOwner.id, body: "Thanks both, great work this week." },
+    ],
+  });
+
+  // ── WhatsApp communication log (simulated sends — see WhatsAppConfig above) ─
+  const upcoming = appointments.filter((a) => a.startTime > now).slice(0, 4);
+  await prisma.communicationLog.createMany({
+    data: upcoming.map((appt) => ({
+      tenantId: tenant.id,
+      patientId: appt.patientId,
+      appointmentId: appt.id,
+      channel: CommunicationChannel.WHATSAPP,
+      direction: CommunicationDirection.OUTBOUND,
+      externalContact: "+212 6XXXXXXXX",
+      content: "Reminder: you have an appointment tomorrow. Reply if you need to reschedule.",
+      status: "SIMULATED",
+    })),
+  });
+  await prisma.communicationLog.createMany({
+    data: [
+      {
+        tenantId: tenant.id,
+        patientId: patients[0].id,
+        channel: CommunicationChannel.WHATSAPP,
+        direction: CommunicationDirection.INBOUND,
+        externalContact: "+212 6XXXXXXXX",
+        content: "What time is the clinic open on Saturday?",
+        status: "RECEIVED",
+      },
+      {
+        tenantId: tenant.id,
+        patientId: patients[0].id,
+        channel: CommunicationChannel.WHATSAPP,
+        direction: CommunicationDirection.OUTBOUND,
+        externalContact: "+212 6XXXXXXXX",
+        content: "We're open Saturdays 9am-1pm. Would you like to book an appointment?",
+        status: "SIMULATED",
+        respondedByAi: true,
+      },
+    ],
+  });
+
+  // ── Audit trail (so the Audit Logs screen isn't empty in the demo) ────────
+  await prisma.auditLog.createMany({
+    data: [
+      {
+        tenantId: tenant.id,
+        userId: clinicOwner.id,
+        action: AuditAction.LOGIN,
+        entityType: "User",
+        entityId: clinicOwner.id,
+        ipAddress: "197.230.10.5",
+        userAgent: "Mozilla/5.0",
+      },
+      {
+        tenantId: tenant.id,
+        userId: receptionist.id,
+        action: AuditAction.CREATE,
+        entityType: "Patient",
+        entityId: patients[0].id,
+        metadata: { mrn: patients[0].mrn },
+      },
+      {
+        tenantId: tenant.id,
+        userId: manager.id,
+        action: AuditAction.UPDATE,
+        entityType: "InventoryItem",
+        metadata: { name: "Paracetamol 500mg", change: "reorder alert triggered" },
+      },
+      {
+        tenantId: tenant.id,
+        userId: clinicOwner.id,
+        action: AuditAction.EXPORT,
+        entityType: "Report",
+        metadata: { report: "monthly-revenue" },
       },
     ],
   });

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CreditCard, ExternalLink, MessageCircle, ShieldCheck, Smartphone, Trash2 } from "lucide-react";
+import { Check, CreditCard, ExternalLink, MessageCircle, ShieldCheck, Smartphone, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { useUpsertWhatsAppConfig, useWhatsAppConfig } from "@/hooks/use-whatsapp
 import { api } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-client";
 import { formatDateTime } from "@/lib/utils";
+import { PRICING_PLANS, formatPlanPrice } from "@/lib/pricing";
 
 function ProfileTab() {
   const { user } = useAuth();
@@ -373,12 +374,53 @@ function BillingTab() {
       <CardContent className="space-y-4">
         {hasPermission("SUBSCRIPTION_MANAGE") ? (
           <>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {(["STARTER", "PROFESSIONAL", "ENTERPRISE"] as const).map((plan) => (
-                <Button key={plan} variant="outline" disabled={loadingPlan === plan} onClick={() => startCheckout(plan)}>
-                  <CreditCard className="h-3.5 w-3.5" /> Upgrade to {plan}
-                </Button>
-              ))}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {PRICING_PLANS.map((plan) => {
+                const isCurrent = tenant?.subscription?.plan === plan.id;
+                return (
+                  <Card key={plan.id} className={plan.highlighted ? "border-primary shadow-sm" : undefined}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center justify-between text-base">
+                        {plan.name}
+                        {isCurrent && <Badge variant="success">Current</Badge>}
+                      </CardTitle>
+                      <CardDescription>{plan.tagline}</CardDescription>
+                      <p className="pt-1 text-lg font-semibold">{formatPlanPrice(plan)}</p>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ul className="space-y-1.5 text-sm text-muted-foreground">
+                        {plan.features.map((feature) => (
+                          <li key={feature} className="flex items-start gap-1.5">
+                            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                      {plan.priceMad === null ? (
+                        <Button className="w-full" variant={isCurrent ? "outline" : "default"} disabled={isCurrent} asChild={!isCurrent}>
+                          {isCurrent ? (
+                            "Current plan"
+                          ) : (
+                            <a href="mailto:sales@mbnhealth.com?subject=Enterprise%20plan%20inquiry">
+                              <CreditCard className="h-3.5 w-3.5" /> Contact sales
+                            </a>
+                          )}
+                        </Button>
+                      ) : (
+                        <Button
+                          className="w-full"
+                          variant={isCurrent ? "outline" : "default"}
+                          disabled={isCurrent || loadingPlan === plan.id}
+                          onClick={() => startCheckout(plan.id)}
+                        >
+                          <CreditCard className="h-3.5 w-3.5" />
+                          {isCurrent ? "Current plan" : `Upgrade to ${plan.name}`}
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
             <Button variant="ghost" onClick={openPortal}>
               Manage billing & invoices

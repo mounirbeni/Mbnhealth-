@@ -268,3 +268,61 @@ Vercel:
   `api`/`web` images to a registry the cluster can pull from, and manage secrets via your cluster's
   secret store rather than the example file. The same "nothing triggers `/cron/reminders`" caveat
   applies — add a `CronJob` manifest hitting that endpoint if you go this route.
+
+## Pricing & plan limits
+
+Three subscription tiers, each sized for a different clinic — sold on time saved, not features:
+
+| | Starter | Professional | Enterprise |
+|---|---|---|---|
+| Fits | Solo doctor | Small clinic | Hospital / multi-branch |
+| Price (MAD/mo) | 399 | 999 | Custom |
+| Doctors | 1 | Up to 10 | Unlimited |
+| Staff accounts | Up to 3 | Up to 30 | Unlimited |
+| Patients | Up to 500 | Unlimited | Unlimited |
+| WhatsApp | Basic messaging | AI assistant | Advanced AI assistant |
+| Reports | Basic | Advanced analytics | Custom reports |
+| Support | Basic | Priority | Dedicated account manager |
+
+The limits are enforced, not just marketing copy:
+- **Single source of truth:** `packages/database/src/plan-limits.ts` exports `PLAN_LIMITS` (per-plan
+  `maxDoctors`/`maxStaff`/`maxPatients`, `null` = unlimited). The marketing/display copy in
+  `apps/web/src/lib/pricing.ts` is kept in sync with it by hand — the API is authoritative.
+- **Enforced server-side** by `PlanLimitsService` (`apps/api/src/common/plan-limits`), called from
+  `DoctorsService.create`, `UsersService.create` and `PatientsService.create`. Exceeding a plan's
+  limit returns `403 Forbidden` with an "upgrade your plan" message rather than silently succeeding.
+  The `TRIAL` plan (used before a clinic picks a paid tier) gets Professional-level limits so
+  prospects experience the full product before paying.
+- **Not yet wired:** the Stripe `STRIPE_PRICE_ID_STARTER` / `_PROFESSIONAL` / `_ENTERPRISE`
+  environment variables still need real Stripe Price objects created at the prices above (or
+  whatever pricing you settle on) before checkout will work — see "Connecting real WhatsApp, AI and
+  Stripe" above.
+
+## Public demo environment (demo.mbnhealth.com)
+
+For letting prospects click into a live, fully-populated clinic before talking to sales:
+
+- **Seed data:** `packages/database/prisma/seed.ts` creates the `demo-clinic` tenant on the
+  `PROFESSIONAL` plan with 14 patients, 30 appointments across every status, medical
+  records/prescriptions, invoices in every status (`PAID`/`PARTIALLY_PAID`/`OVERDUE`) with insurance
+  claims, lab/radiology orders, inventory, an internal staff chat thread, simulated WhatsApp
+  conversation logs (including one AI-assisted reply), and audit log entries — every screen has
+  something real to show. Re-run `npm run prisma:seed` any time to reset it back to this baseline
+  (upserts, safe to run repeatedly).
+- **One-click login:** the landing page's "Try the live demo" buttons link to
+  `/login?clinic=demo-clinic`, which shows a one-click role picker (Owner/Manager/Receptionist/
+  Doctor) that fills in the login form with the seeded demo credentials — no typing required.
+- **What's *not* set up here:** provisioning the actual `demo.mbnhealth.com` DNS record and a
+  dedicated Vercel project/domain alias requires access to the domain registrar and the Vercel
+  account, which this environment does not have. To stand it up:
+  1. Deploy a second Vercel project (or a Preview/Production domain alias on the existing one)
+     pointed at a **separate** Postgres database seeded with the script above — don't point the
+     public demo at the same database as real clinic data.
+  2. Add `demo.mbnhealth.com` as a custom domain on that Vercel project and create the matching
+     CNAME/A record with your DNS provider.
+  3. Consider a nightly cron (e.g. a scheduled GitHub Action or Vercel Cron hitting a small reset
+     endpoint) that re-runs the seed script against the demo database, so visitor edits don't
+     accumulate or corrupt the demo over time.
+  4. Skip real WhatsApp/Stripe credentials on the demo project — leave them unset so sends/checkouts
+     stay in their existing "simulated" / "not configured" graceful-degradation paths instead of
+     hitting real Meta or Stripe accounts from a public sandbox.

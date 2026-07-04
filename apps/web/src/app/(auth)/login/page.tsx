@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +14,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api-client";
 
+const DEMO_ACCOUNTS = [
+  { role: "Clinic Owner", email: "owner@demo-clinic.com" },
+  { role: "Manager", email: "manager@demo-clinic.com" },
+  { role: "Receptionist", email: "reception@demo-clinic.com" },
+  { role: "Doctor", email: "dr.hicham@demo-clinic.com" },
+];
+const DEMO_PASSWORD = "Passw0rd!123";
+
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email"),
   password: z.string().min(1, "Password is required"),
@@ -25,13 +33,32 @@ const mfaSchema = z.object({ code: z.string().length(6, "Enter the 6-digit code"
 type MfaForm = z.infer<typeof mfaSchema>;
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const clinicParam = searchParams.get("clinic") ?? undefined;
   const { login, verifyMfa } = useAuth();
   const [challengeToken, setChallengeToken] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const loginForm = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
+  const loginForm = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { tenantSlug: clinicParam ?? "", email: "", password: "" },
+  });
   const mfaForm = useForm<MfaForm>({ resolver: zodResolver(mfaSchema) });
+
+  const fillDemoAccount = (email: string) => {
+    loginForm.setValue("tenantSlug", "demo-clinic");
+    loginForm.setValue("email", email);
+    loginForm.setValue("password", DEMO_PASSWORD);
+  };
 
   const onLogin = async (values: LoginForm) => {
     setIsSubmitting(true);
@@ -99,6 +126,24 @@ export default function LoginPage() {
         <CardDescription>Sign in to your clinic&apos;s MBN Health workspace.</CardDescription>
       </CardHeader>
       <CardContent>
+        {clinicParam === "demo-clinic" && (
+          <div className="mb-4 space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
+            <p className="text-xs font-medium text-foreground">Live demo — click a role to fill the login form</p>
+            <div className="flex flex-wrap gap-1.5">
+              {DEMO_ACCOUNTS.map((acc) => (
+                <button
+                  key={acc.email}
+                  type="button"
+                  onClick={() => fillDemoAccount(acc.email)}
+                  className="rounded-full border border-border bg-background px-2.5 py-1 text-xs hover:bg-accent"
+                >
+                  {acc.role}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">Password: {DEMO_PASSWORD}</p>
+          </div>
+        )}
         <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="tenantSlug">Clinic URL (optional for Super Admin)</Label>

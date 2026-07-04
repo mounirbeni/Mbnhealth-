@@ -2,11 +2,15 @@ import { ConflictException, Injectable, NotFoundException } from "@nestjs/common
 import * as argon2 from "argon2";
 import { SystemRoleName } from "@mbn/database";
 import { PrismaService } from "../prisma/prisma.service";
+import { PlanLimitsService } from "../common/plan-limits/plan-limits.service";
 import { CreateDoctorDto, UpdateDoctorDto } from "./dto/doctor.dto";
 
 @Injectable()
 export class DoctorsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly planLimits: PlanLimitsService,
+  ) {}
 
   findAll(tenantId: string, params: { departmentId?: string; search?: string }) {
     return this.prisma.doctor.findMany({
@@ -41,6 +45,8 @@ export class DoctorsService {
   }
 
   async create(tenantId: string, dto: CreateDoctorDto) {
+    await this.planLimits.assertWithinLimit(tenantId, "doctors");
+
     const existing = await this.prisma.user.findFirst({
       where: { tenantId, email: dto.email.toLowerCase() },
     });

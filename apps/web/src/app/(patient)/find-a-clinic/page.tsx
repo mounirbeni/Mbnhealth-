@@ -4,12 +4,13 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, MapPin, Search, SearchX, Stethoscope, X } from "lucide-react";
+import { ArrowRight, MapPin, Search, SearchX, Stethoscope, Users, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ClinicLogo } from "@/components/patient/clinic-logo";
 import { patientApi } from "@/lib/patient-api-client";
 
 interface ClinicSearchResult {
@@ -42,10 +43,11 @@ function useDebounced<T>(value: T, delayMs: number): T {
 
 function ClinicCardSkeleton() {
   return (
-    <Card className="animate-pulse">
+    <Card className="animate-pulse overflow-hidden">
+      <div className="h-1.5 bg-muted" />
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="h-11 w-11 shrink-0 rounded-xl bg-muted" />
+          <div className="h-14 w-14 shrink-0 rounded-xl bg-muted" />
           <div className="flex-1 space-y-2">
             <div className="h-4 w-2/3 rounded bg-muted" />
             <div className="h-3 w-1/2 rounded bg-muted" />
@@ -224,40 +226,47 @@ function FindClinicContent() {
           )}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           {data.map((clinic) => (
-            <Link key={clinic.slug} href={`/clinics/${clinic.slug}`}>
-              <Card className="group h-full transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm"
-                      style={{ backgroundColor: clinic.primaryColor ?? "#0EA5E9" }}
-                    >
-                      <Building2 className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <CardTitle className="truncate text-base group-hover:text-primary">{clinic.name}</CardTitle>
-                      {(clinic.city || clinic.address) && (
-                        <CardDescription className="flex items-center gap-1 truncate">
-                          <MapPin className="h-3 w-3 shrink-0" />
-                          <span className="truncate">{clinic.city ?? clinic.address}</span>
+            <Link key={clinic.slug} href={`/clinics/${clinic.slug}`} className="group block h-full">
+              <Card className="h-full overflow-hidden transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-lg">
+                <div className="h-1.5" style={{ backgroundColor: clinic.primaryColor ?? "#0EA5E9" }} />
+                <CardHeader className="pb-3">
+                  <div className="flex items-start gap-3.5">
+                    <ClinicLogo logoUrl={clinic.logoUrl} name={clinic.name} color={clinic.primaryColor} />
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="truncate text-lg group-hover:text-primary">{clinic.name}</CardTitle>
+                      {(clinic.address || clinic.city) && (
+                        <CardDescription className="mt-0.5 flex items-start gap-1.5">
+                          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                          <span className="line-clamp-1">{clinic.address ?? clinic.city}</span>
                         </CardDescription>
                       )}
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-1.5">
-                    {clinic.specialties.slice(0, 4).map((s) => (
-                      <Badge key={s} variant="secondary">
-                        {s}
-                      </Badge>
-                    ))}
+                <CardContent className="pb-4">
+                  {clinic.specialties.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {clinic.specialties.slice(0, 4).map((s) => (
+                        <Badge key={s} variant="secondary">
+                          {s}
+                        </Badge>
+                      ))}
+                      {clinic.specialties.length > 4 && (
+                        <Badge variant="outline">+{clinic.specialties.length - 4} more</Badge>
+                      )}
+                    </div>
+                  )}
+                  <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3">
+                    <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <Users className="h-3.5 w-3.5" />
+                      {clinic.doctorCount} doctor{clinic.doctorCount === 1 ? "" : "s"}
+                    </span>
+                    <span className="flex items-center gap-1 text-sm font-medium text-primary opacity-80 transition-opacity group-hover:opacity-100">
+                      View clinic <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </span>
                   </div>
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    {clinic.doctorCount} doctor{clinic.doctorCount === 1 ? "" : "s"}
-                  </p>
                 </CardContent>
               </Card>
             </Link>

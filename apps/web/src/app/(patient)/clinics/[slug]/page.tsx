@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Building2, CalendarCheck, Globe, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarCheck, Globe, Mail, MapPin, Phone } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ClinicLogo } from "@/components/patient/clinic-logo";
 import { patientApi } from "@/lib/patient-api-client";
 
 interface ClinicProfile {
@@ -92,16 +93,12 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
 
       {/* Header */}
       <div
-        className="rounded-2xl border border-border p-6 sm:p-8"
-        style={{ background: `linear-gradient(135deg, ${accent}1a, transparent 60%)` }}
+        className="overflow-hidden rounded-2xl border border-border"
+        style={{ background: `linear-gradient(135deg, ${accent}22, transparent 70%)` }}
       >
-        <div className="flex flex-wrap items-start gap-4">
-          <div
-            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-white shadow-sm"
-            style={{ backgroundColor: accent }}
-          >
-            <Building2 className="h-7 w-7" />
-          </div>
+        <div className="h-2" style={{ backgroundColor: accent }} />
+        <div className="flex flex-wrap items-start gap-4 p-6 sm:p-8">
+          <ClinicLogo logoUrl={clinic.logoUrl} name={clinic.name} color={clinic.primaryColor} size={72} rounded="2xl" />
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{clinic.name}</h1>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
@@ -146,37 +143,51 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
           Book an appointment
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          {clinic.doctors.map((doctor) => (
-            <Card key={doctor.id} className="transition-shadow hover:shadow-md">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="text-sm font-semibold" style={{ backgroundColor: `${accent}26`, color: accent }}>
-                      {doctor.firstName[0]}
-                      {doctor.lastName[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <CardTitle className="truncate text-base">
-                      Dr. {doctor.firstName} {doctor.lastName}
-                    </CardTitle>
-                    <CardDescription className="truncate">
-                      {doctor.specialization}
-                      {doctor.department ? ` · ${doctor.department.name}` : ""}
-                    </CardDescription>
+          {clinic.doctors.map((doctor) => {
+            // The department can legitimately share its name with the doctor's
+            // specialization (e.g. an "Orthopedics" doctor in the "Orthopedics"
+            // department) — showing both then would just repeat the same word.
+            const showDepartment =
+              doctor.department && doctor.department.name.toLowerCase() !== doctor.specialization.toLowerCase();
+
+            return (
+              <Card key={doctor.id} className="flex flex-col transition-shadow hover:shadow-md">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12">
+                      {doctor.avatarUrl && <AvatarImage src={doctor.avatarUrl} alt="" />}
+                      <AvatarFallback className="text-sm font-semibold" style={{ backgroundColor: `${accent}26`, color: accent }}>
+                        {doctor.firstName[0]}
+                        {doctor.lastName[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <CardTitle className="truncate text-base">
+                        Dr. {doctor.firstName} {doctor.lastName}
+                      </CardTitle>
+                      <CardDescription className="truncate">
+                        {doctor.specialization}
+                        {showDepartment ? ` · ${doctor.department!.name}` : ""}
+                      </CardDescription>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="flex items-center justify-between gap-3">
-                <span className="text-sm text-muted-foreground">
-                  {doctor.consultationFee ? `${doctor.consultationFee} MAD / visit` : "Fee on request"}
-                </span>
-                <Button size="sm" asChild>
-                  <Link href={`/clinics/${clinic.slug}/book/${doctor.id}`}>Book</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                </CardHeader>
+                <CardContent className="flex flex-1 flex-col gap-3">
+                  {doctor.bio && <p className="line-clamp-3 flex-1 text-sm text-muted-foreground">{doctor.bio}</p>}
+                  <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3">
+                    <span className="text-sm font-medium text-foreground">
+                      {doctor.consultationFee ? `${doctor.consultationFee} MAD / visit` : "Fee on request"}
+                    </span>
+                    <Button size="sm" asChild>
+                      <Link href={`/clinics/${clinic.slug}/book/${doctor.id}`}>
+                        Book <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
           {clinic.doctors.length === 0 && (
             <p className="text-sm text-muted-foreground">This clinic hasn&apos;t listed any doctors yet.</p>
           )}

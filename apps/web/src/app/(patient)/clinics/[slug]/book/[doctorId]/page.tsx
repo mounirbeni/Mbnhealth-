@@ -10,12 +10,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { patientApi, ApiError } from "@/lib/patient-api-client";
 import { usePatientAuth } from "@/lib/patient-auth-context";
 
 interface Slot {
   start: string;
   end: string;
+}
+
+interface ClinicProfile {
+  name: string;
+  primaryColor: string | null;
+  doctors: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl: string | null;
+    specialization: string;
+    consultationFee: string | null;
+  }[];
 }
 
 function todayIso() {
@@ -61,6 +75,14 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
       ),
   });
 
+  // Reuses the same query key as the clinic profile page, so no extra
+  // request is made when arriving here via "Book" from that page.
+  const { data: clinic } = useQuery({
+    queryKey: ["clinic-profile", params.slug],
+    queryFn: () => patientApi.get<ClinicProfile>(`/public/clinics/${params.slug}`, { skipAuth: true }),
+  });
+  const doctor = clinic?.doctors.find((d) => d.id === params.doctorId);
+
   const returnUrl = selectedSlot
     ? `${pathname}?${new URLSearchParams({ date, start: selectedSlot.start, end: selectedSlot.end })}`
     : pathname;
@@ -97,6 +119,32 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
         </Link>
         <h1 className="mt-2 text-2xl font-bold tracking-tight">Book an appointment</h1>
       </div>
+
+      {doctor && (
+        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+          <Avatar className="h-11 w-11">
+            {doctor.avatarUrl && <AvatarImage src={doctor.avatarUrl} alt="" />}
+            <AvatarFallback
+              className="text-sm font-semibold"
+              style={{ backgroundColor: `${clinic?.primaryColor ?? "#0EA5E9"}26`, color: clinic?.primaryColor ?? "#0EA5E9" }}
+            >
+              {doctor.firstName[0]}
+              {doctor.lastName[0]}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-semibold">
+              Dr. {doctor.firstName} {doctor.lastName}
+            </p>
+            <p className="truncate text-sm text-muted-foreground">
+              {doctor.specialization} · {clinic!.name}
+            </p>
+          </div>
+          {doctor.consultationFee && (
+            <span className="shrink-0 text-sm font-medium text-muted-foreground">{doctor.consultationFee} MAD</span>
+          )}
+        </div>
+      )}
 
       <Card>
         <CardHeader>

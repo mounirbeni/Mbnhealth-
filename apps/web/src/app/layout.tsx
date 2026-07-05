@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/lib/query-provider";
 import { AuthProvider } from "@/lib/auth-context";
 import { LocaleProvider } from "@/lib/i18n/locale-context";
+import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,15 @@ const notoSansArabic = Noto_Sans_Arabic({ subsets: ["arabic"], variable: "--font
 export const metadata: Metadata = {
   title: "MBN Health — Clinic Management Platform",
   description: "Enterprise SaaS platform for clinics and healthcare providers.",
+  appleWebApp: {
+    capable: true,
+    title: "MBN Health",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0ea5e9",
 };
 
 // Deliberately NOT reading the locale cookie here via next/headers: doing so
@@ -35,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <AuthProvider>
                 {children}
                 <Toaster richColors position="top-right" />
+                <ServiceWorkerRegister />
               </AuthProvider>
             </QueryProvider>
           </LocaleProvider>

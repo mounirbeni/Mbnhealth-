@@ -23,8 +23,19 @@ function isSharedPath(pathname: string): boolean {
   return SHARED_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
+// PWA assets (manifest, generated icons, service worker) must resolve the
+// same way regardless of which host requested them — a browser installing
+// the patient portal as an app needs its manifest/icons served, not redirected
+// away by the same host-based wall that separates the two products' pages.
+const PWA_PATHS = ["/manifest.webmanifest", "/icon", "/apple-icon", "/icon-192.png", "/icon-512.png", "/sw.js"];
+
 function isAssetOrApiPath(pathname: string): boolean {
-  return pathname.startsWith("/_next") || pathname.startsWith("/api") || pathname === "/favicon.ico";
+  return (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname === "/favicon.ico" ||
+    PWA_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
+  );
 }
 
 export function middleware(request: NextRequest) {

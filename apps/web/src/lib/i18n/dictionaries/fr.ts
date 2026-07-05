@@ -78,6 +78,7 @@ const fr: Messages = {
       badge: "Patients",
       findClinic: "Trouver une clinique",
       myAppointments: "Mes rendez-vous",
+      createAccount: "Créer un compte",
     },
     footer: {
       tagline: "Portail patient MBN Health",

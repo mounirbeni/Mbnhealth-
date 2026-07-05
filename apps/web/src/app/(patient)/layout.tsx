@@ -47,9 +47,14 @@ function PatientNav() {
             </>
           ) : (
             !isLoading && (
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/patient/login">{t("common.signIn")}</Link>
-              </Button>
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/patient/login">{t("common.signIn")}</Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/patient/register">{t("patientPortal.nav.createAccount")}</Link>
+                </Button>
+              </>
             )
           )}
           <LanguageSwitcher size="icon" />

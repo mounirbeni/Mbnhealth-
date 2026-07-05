@@ -78,6 +78,7 @@ const en = {
       badge: "Patients",
       findClinic: "Find a clinic",
       myAppointments: "My appointments",
+      createAccount: "Create account",
     },
     footer: {
       tagline: "MBN Health Patient Portal",

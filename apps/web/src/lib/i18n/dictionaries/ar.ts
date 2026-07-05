@@ -78,6 +78,7 @@ const ar: Messages = {
       badge: "المرضى",
       findClinic: "ابحث عن عيادة",
       myAppointments: "مواعيدي",
+      createAccount: "إنشاء حساب",
     },
     footer: {
       tagline: "بوابة مرضى MBN Health",

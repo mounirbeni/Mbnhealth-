@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth-context";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { STATUS_BADGE_VARIANT } from "@/lib/status-styles";
 import { DollarSign, FileWarning, Receipt } from "lucide-react";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export default function BillingPage() {
   const [page, setPage] = useState(1);
@@ -20,27 +21,38 @@ export default function BillingPage() {
   const { data: outstanding } = useOutstandingBalance();
   const { data: claims } = useInsuranceClaims();
   const { hasPermission } = useAuth();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Billing</h1>
-          <p className="text-sm text-muted-foreground">Invoices, payments and insurance claims</p>
+          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.billing.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dashboard.billing.subtitle")}</p>
         </div>
         {hasPermission("BILLING_WRITE") && <InvoiceFormDialog />}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Outstanding Balance" value={formatCurrency(outstanding?.outstanding ?? 0)} icon={DollarSign} accent="warning" />
-        <StatCard label="Total Invoices" value={invoices?.total ?? 0} icon={Receipt} accent="primary" />
-        <StatCard label="Open Insurance Claims" value={claims?.filter((c) => !["APPROVED", "REJECTED", "PAID"].includes(c.status)).length ?? 0} icon={FileWarning} accent="warning" />
+        <StatCard
+          label={t("dashboard.billing.outstandingBalance")}
+          value={formatCurrency(outstanding?.outstanding ?? 0)}
+          icon={DollarSign}
+          accent="warning"
+        />
+        <StatCard label={t("dashboard.billing.totalInvoices")} value={invoices?.total ?? 0} icon={Receipt} accent="primary" />
+        <StatCard
+          label={t("dashboard.billing.openClaims")}
+          value={claims?.filter((c) => !["APPROVED", "REJECTED", "PAID"].includes(c.status)).length ?? 0}
+          icon={FileWarning}
+          accent="warning"
+        />
       </div>
 
       <Tabs defaultValue="invoices">
         <TabsList>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="claims">Insurance Claims</TabsTrigger>
+          <TabsTrigger value="invoices">{t("dashboard.billing.invoicesTab")}</TabsTrigger>
+          <TabsTrigger value="claims">{t("dashboard.billing.claimsTab")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="invoices">
@@ -48,12 +60,12 @@ export default function BillingPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Invoice #</TableHead>
-                  <TableHead>Patient</TableHead>
-                  <TableHead>Issued</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Paid</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{t("dashboard.billing.colInvoiceNumber")}</TableHead>
+                  <TableHead>{t("dashboard.billing.colPatient")}</TableHead>
+                  <TableHead>{t("dashboard.billing.colIssued")}</TableHead>
+                  <TableHead>{t("dashboard.billing.colTotal")}</TableHead>
+                  <TableHead>{t("dashboard.billing.colPaid")}</TableHead>
+                  <TableHead>{t("dashboard.billing.colStatus")}</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
@@ -61,7 +73,7 @@ export default function BillingPage() {
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
-                      Loading invoices...
+                      {t("dashboard.billing.loadingInvoices")}
                     </TableCell>
                   </TableRow>
                 ) : invoices && invoices.items.length > 0 ? (
@@ -75,7 +87,9 @@ export default function BillingPage() {
                       <TableCell>{formatCurrency(Number(invoice.totalAmount))}</TableCell>
                       <TableCell>{formatCurrency(Number(invoice.paidAmount))}</TableCell>
                       <TableCell>
-                        <Badge variant={STATUS_BADGE_VARIANT[invoice.status] ?? "secondary"}>{invoice.status}</Badge>
+                        <Badge variant={STATUS_BADGE_VARIANT[invoice.status] ?? "secondary"}>
+                          {t(`workflowStatus.${invoice.status}`)}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         {invoice.status !== "PAID" && invoice.status !== "VOID" && hasPermission("BILLING_WRITE") && (
@@ -87,7 +101,7 @@ export default function BillingPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
-                      No invoices yet.
+                      {t("dashboard.billing.noInvoices")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -107,14 +121,17 @@ export default function BillingPage() {
                         {claim.patient.firstName} {claim.patient.lastName} · {claim.provider}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Claimed {formatCurrency(Number(claim.claimAmount))} · {formatDate(claim.submittedAt)}
+                        {t("dashboard.billing.claimedAmount", { amount: formatCurrency(Number(claim.claimAmount)) })} ·{" "}
+                        {formatDate(claim.submittedAt)}
                       </p>
                     </div>
-                    <Badge variant={STATUS_BADGE_VARIANT[claim.status] ?? "secondary"}>{claim.status}</Badge>
+                    <Badge variant={STATUS_BADGE_VARIANT[claim.status] ?? "secondary"}>
+                      {t(`workflowStatus.${claim.status}`)}
+                    </Badge>
                   </div>
                 ))
               ) : (
-                <p className="p-6 text-center text-sm text-muted-foreground">No insurance claims submitted.</p>
+                <p className="p-6 text-center text-sm text-muted-foreground">{t("dashboard.billing.noClaims")}</p>
               )}
             </CardContent>
           </Card>

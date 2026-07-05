@@ -8,25 +8,29 @@ import { AppointmentFormDialog } from "@/components/appointments/appointment-for
 import { useWaitlist } from "@/hooks/use-appointments";
 import { useAuth } from "@/lib/auth-context";
 import { formatDate, initials } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export default function AppointmentsPage() {
   const { hasPermission } = useAuth();
   const { data: waitlist } = useWaitlist();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Appointments</h1>
-          <p className="text-sm text-muted-foreground">Drag an appointment to reschedule it.</p>
+          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.appointments.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dashboard.appointments.subtitle")}</p>
         </div>
         {hasPermission("APPOINTMENTS_WRITE") && <AppointmentFormDialog />}
       </div>
 
       <Tabs defaultValue="calendar">
         <TabsList>
-          <TabsTrigger value="calendar">Calendar</TabsTrigger>
-          <TabsTrigger value="waitlist">Waitlist ({waitlist?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="calendar">{t("dashboard.appointments.calendarTab")}</TabsTrigger>
+          <TabsTrigger value="waitlist">
+            {t("dashboard.appointments.waitlistTab", { count: waitlist?.length ?? 0 })}
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="calendar">
           <CalendarView />
@@ -45,14 +49,20 @@ export default function AppointmentsPage() {
                         {w.patient.firstName} {w.patient.lastName}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {w.doctor ? `Dr. ${w.doctor.user.firstName} ${w.doctor.user.lastName}` : "Any doctor"} ·{" "}
-                        {w.preferredDate ? formatDate(w.preferredDate) : "No preferred date"}
+                        {w.doctor
+                          ? t("patientPortal.clinicProfile.doctorTitle", {
+                              name: `${w.doctor.user.firstName} ${w.doctor.user.lastName}`,
+                            })
+                          : t("dashboard.appointments.anyDoctor")}{" "}
+                        · {w.preferredDate ? formatDate(w.preferredDate) : t("dashboard.appointments.noPreferredDate")}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="p-6 text-center text-sm text-muted-foreground">No patients on the waitlist.</p>
+                <p className="p-6 text-center text-sm text-muted-foreground">
+                  {t("dashboard.appointments.emptyWaitlist")}
+                </p>
               )}
             </CardContent>
           </Card>

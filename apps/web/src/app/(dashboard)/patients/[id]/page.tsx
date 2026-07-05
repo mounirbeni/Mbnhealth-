@@ -16,8 +16,10 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { usePatient, usePatientTimeline, useAddAllergy, useAddMedication, useAddVital } from "@/hooks/use-patients";
 import { formatDate, formatDateTime, initials } from "@/lib/utils";
 import { ApiError } from "@/lib/api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 function AddAllergyDialog({ patientId }: { patientId: string }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm<{ substance: string; reaction?: string }>();
   const addAllergy = useAddAllergy(patientId);
@@ -26,36 +28,36 @@ function AddAllergyDialog({ patientId }: { patientId: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
-          <Plus /> Add allergy
+          <Plus /> {t("dashboard.patientDetail.addAllergy")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add allergy</DialogTitle>
+          <DialogTitle>{t("dashboard.patientDetail.addAllergyTitle")}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(async (v) => {
             try {
               await addAllergy.mutateAsync(v);
-              toast.success("Allergy added");
+              toast.success(t("dashboard.patientDetail.allergyAddedToast"));
               reset();
               setOpen(false);
             } catch (e) {
-              toast.error(e instanceof ApiError ? e.message : "Failed");
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.patientDetail.addFailedToast"));
             }
           })}
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <Label>Substance</Label>
-            <Input {...register("substance", { required: true })} placeholder="Penicillin" />
+            <Label>{t("dashboard.patientDetail.substanceLabel")}</Label>
+            <Input {...register("substance", { required: true })} placeholder={t("dashboard.patientDetail.substancePlaceholder")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Reaction</Label>
-            <Input {...register("reaction")} placeholder="Rash, hives..." />
+            <Label>{t("dashboard.patientDetail.reactionLabel")}</Label>
+            <Input {...register("reaction")} placeholder={t("dashboard.patientDetail.reactionPlaceholder")} />
           </div>
           <DialogFooter>
-            <Button type="submit">Save</Button>
+            <Button type="submit">{t("dashboard.patientDetail.save")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -64,6 +66,7 @@ function AddAllergyDialog({ patientId }: { patientId: string }) {
 }
 
 function AddMedicationDialog({ patientId }: { patientId: string }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm<{ name: string; dosage?: string; frequency?: string }>();
   const addMedication = useAddMedication(patientId);
@@ -72,40 +75,40 @@ function AddMedicationDialog({ patientId }: { patientId: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
-          <Plus /> Add medication
+          <Plus /> {t("dashboard.patientDetail.addMedication")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add medication</DialogTitle>
+          <DialogTitle>{t("dashboard.patientDetail.addMedicationTitle")}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(async (v) => {
             try {
               await addMedication.mutateAsync(v);
-              toast.success("Medication added");
+              toast.success(t("dashboard.patientDetail.medicationAddedToast"));
               reset();
               setOpen(false);
             } catch (e) {
-              toast.error(e instanceof ApiError ? e.message : "Failed");
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.patientDetail.addFailedToast"));
             }
           })}
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <Label>Name</Label>
-            <Input {...register("name", { required: true })} placeholder="Metformin" />
+            <Label>{t("dashboard.patientDetail.nameLabel")}</Label>
+            <Input {...register("name", { required: true })} placeholder={t("dashboard.patientDetail.namePlaceholder")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Dosage</Label>
-            <Input {...register("dosage")} placeholder="500mg" />
+            <Label>{t("dashboard.patientDetail.dosageLabel")}</Label>
+            <Input {...register("dosage")} placeholder={t("dashboard.patientDetail.dosagePlaceholder")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Frequency</Label>
-            <Input {...register("frequency")} placeholder="2x daily" />
+            <Label>{t("dashboard.patientDetail.frequencyLabel")}</Label>
+            <Input {...register("frequency")} placeholder={t("dashboard.patientDetail.frequencyPlaceholder")} />
           </div>
           <DialogFooter>
-            <Button type="submit">Save</Button>
+            <Button type="submit">{t("dashboard.patientDetail.save")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -114,6 +117,7 @@ function AddMedicationDialog({ patientId }: { patientId: string }) {
 }
 
 function AddVitalDialog({ patientId }: { patientId: string }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm<Record<string, string>>();
   const addVital = useAddVital(patientId);
@@ -122,12 +126,12 @@ function AddVitalDialog({ patientId }: { patientId: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
-          <Plus /> Record vitals
+          <Plus /> {t("dashboard.patientDetail.recordVitals")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Record vitals</DialogTitle>
+          <DialogTitle>{t("dashboard.patientDetail.recordVitalsTitle")}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(async (v) => {
@@ -138,41 +142,41 @@ function AddVitalDialog({ patientId }: { patientId: string }) {
                   .map(([k, val]) => [k, Number(val)]),
               );
               await addVital.mutateAsync(payload);
-              toast.success("Vitals recorded");
+              toast.success(t("dashboard.patientDetail.vitalsRecordedToast"));
               reset();
               setOpen(false);
             } catch (e) {
-              toast.error(e instanceof ApiError ? e.message : "Failed");
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.patientDetail.addFailedToast"));
             }
           })}
           className="grid grid-cols-2 gap-3"
         >
           <div className="space-y-1.5">
-            <Label>Temperature (°C)</Label>
+            <Label>{t("dashboard.patientDetail.temperatureLabel")}</Label>
             <Input type="number" step="0.1" {...register("temperatureC")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Heart rate (bpm)</Label>
+            <Label>{t("dashboard.patientDetail.heartRateLabel")}</Label>
             <Input type="number" {...register("heartRate")} />
           </div>
           <div className="space-y-1.5">
-            <Label>BP Systolic</Label>
+            <Label>{t("dashboard.patientDetail.bpSystolicLabel")}</Label>
             <Input type="number" {...register("bloodPressureSystolic")} />
           </div>
           <div className="space-y-1.5">
-            <Label>BP Diastolic</Label>
+            <Label>{t("dashboard.patientDetail.bpDiastolicLabel")}</Label>
             <Input type="number" {...register("bloodPressureDiastolic")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Weight (kg)</Label>
+            <Label>{t("dashboard.patientDetail.weightLabel")}</Label>
             <Input type="number" step="0.1" {...register("weightKg")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Height (cm)</Label>
+            <Label>{t("dashboard.patientDetail.heightLabel")}</Label>
             <Input type="number" step="0.1" {...register("heightCm")} />
           </div>
           <DialogFooter className="col-span-2">
-            <Button type="submit">Save</Button>
+            <Button type="submit">{t("dashboard.patientDetail.save")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -184,9 +188,10 @@ export default function PatientDetailPage() {
   const params = useParams<{ id: string }>();
   const { data: patient, isLoading } = usePatient(params.id);
   const { data: timeline } = usePatientTimeline(params.id);
+  const { t } = useLocale();
 
   if (isLoading || !patient) {
-    return <div className="text-sm text-muted-foreground">Loading patient record...</div>;
+    return <div className="text-sm text-muted-foreground">{t("dashboard.patientDetail.loadingRecord")}</div>;
   }
 
   return (
@@ -203,53 +208,56 @@ export default function PatientDetailPage() {
             {patient.mrn} · {formatDate(patient.dob)} · {patient.gender}
           </p>
         </div>
-        <Badge variant={patient.status === "ACTIVE" ? "success" : "secondary"}>{patient.status}</Badge>
+        <Badge variant={patient.status === "ACTIVE" ? "success" : "secondary"}>
+          {t(`patientStatus.${patient.status}`)}
+        </Badge>
       </div>
 
       <Tabs defaultValue="overview">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="allergies">Allergies</TabsTrigger>
-          <TabsTrigger value="medications">Medications</TabsTrigger>
-          <TabsTrigger value="vitals">Vitals</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="overview">{t("dashboard.patientDetail.overviewTab")}</TabsTrigger>
+          <TabsTrigger value="allergies">{t("dashboard.patientDetail.allergiesTab")}</TabsTrigger>
+          <TabsTrigger value="medications">{t("dashboard.patientDetail.medicationsTab")}</TabsTrigger>
+          <TabsTrigger value="vitals">{t("dashboard.patientDetail.vitalsTab")}</TabsTrigger>
+          <TabsTrigger value="timeline">{t("dashboard.patientDetail.timelineTab")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Contact information</CardTitle>
+                <CardTitle>{t("dashboard.patientDetail.contactInfo")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <p>
-                  <span className="text-muted-foreground">Phone:</span> {patient.phone ?? "—"}
+                  <span className="text-muted-foreground">{t("dashboard.patientDetail.phoneLabel")}</span> {patient.phone ?? "—"}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Email:</span> {patient.email ?? "—"}
+                  <span className="text-muted-foreground">{t("dashboard.patientDetail.emailLabel")}</span> {patient.email ?? "—"}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Address:</span> {patient.address ?? "—"}
+                  <span className="text-muted-foreground">{t("dashboard.patientDetail.addressLabel")}</span> {patient.address ?? "—"}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Emergency contact:</span>{" "}
+                  <span className="text-muted-foreground">{t("dashboard.patientDetail.emergencyContactLabel")}</span>{" "}
                   {patient.emergencyContactName ? `${patient.emergencyContactName} (${patient.emergencyContactPhone})` : "—"}
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Insurance</CardTitle>
+                <CardTitle>{t("dashboard.patientDetail.insurance")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <p>
-                  <span className="text-muted-foreground">Provider:</span> {patient.insuranceProvider ?? "—"}
+                  <span className="text-muted-foreground">{t("dashboard.patientDetail.providerLabel")}</span> {patient.insuranceProvider ?? "—"}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Policy number:</span> {patient.insurancePolicyNumber ?? "—"}
+                  <span className="text-muted-foreground">{t("dashboard.patientDetail.policyNumberLabel")}</span>{" "}
+                  {patient.insurancePolicyNumber ?? "—"}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Blood type:</span> {patient.bloodType ?? "—"}
+                  <span className="text-muted-foreground">{t("dashboard.patientDetail.bloodTypeLabel")}</span> {patient.bloodType ?? "—"}
                 </p>
               </CardContent>
             </Card>
@@ -259,7 +267,7 @@ export default function PatientDetailPage() {
         <TabsContent value="allergies">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Allergies</CardTitle>
+              <CardTitle>{t("dashboard.patientDetail.allergies")}</CardTitle>
               <AddAllergyDialog patientId={patient.id} />
             </CardHeader>
             <CardContent className="space-y-2">
@@ -269,7 +277,7 @@ export default function PatientDetailPage() {
                     <AlertTriangle className="h-4 w-4 text-warning" />
                     <div>
                       <p className="text-sm font-medium">{a.substance}</p>
-                      <p className="text-xs text-muted-foreground">{a.reaction ?? "No reaction noted"}</p>
+                      <p className="text-xs text-muted-foreground">{a.reaction ?? t("dashboard.patientDetail.noReactionNoted")}</p>
                     </div>
                     <Badge className="ml-auto" variant={a.severity === "SEVERE" ? "destructive" : "warning"}>
                       {a.severity}
@@ -277,7 +285,7 @@ export default function PatientDetailPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No known allergies.</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.patientDetail.noKnownAllergies")}</p>
               )}
             </CardContent>
           </Card>
@@ -286,7 +294,7 @@ export default function PatientDetailPage() {
         <TabsContent value="medications">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Medications</CardTitle>
+              <CardTitle>{t("dashboard.patientDetail.medications")}</CardTitle>
               <AddMedicationDialog patientId={patient.id} />
             </CardHeader>
             <CardContent className="space-y-2">
@@ -301,12 +309,12 @@ export default function PatientDetailPage() {
                       </p>
                     </div>
                     <Badge className="ml-auto" variant={m.isActive ? "success" : "secondary"}>
-                      {m.isActive ? "Active" : "Stopped"}
+                      {m.isActive ? t("common.active") : t("dashboard.patientDetail.stopped")}
                     </Badge>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No medications on record.</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.patientDetail.noMedications")}</p>
               )}
             </CardContent>
           </Card>
@@ -315,7 +323,7 @@ export default function PatientDetailPage() {
         <TabsContent value="vitals">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Vital signs</CardTitle>
+              <CardTitle>{t("dashboard.patientDetail.vitalSigns")}</CardTitle>
               <AddVitalDialog patientId={patient.id} />
             </CardHeader>
             <CardContent className="space-y-2">
@@ -336,7 +344,7 @@ export default function PatientDetailPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No vitals recorded yet.</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.patientDetail.noVitals")}</p>
               )}
             </CardContent>
           </Card>
@@ -345,7 +353,7 @@ export default function PatientDetailPage() {
         <TabsContent value="timeline">
           <Card>
             <CardHeader>
-              <CardTitle>Patient timeline</CardTitle>
+              <CardTitle>{t("dashboard.patientDetail.patientTimeline")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4 border-l border-border pl-4">
@@ -356,15 +364,15 @@ export default function PatientDetailPage() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {formatDateTime(event.date)}
-                        <Badge variant="outline" className="ml-1 capitalize">
-                          {event.type.replace("_", " ")}
+                        <Badge variant="outline" className="ml-1">
+                          {t(`dashboard.patientDetail.eventType.${event.type}`)}
                         </Badge>
                       </div>
-                      <p className="mt-0.5 text-sm">{describeTimelineEvent(event)}</p>
+                      <p className="mt-0.5 text-sm">{describeTimelineEvent(event, t)}</p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">No history yet.</p>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.patientDetail.noHistory")}</p>
                 )}
               </div>
             </CardContent>
@@ -375,21 +383,35 @@ export default function PatientDetailPage() {
   );
 }
 
-function describeTimelineEvent(event: { type: string; data: any }): string {
+function describeTimelineEvent(event: { type: string; data: any }, t: ReturnType<typeof useLocale>["t"]): string {
   switch (event.type) {
     case "appointment":
-      return `Appointment (${event.data.status}) with Dr. ${event.data.doctor?.user?.firstName ?? ""} ${event.data.doctor?.user?.lastName ?? ""}`;
+      return t("dashboard.patientDetail.eventAppointment", {
+        status: t(`appointmentStatus.${event.data.status}`),
+        doctor: t("patientPortal.clinicProfile.doctorTitle", {
+          name: `${event.data.doctor?.user?.firstName ?? ""} ${event.data.doctor?.user?.lastName ?? ""}`,
+        }),
+      });
     case "medical_record":
-      return event.data.assessment || "Consultation note";
+      return event.data.assessment || t("dashboard.patientDetail.eventConsultationNote");
     case "prescription":
-      return `Prescription issued (${event.data.items?.length ?? 0} item(s))`;
+      return t("dashboard.patientDetail.eventPrescription", { count: event.data.items?.length ?? 0 });
     case "lab_order":
-      return `Lab order: ${event.data.testName} (${event.data.status})`;
+      return t("dashboard.patientDetail.eventLabOrder", {
+        test: event.data.testName,
+        status: t(`workflowStatus.${event.data.status}`),
+      });
     case "radiology_order":
-      return `Radiology: ${event.data.examType} (${event.data.status})`;
+      return t("dashboard.patientDetail.eventRadiologyOrder", {
+        exam: event.data.examType,
+        status: t(`workflowStatus.${event.data.status}`),
+      });
     case "invoice":
-      return `Invoice ${event.data.invoiceNumber} (${event.data.status})`;
+      return t("dashboard.patientDetail.eventInvoice", {
+        number: event.data.invoiceNumber,
+        status: t(`workflowStatus.${event.data.status}`),
+      });
     default:
-      return "Event";
+      return t("dashboard.patientDetail.eventGeneric");
   }
 }

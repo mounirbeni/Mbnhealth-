@@ -15,6 +15,7 @@ import { usePatients } from "@/hooks/use-patients";
 import { useAuth } from "@/lib/auth-context";
 import { formatDate, initials } from "@/lib/utils";
 import type { Patient } from "@/types";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export default function PatientsPage() {
   const [search, setSearch] = useState("");
@@ -22,11 +23,12 @@ export default function PatientsPage() {
   const { hasPermission } = useAuth();
   const router = useRouter();
   const { data, isLoading } = usePatients({ search, page, pageSize: 20 });
+  const { t } = useLocale();
 
   const columns = useMemo<ColumnDef<Patient>[]>(
     () => [
       {
-        header: "Patient",
+        header: t("dashboard.patients.colPatient"),
         accessorKey: "firstName",
         cell: ({ row }) => (
           <div className="flex items-center gap-3">
@@ -42,22 +44,28 @@ export default function PatientsPage() {
           </div>
         ),
       },
-      { header: "DOB", accessorKey: "dob", cell: ({ getValue }) => formatDate(getValue<string>()) },
-      { header: "Phone", accessorKey: "phone", cell: ({ getValue }) => getValue<string>() ?? "—" },
-      { header: "Blood type", accessorKey: "bloodType", cell: ({ getValue }) => getValue<string>() ?? "—" },
+      { header: t("dashboard.patients.colDob"), accessorKey: "dob", cell: ({ getValue }) => formatDate(getValue<string>()) },
+      { header: t("dashboard.patients.colPhone"), accessorKey: "phone", cell: ({ getValue }) => getValue<string>() ?? "—" },
       {
-        header: "Status",
+        header: t("dashboard.patients.colBloodType"),
+        accessorKey: "bloodType",
+        cell: ({ getValue }) => getValue<string>() ?? "—",
+      },
+      {
+        header: t("dashboard.patients.colStatus"),
         accessorKey: "status",
         cell: ({ getValue }) => (
-          <Badge variant={getValue<string>() === "ACTIVE" ? "success" : "secondary"}>{getValue<string>()}</Badge>
+          <Badge variant={getValue<string>() === "ACTIVE" ? "success" : "secondary"}>
+            {t(`patientStatus.${getValue<string>()}`)}
+          </Badge>
         ),
       },
       {
-        header: "Appointments",
+        header: t("dashboard.patients.colAppointments"),
         accessorFn: (row) => row._count?.appointments ?? 0,
       },
     ],
-    [],
+    [t],
   );
 
   const table = useReactTable({
@@ -72,17 +80,19 @@ export default function PatientsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Patients</h1>
-          <p className="text-sm text-muted-foreground">{data?.total ?? 0} patients registered</p>
+          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.patients.title")}</h1>
+          <p className="text-sm text-muted-foreground">
+            {t("dashboard.patients.countRegistered", { count: data?.total ?? 0 })}
+          </p>
         </div>
         {hasPermission("PATIENTS_WRITE") && <PatientFormDialog />}
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground rtl:left-auto rtl:right-3" />
         <Input
-          placeholder="Search by name, MRN or phone..."
-          className="pl-9"
+          placeholder={t("dashboard.patients.searchPlaceholder")}
+          className="pl-9 rtl:pl-3 rtl:pr-9"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -108,13 +118,13 @@ export default function PatientsPage() {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="py-8 text-center text-muted-foreground">
-                  Loading patients...
+                  {t("dashboard.patients.loading")}
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="py-8 text-center text-muted-foreground">
-                  No patients found.
+                  {t("dashboard.patients.empty")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -135,15 +145,13 @@ export default function PatientsPage() {
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Page {page} of {totalPages}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("dashboard.patients.page", { page, totalPages })}</p>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            Previous
+            {t("dashboard.patients.previous")}
           </Button>
           <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
-            Next
+            {t("dashboard.patients.next")}
           </Button>
         </div>
       </div>

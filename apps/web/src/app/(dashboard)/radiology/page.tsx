@@ -18,8 +18,10 @@ import { useAuth } from "@/lib/auth-context";
 import { STATUS_BADGE_VARIANT } from "@/lib/status-styles";
 import { ApiError } from "@/lib/api-client";
 import { formatDateTime } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 function NewRadiologyOrderDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const { data: doctors } = useDoctors();
   const createOrder = useCreateRadiologyOrder();
@@ -29,32 +31,32 @@ function NewRadiologyOrderDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> New Radiology Order
+          <Plus /> {t("dashboard.radiology.newOrder")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New radiology order</DialogTitle>
+          <DialogTitle>{t("dashboard.radiology.newOrderDialogTitle")}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(async (v) => {
             try {
               await createOrder.mutateAsync(v);
-              toast.success("Radiology order created");
+              toast.success(t("dashboard.radiology.createdToast"));
               reset();
               setOpen(false);
             } catch (e) {
-              toast.error(e instanceof ApiError ? e.message : "Failed");
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.radiology.createFailedToast"));
             }
           })}
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <Label>Patient</Label>
+            <Label>{t("dashboard.radiology.patientLabel")}</Label>
             <Controller control={control} name="patientId" rules={{ required: true }} render={({ field }) => <PatientCombobox value={field.value} onChange={(id) => field.onChange(id)} />} />
           </div>
           <div className="space-y-1.5">
-            <Label>Ordering doctor</Label>
+            <Label>{t("dashboard.radiology.orderingDoctorLabel")}</Label>
             <Controller
               control={control}
               name="doctorId"
@@ -62,12 +64,12 @@ function NewRadiologyOrderDialog() {
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select doctor" />
+                    <SelectValue placeholder={t("dashboard.radiology.selectDoctorPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {doctors?.map((d) => (
                       <SelectItem key={d.id} value={d.id}>
-                        Dr. {d.user.firstName} {d.user.lastName}
+                        {t("patientPortal.clinicProfile.doctorTitle", { name: `${d.user.firstName} ${d.user.lastName}` })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -76,11 +78,11 @@ function NewRadiologyOrderDialog() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Exam type</Label>
-            <Input {...register("examType", { required: true })} placeholder="Chest X-Ray" />
+            <Label>{t("dashboard.radiology.examTypeLabel")}</Label>
+            <Input {...register("examType", { required: true })} placeholder={t("dashboard.radiology.examTypePlaceholder")} />
           </div>
           <DialogFooter>
-            <Button type="submit">Create order</Button>
+            <Button type="submit">{t("dashboard.radiology.createOrder")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -92,13 +94,14 @@ export default function RadiologyPage() {
   const { data: orders, isLoading } = useRadiologyOrders();
   const updateOrder = useUpdateRadiologyOrder();
   const { hasPermission } = useAuth();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Radiology</h1>
-          <p className="text-sm text-muted-foreground">Track imaging orders and findings</p>
+          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.radiology.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dashboard.radiology.subtitle")}</p>
         </div>
         {hasPermission("RADIOLOGY_WRITE") && <NewRadiologyOrderDialog />}
       </div>
@@ -107,11 +110,11 @@ export default function RadiologyPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Exam</TableHead>
-              <TableHead>Patient</TableHead>
-              <TableHead>Doctor</TableHead>
-              <TableHead>Ordered</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t("dashboard.radiology.colExam")}</TableHead>
+              <TableHead>{t("dashboard.radiology.colPatient")}</TableHead>
+              <TableHead>{t("dashboard.radiology.colDoctor")}</TableHead>
+              <TableHead>{t("dashboard.radiology.colOrdered")}</TableHead>
+              <TableHead>{t("dashboard.radiology.colStatus")}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -119,7 +122,7 @@ export default function RadiologyPage() {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  Loading...
+                  {t("dashboard.radiology.loading")}
                 </TableCell>
               </TableRow>
             ) : orders && orders.length > 0 ? (
@@ -132,16 +135,16 @@ export default function RadiologyPage() {
                     {o.patient.firstName} {o.patient.lastName}
                   </TableCell>
                   <TableCell>
-                    Dr. {o.doctor.user.firstName} {o.doctor.user.lastName}
+                    {t("patientPortal.clinicProfile.doctorTitle", { name: `${o.doctor.user.firstName} ${o.doctor.user.lastName}` })}
                   </TableCell>
                   <TableCell>{formatDateTime(o.orderedAt)}</TableCell>
                   <TableCell>
-                    <Badge variant={STATUS_BADGE_VARIANT[o.status] ?? "secondary"}>{o.status}</Badge>
+                    <Badge variant={STATUS_BADGE_VARIANT[o.status] ?? "secondary"}>{t(`workflowStatus.${o.status}`)}</Badge>
                   </TableCell>
                   <TableCell className="space-x-2">
                     {hasPermission("RADIOLOGY_WRITE") && o.status === "ORDERED" && (
                       <Button size="sm" variant="outline" onClick={() => updateOrder.mutate({ id: o.id, action: "start" })}>
-                        Start
+                        {t("dashboard.radiology.start")}
                       </Button>
                     )}
                     {hasPermission("RADIOLOGY_WRITE") && o.status === "IN_PROGRESS" && (
@@ -150,7 +153,7 @@ export default function RadiologyPage() {
                         variant="outline"
                         onClick={() => updateOrder.mutate({ id: o.id, action: "complete", data: { findings: "No acute findings" } })}
                       >
-                        Complete
+                        {t("dashboard.radiology.complete")}
                       </Button>
                     )}
                   </TableCell>
@@ -159,7 +162,7 @@ export default function RadiologyPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  No radiology orders yet.
+                  {t("dashboard.radiology.empty")}
                 </TableCell>
               </TableRow>
             )}

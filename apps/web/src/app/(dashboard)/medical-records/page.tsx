@@ -17,6 +17,7 @@ import { useDoctors } from "@/hooks/use-doctors";
 import { useCreateMedicalRecord, useCreatePrescription, useFinalizeMedicalRecord, useMedicalRecords } from "@/hooks/use-medical-records";
 import { ApiError } from "@/lib/api-client";
 import { formatDateTime } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 interface SoapFormValues {
   doctorId: string;
@@ -33,6 +34,7 @@ interface PrescriptionFormValues {
 }
 
 function NewSoapNoteDialog({ patientId }: { patientId: string }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const { data: doctors } = useDoctors();
   const createRecord = useCreateMedicalRecord();
@@ -42,12 +44,12 @@ function NewSoapNoteDialog({ patientId }: { patientId: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> New SOAP note
+          <Plus /> {t("dashboard.medicalRecords.newSoapNote")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>New consultation note</DialogTitle>
+          <DialogTitle>{t("dashboard.medicalRecords.newNoteDialogTitle")}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(async (v) => {
@@ -61,17 +63,17 @@ function NewSoapNoteDialog({ patientId }: { patientId: string }) {
                 plan: v.plan,
                 diagnoses: v.diagnosisDescription ? [{ description: v.diagnosisDescription, isPrimary: true }] : undefined,
               });
-              toast.success("Consultation note saved as draft");
+              toast.success(t("dashboard.medicalRecords.noteSavedToast"));
               reset();
               setOpen(false);
             } catch (e) {
-              toast.error(e instanceof ApiError ? e.message : "Failed to save note");
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.medicalRecords.noteSaveFailedToast"));
             }
           })}
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <Label>Doctor</Label>
+            <Label>{t("dashboard.medicalRecords.doctorLabel")}</Label>
             <Controller
               control={control}
               name="doctorId"
@@ -79,12 +81,12 @@ function NewSoapNoteDialog({ patientId }: { patientId: string }) {
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select doctor" />
+                    <SelectValue placeholder={t("dashboard.medicalRecords.selectDoctorPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {doctors?.map((d) => (
                       <SelectItem key={d.id} value={d.id}>
-                        Dr. {d.user.firstName} {d.user.lastName}
+                        {t("patientPortal.clinicProfile.doctorTitle", { name: `${d.user.firstName} ${d.user.lastName}` })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -93,27 +95,27 @@ function NewSoapNoteDialog({ patientId }: { patientId: string }) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Subjective</Label>
-            <Textarea rows={2} {...register("subjective")} placeholder="Patient-reported symptoms..." />
+            <Label>{t("dashboard.medicalRecords.subjectiveLabel")}</Label>
+            <Textarea rows={2} {...register("subjective")} placeholder={t("dashboard.medicalRecords.subjectivePlaceholder")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Objective</Label>
-            <Textarea rows={2} {...register("objective")} placeholder="Exam findings, vitals..." />
+            <Label>{t("dashboard.medicalRecords.objectiveLabel")}</Label>
+            <Textarea rows={2} {...register("objective")} placeholder={t("dashboard.medicalRecords.objectivePlaceholder")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Assessment</Label>
-            <Textarea rows={2} {...register("assessment")} placeholder="Clinical assessment..." />
+            <Label>{t("dashboard.medicalRecords.assessmentLabel")}</Label>
+            <Textarea rows={2} {...register("assessment")} placeholder={t("dashboard.medicalRecords.assessmentPlaceholder")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Plan</Label>
-            <Textarea rows={2} {...register("plan")} placeholder="Treatment plan, follow-up..." />
+            <Label>{t("dashboard.medicalRecords.planLabel")}</Label>
+            <Textarea rows={2} {...register("plan")} placeholder={t("dashboard.medicalRecords.planPlaceholder")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Primary diagnosis</Label>
-            <Input {...register("diagnosisDescription")} placeholder="e.g. Tension headache" />
+            <Label>{t("dashboard.medicalRecords.primaryDiagnosisLabel")}</Label>
+            <Input {...register("diagnosisDescription")} placeholder={t("dashboard.medicalRecords.primaryDiagnosisPlaceholder")} />
           </div>
           <DialogFooter>
-            <Button type="submit">Save note</Button>
+            <Button type="submit">{t("dashboard.medicalRecords.saveNote")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -122,6 +124,7 @@ function NewSoapNoteDialog({ patientId }: { patientId: string }) {
 }
 
 function NewPrescriptionDialog({ patientId }: { patientId: string }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const { data: doctors } = useDoctors();
   const createPrescription = useCreatePrescription();
@@ -134,28 +137,28 @@ function NewPrescriptionDialog({ patientId }: { patientId: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
-          <Plus /> New prescription
+          <Plus /> {t("dashboard.medicalRecords.newPrescription")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Quick prescription</DialogTitle>
+          <DialogTitle>{t("dashboard.medicalRecords.quickPrescriptionTitle")}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(async (v) => {
             try {
               await createPrescription.mutateAsync({ patientId, doctorId: v.doctorId, items: v.items });
-              toast.success("Prescription issued");
+              toast.success(t("dashboard.medicalRecords.prescriptionIssuedToast"));
               reset();
               setOpen(false);
             } catch (e) {
-              toast.error(e instanceof ApiError ? e.message : "Failed to issue prescription");
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.medicalRecords.prescriptionFailedToast"));
             }
           })}
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <Label>Doctor</Label>
+            <Label>{t("dashboard.medicalRecords.doctorLabel")}</Label>
             <Controller
               control={control}
               name="doctorId"
@@ -163,12 +166,12 @@ function NewPrescriptionDialog({ patientId }: { patientId: string }) {
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select doctor" />
+                    <SelectValue placeholder={t("dashboard.medicalRecords.selectDoctorPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {doctors?.map((d) => (
                       <SelectItem key={d.id} value={d.id}>
-                        Dr. {d.user.firstName} {d.user.lastName}
+                        {t("patientPortal.clinicProfile.doctorTitle", { name: `${d.user.firstName} ${d.user.lastName}` })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -178,11 +181,15 @@ function NewPrescriptionDialog({ patientId }: { patientId: string }) {
           </div>
           {fields.map((field, index) => (
             <div key={field.id} className="grid grid-cols-5 items-center gap-2">
-              <Input className="col-span-2" placeholder="Drug name" {...register(`items.${index}.drugName`, { required: true })} />
-              <Input placeholder="Dosage" {...register(`items.${index}.dosage`)} />
-              <Input placeholder="Frequency" {...register(`items.${index}.frequency`)} />
+              <Input
+                className="col-span-2"
+                placeholder={t("dashboard.medicalRecords.drugNamePlaceholder")}
+                {...register(`items.${index}.drugName`, { required: true })}
+              />
+              <Input placeholder={t("dashboard.medicalRecords.dosagePlaceholder")} {...register(`items.${index}.dosage`)} />
+              <Input placeholder={t("dashboard.medicalRecords.frequencyPlaceholder")} {...register(`items.${index}.frequency`)} />
               <div className="flex gap-1">
-                <Input placeholder="Duration" {...register(`items.${index}.duration`)} />
+                <Input placeholder={t("dashboard.medicalRecords.durationPlaceholder")} {...register(`items.${index}.duration`)} />
                 <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length === 1}>
                   ×
                 </Button>
@@ -190,10 +197,10 @@ function NewPrescriptionDialog({ patientId }: { patientId: string }) {
             </div>
           ))}
           <Button type="button" variant="outline" size="sm" onClick={() => append({ drugName: "", dosage: "", frequency: "", duration: "" })}>
-            <Plus className="h-3 w-3" /> Add drug
+            <Plus className="h-3 w-3" /> {t("dashboard.medicalRecords.addDrug")}
           </Button>
           <DialogFooter>
-            <Button type="submit">Issue prescription</Button>
+            <Button type="submit">{t("dashboard.medicalRecords.issuePrescription")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -205,12 +212,13 @@ export default function MedicalRecordsPage() {
   const [patientId, setPatientId] = useState<string | undefined>();
   const { data: records } = useMedicalRecords(patientId);
   const finalizeRecord = useFinalizeMedicalRecord();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Medical Records</h1>
-        <p className="text-sm text-muted-foreground">Select a patient to view or add SOAP notes and prescriptions.</p>
+        <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.medicalRecords.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("dashboard.medicalRecords.subtitle")}</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -226,7 +234,7 @@ export default function MedicalRecordsPage() {
       </div>
 
       {!patientId ? (
-        <p className="text-sm text-muted-foreground">No patient selected.</p>
+        <p className="text-sm text-muted-foreground">{t("dashboard.medicalRecords.selectPatientPrompt")}</p>
       ) : records && records.length > 0 ? (
         <div className="space-y-3">
           {records.map((record) => (
@@ -235,33 +243,38 @@ export default function MedicalRecordsPage() {
                 <div className="flex items-center gap-2">
                   <Stethoscope className="h-4 w-4 text-primary" />
                   <CardTitle className="text-sm">
-                    Dr. {record.doctor.user.firstName} {record.doctor.user.lastName} · {formatDateTime(record.visitDate)}
+                    {t("patientPortal.clinicProfile.doctorTitle", {
+                      name: `${record.doctor.user.firstName} ${record.doctor.user.lastName}`,
+                    })}{" "}
+                    · {formatDateTime(record.visitDate)}
                   </CardTitle>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant={record.status === "FINALIZED" ? "success" : "secondary"}>{record.status}</Badge>
+                  <Badge variant={record.status === "FINALIZED" ? "success" : "secondary"}>
+                    {t(`workflowStatus.${record.status}`)}
+                  </Badge>
                   {record.status === "DRAFT" && (
                     <Button size="sm" variant="outline" onClick={() => finalizeRecord.mutate(record.id)}>
-                      Finalize
+                      {t("dashboard.medicalRecords.finalize")}
                     </Button>
                   )}
                 </div>
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <p className="font-medium text-muted-foreground">Subjective</p>
+                  <p className="font-medium text-muted-foreground">{t("dashboard.medicalRecords.subjective")}</p>
                   <p>{record.subjective || "—"}</p>
                 </div>
                 <div>
-                  <p className="font-medium text-muted-foreground">Objective</p>
+                  <p className="font-medium text-muted-foreground">{t("dashboard.medicalRecords.objective")}</p>
                   <p>{record.objective || "—"}</p>
                 </div>
                 <div>
-                  <p className="font-medium text-muted-foreground">Assessment</p>
+                  <p className="font-medium text-muted-foreground">{t("dashboard.medicalRecords.assessment")}</p>
                   <p>{record.assessment || "—"}</p>
                 </div>
                 <div>
-                  <p className="font-medium text-muted-foreground">Plan</p>
+                  <p className="font-medium text-muted-foreground">{t("dashboard.medicalRecords.plan")}</p>
                   <p>{record.plan || "—"}</p>
                 </div>
                 {record.diagnoses?.length > 0 && (
@@ -278,7 +291,7 @@ export default function MedicalRecordsPage() {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">No medical records for this patient yet.</p>
+        <p className="text-sm text-muted-foreground">{t("dashboard.medicalRecords.noRecords")}</p>
       )}
     </div>
   );

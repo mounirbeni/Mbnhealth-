@@ -17,9 +17,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api-client";
 import { initials, formatDateTime } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 interface Notification {
   id: string;
@@ -33,6 +35,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
+  const { t } = useLocale();
 
   const { data: unread } = useQuery({
     queryKey: ["notifications", "unread-count"],
@@ -56,12 +59,13 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
           className="hidden items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent sm:flex"
         >
           <Search className="h-4 w-4" />
-          <span>Search...</span>
+          <span>{t("dashboard.topbar.searchPlaceholder")}</span>
           <kbd className="ml-6 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px]">⌘K</kbd>
         </button>
       </div>
 
       <div className="flex items-center gap-1.5">
+        <LanguageSwitcher size="icon" />
         <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
           <Sun className="h-4 w-4 dark:hidden" />
           <Moon className="hidden h-4 w-4 dark:block" />
@@ -78,8 +82,10 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </PopoverTrigger>
           <PopoverContent align="end" className="w-80 p-0">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <span className="text-sm font-semibold">Notifications</span>
-              {!!unread?.count && <Badge variant="secondary">{unread.count} new</Badge>}
+              <span className="text-sm font-semibold">{t("dashboard.topbar.notifications")}</span>
+              {!!unread?.count && (
+                <Badge variant="secondary">{t("dashboard.topbar.newCount", { count: unread.count })}</Badge>
+              )}
             </div>
             <div className="max-h-80 overflow-y-auto">
               {notifications && notifications.length > 0 ? (
@@ -91,7 +97,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
                   </div>
                 ))
               ) : (
-                <p className="px-4 py-6 text-center text-sm text-muted-foreground">You&apos;re all caught up.</p>
+                <p className="px-4 py-6 text-center text-sm text-muted-foreground">{t("dashboard.topbar.allCaughtUp")}</p>
               )}
             </div>
           </PopoverContent>
@@ -113,9 +119,9 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
               <p className="text-xs font-normal text-muted-foreground">{user?.roleName}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/settings")}>{t("dashboard.topbar.settings")}</DropdownMenuItem>
             <DropdownMenuItem onClick={() => logout()} className="text-destructive">
-              Log out
+              {t("dashboard.topbar.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

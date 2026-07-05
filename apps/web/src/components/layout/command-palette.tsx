@@ -8,12 +8,14 @@ import { useTheme } from "next-themes";
 import { NAV_ITEMS } from "@/lib/nav-config";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function CommandPalette() {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
   const { hasPermission, logout } = useAuth();
   const { setTheme } = useTheme();
+  const { t } = useLocale();
 
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -44,12 +46,17 @@ export function CommandPalette() {
         >
           <Command.Input
             autoFocus
-            placeholder="Search pages, patients, actions..."
+            placeholder={t("dashboard.commandPalette.searchPlaceholder")}
             className="w-full border-b border-border bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground"
           />
           <Command.List className="max-h-80 overflow-y-auto p-2">
-            <Command.Empty className="py-6 text-center text-sm text-muted-foreground">No results found.</Command.Empty>
-            <Command.Group heading="Navigate" className="px-2 py-1 text-xs font-medium text-muted-foreground">
+            <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
+              {t("dashboard.commandPalette.noResults")}
+            </Command.Empty>
+            <Command.Group
+              heading={t("dashboard.commandPalette.navigate")}
+              className="px-2 py-1 text-xs font-medium text-muted-foreground"
+            >
               {NAV_ITEMS.filter((item) => hasPermission(item.permission)).map((item) => (
                 <Command.Item
                   key={item.href}
@@ -57,11 +64,14 @@ export function CommandPalette() {
                   className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm data-[selected=true]:bg-accent"
                 >
                   <item.icon className="h-4 w-4" />
-                  {item.label}
+                  {t(`dashboard.nav.${item.labelKey}`)}
                 </Command.Item>
               ))}
             </Command.Group>
-            <Command.Group heading="Actions" className="px-2 py-1 text-xs font-medium text-muted-foreground">
+            <Command.Group
+              heading={t("dashboard.commandPalette.actions")}
+              className="px-2 py-1 text-xs font-medium text-muted-foreground"
+            >
               <Command.Item
                 onSelect={() => {
                   setTheme("light");
@@ -69,7 +79,7 @@ export function CommandPalette() {
                 }}
                 className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm data-[selected=true]:bg-accent"
               >
-                <Sun className="h-4 w-4" /> Switch to light mode
+                <Sun className="h-4 w-4" /> {t("dashboard.commandPalette.lightMode")}
               </Command.Item>
               <Command.Item
                 onSelect={() => {
@@ -78,7 +88,7 @@ export function CommandPalette() {
                 }}
                 className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm data-[selected=true]:bg-accent"
               >
-                <Moon className="h-4 w-4" /> Switch to dark mode
+                <Moon className="h-4 w-4" /> {t("dashboard.commandPalette.darkMode")}
               </Command.Item>
               <Command.Item
                 onSelect={() => {
@@ -87,7 +97,7 @@ export function CommandPalette() {
                 }}
                 className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive data-[selected=true]:bg-accent"
               >
-                <LogOut className="h-4 w-4" /> Log out
+                <LogOut className="h-4 w-4" /> {t("dashboard.commandPalette.logout")}
               </Command.Item>
             </Command.Group>
           </Command.List>

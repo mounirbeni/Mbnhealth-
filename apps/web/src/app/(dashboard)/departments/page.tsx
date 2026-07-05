@@ -13,8 +13,10 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useCreateDepartment, useDeleteDepartment, useDepartments } from "@/hooks/use-departments";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 function NewDepartmentDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm<{ name: string; description?: string; color?: string }>();
   const createDepartment = useCreateDepartment();
@@ -23,40 +25,40 @@ function NewDepartmentDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> New Department
+          <Plus /> {t("dashboard.departments.newDepartment")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New department</DialogTitle>
+          <DialogTitle>{t("dashboard.departments.newDepartmentDialogTitle")}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(async (v) => {
             try {
               await createDepartment.mutateAsync(v);
-              toast.success("Department created");
+              toast.success(t("dashboard.departments.createdToast"));
               reset();
               setOpen(false);
             } catch (e) {
-              toast.error(e instanceof ApiError ? e.message : "Failed");
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.departments.createFailedToast"));
             }
           })}
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <Label>Name</Label>
-            <Input {...register("name", { required: true })} placeholder="Cardiology" />
+            <Label>{t("dashboard.departments.nameLabel")}</Label>
+            <Input {...register("name", { required: true })} placeholder={t("dashboard.departments.namePlaceholder")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Description</Label>
+            <Label>{t("dashboard.departments.descriptionLabel")}</Label>
             <Input {...register("description")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Color</Label>
+            <Label>{t("dashboard.departments.colorLabel")}</Label>
             <Input type="color" {...register("color")} defaultValue="#0EA5E9" className="h-9 w-16 p-1" />
           </div>
           <DialogFooter>
-            <Button type="submit">Create</Button>
+            <Button type="submit">{t("dashboard.departments.create")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -68,19 +70,20 @@ export default function DepartmentsPage() {
   const { data: departments, isLoading } = useDepartments();
   const deleteDepartment = useDeleteDepartment();
   const { hasPermission } = useAuth();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Departments</h1>
-          <p className="text-sm text-muted-foreground">Organize doctors and appointments by department</p>
+          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.departments.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dashboard.departments.subtitle")}</p>
         </div>
         {hasPermission("DEPARTMENTS_MANAGE") && <NewDepartmentDialog />}
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">{t("dashboard.departments.loading")}</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {departments?.map((dept) => (
@@ -94,10 +97,16 @@ export default function DepartmentsPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{dept.name}</p>
-                  <p className="truncate text-sm text-muted-foreground">{dept.description ?? "No description"}</p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {dept.description ?? t("dashboard.departments.noDescription")}
+                  </p>
                   <div className="mt-2 flex gap-2">
-                    <Badge variant="secondary">{dept._count?.doctors ?? 0} doctors</Badge>
-                    <Badge variant="secondary">{dept._count?.appointments ?? 0} appointments</Badge>
+                    <Badge variant="secondary">
+                      {t("dashboard.departments.doctorsCount", { count: dept._count?.doctors ?? 0 })}
+                    </Badge>
+                    <Badge variant="secondary">
+                      {t("dashboard.departments.appointmentsCount", { count: dept._count?.appointments ?? 0 })}
+                    </Badge>
                   </div>
                 </div>
                 {hasPermission("DEPARTMENTS_MANAGE") && (

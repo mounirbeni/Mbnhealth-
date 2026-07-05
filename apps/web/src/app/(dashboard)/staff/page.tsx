@@ -15,8 +15,10 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useCreateStaff, useDeactivateStaff, useRoles, useStaff } from "@/hooks/use-users";
 import { ApiError } from "@/lib/api-client";
 import { initials } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 function NewStaffDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const { data: roles } = useRoles();
   const createStaff = useCreateStaff();
@@ -32,46 +34,46 @@ function NewStaffDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> New Staff Member
+          <Plus /> {t("dashboard.staff.newStaffMember")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Invite staff member</DialogTitle>
+          <DialogTitle>{t("dashboard.staff.inviteStaffTitle")}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(async (v) => {
             try {
               await createStaff.mutateAsync(v);
-              toast.success("Staff member added");
+              toast.success(t("dashboard.staff.addedToast"));
               reset();
               setOpen(false);
             } catch (e) {
-              toast.error(e instanceof ApiError ? e.message : "Failed");
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.staff.addFailedToast"));
             }
           })}
           className="space-y-4"
         >
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>First name</Label>
+              <Label>{t("dashboard.staff.firstNameLabel")}</Label>
               <Input {...register("firstName", { required: true })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Last name</Label>
+              <Label>{t("dashboard.staff.lastNameLabel")}</Label>
               <Input {...register("lastName", { required: true })} />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label>Email</Label>
+            <Label>{t("dashboard.staff.emailLabel")}</Label>
             <Input type="email" {...register("email", { required: true })} />
           </div>
           <div className="space-y-1.5">
-            <Label>Temporary password</Label>
+            <Label>{t("dashboard.staff.tempPasswordLabel")}</Label>
             <Input type="password" {...register("password", { required: true, minLength: 8 })} />
           </div>
           <div className="space-y-1.5">
-            <Label>Role</Label>
+            <Label>{t("dashboard.staff.roleLabel")}</Label>
             <Controller
               control={control}
               name="roleId"
@@ -79,7 +81,7 @@ function NewStaffDialog() {
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
+                    <SelectValue placeholder={t("dashboard.staff.selectRolePlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {roles?.map((r) => (
@@ -93,7 +95,7 @@ function NewStaffDialog() {
             />
           </div>
           <DialogFooter>
-            <Button type="submit">Add staff member</Button>
+            <Button type="submit">{t("dashboard.staff.addStaffMember")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -105,27 +107,33 @@ export default function StaffPage() {
   const [search, setSearch] = useState("");
   const { data: staff, isLoading } = useStaff(search);
   const deactivate = useDeactivateStaff();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Staff</h1>
-          <p className="text-sm text-muted-foreground">Manage your clinic&apos;s team members and roles</p>
+          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.staff.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dashboard.staff.subtitle")}</p>
         </div>
         <NewStaffDialog />
       </div>
 
-      <Input placeholder="Search staff..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
+      <Input
+        placeholder={t("dashboard.staff.searchPlaceholder")}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="max-w-sm"
+      />
 
       <div className="rounded-xl border border-border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t("dashboard.staff.colName")}</TableHead>
+              <TableHead>{t("dashboard.staff.colRole")}</TableHead>
+              <TableHead>{t("dashboard.staff.colEmail")}</TableHead>
+              <TableHead>{t("dashboard.staff.colStatus")}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -133,7 +141,7 @@ export default function StaffPage() {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
-                  Loading...
+                  {t("dashboard.staff.loading")}
                 </TableCell>
               </TableRow>
             ) : staff && staff.length > 0 ? (
@@ -150,11 +158,18 @@ export default function StaffPage() {
                   </TableCell>
                   <TableCell>{s.email}</TableCell>
                   <TableCell>
-                    <Badge variant={s.isActive ? "success" : "secondary"}>{s.isActive ? "Active" : "Inactive"}</Badge>
+                    <Badge variant={s.isActive ? "success" : "secondary"}>
+                      {s.isActive ? t("common.active") : t("common.inactive")}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     {s.isActive && (
-                      <Button size="icon" variant="ghost" onClick={() => deactivate.mutate(s.id)} title="Deactivate">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => deactivate.mutate(s.id)}
+                        title={t("dashboard.staff.deactivateTitle")}
+                      >
                         <UserX className="h-4 w-4 text-destructive" />
                       </Button>
                     )}
@@ -164,7 +179,7 @@ export default function StaffPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
-                  No staff members found.
+                  {t("dashboard.staff.empty")}
                 </TableCell>
               </TableRow>
             )}

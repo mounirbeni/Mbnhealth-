@@ -6,15 +6,17 @@ import { Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/nav-config";
 import { useAuth } from "@/lib/auth-context";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { hasPermission } = useAuth();
+  const { t } = useLocale();
 
   const items = NAV_ITEMS.filter((item) => hasPermission(item.permission));
 
   return (
-    <div className="flex h-full w-64 flex-col border-r border-border bg-card">
+    <div className="flex h-full w-64 flex-col border-r border-border bg-card rtl:border-l rtl:border-r-0">
       <div className="flex h-14 items-center gap-2 border-b border-border px-5">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Activity className="h-4 w-4" />
@@ -39,7 +41,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  {item.label}
+                  {t(`dashboard.nav.${item.labelKey}`)}
                 </Link>
               </li>
             );

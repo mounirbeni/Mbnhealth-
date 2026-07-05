@@ -48,7 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Sidebar onNavigate={() => setMobileOpen(false)} />
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute right-[-2.5rem] top-3 rounded-md bg-background/90 p-1.5 text-foreground"
+              className="absolute right-[-2.5rem] top-3 rounded-md bg-background/90 p-1.5 text-foreground rtl:right-auto rtl:left-[-2.5rem]"
             >
               <X className="h-5 w-5" />
             </button>

@@ -17,6 +17,7 @@ import {
 } from "@/hooks/use-reports";
 import { DollarSign, Users, Stethoscope, Package } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export default function ReportsPage() {
   const revenue = useRevenueReport();
@@ -25,6 +26,7 @@ export default function ReportsPage() {
   const doctors = useDoctorsReport();
   const financial = useFinancialReport();
   const inventory = useInventoryReport();
+  const { t } = useLocale();
 
   const appointmentStatusData = appointments.data
     ? Object.entries(appointments.data.byStatus).map(([status, count]) => ({ status, count }))
@@ -33,39 +35,39 @@ export default function ReportsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Reports</h1>
-        <p className="text-sm text-muted-foreground">Revenue, operations and performance insights</p>
+        <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.reports.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("dashboard.reports.subtitle")}</p>
       </div>
 
       <Tabs defaultValue="revenue">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="revenue">Revenue</TabsTrigger>
-          <TabsTrigger value="appointments">Appointments</TabsTrigger>
-          <TabsTrigger value="patients">Patients</TabsTrigger>
-          <TabsTrigger value="doctors">Doctors</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
-          <TabsTrigger value="inventory">Inventory</TabsTrigger>
+          <TabsTrigger value="revenue">{t("dashboard.reports.revenueTab")}</TabsTrigger>
+          <TabsTrigger value="appointments">{t("dashboard.reports.appointmentsTab")}</TabsTrigger>
+          <TabsTrigger value="patients">{t("dashboard.reports.patientsTab")}</TabsTrigger>
+          <TabsTrigger value="doctors">{t("dashboard.reports.doctorsTab")}</TabsTrigger>
+          <TabsTrigger value="financial">{t("dashboard.reports.financialTab")}</TabsTrigger>
+          <TabsTrigger value="inventory">{t("dashboard.reports.inventoryTab")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="revenue" className="space-y-4">
           <div className="flex items-center justify-between">
-            <StatCard label="Total Revenue (last 30 days)" value={formatCurrency(revenue.data?.total ?? 0)} icon={DollarSign} />
+            <StatCard label={t("dashboard.reports.totalRevenue30")} value={formatCurrency(revenue.data?.total ?? 0)} icon={DollarSign} />
             <Button variant="outline" size="sm" onClick={() => downloadReportCsv("revenue")}>
-              <Download className="h-3.5 w-3.5" /> Export CSV
+              <Download className="h-3.5 w-3.5" /> {t("dashboard.reports.exportCsv")}
             </Button>
           </div>
         </TabsContent>
 
         <TabsContent value="appointments" className="space-y-4">
           <div className="flex items-center justify-between">
-            <StatCard label="Total Appointments (last 30 days)" value={appointments.data?.total ?? 0} icon={Users} />
+            <StatCard label={t("dashboard.reports.totalAppointments30")} value={appointments.data?.total ?? 0} icon={Users} />
             <Button variant="outline" size="sm" onClick={() => downloadReportCsv("appointments")}>
-              <Download className="h-3.5 w-3.5" /> Export CSV
+              <Download className="h-3.5 w-3.5" /> {t("dashboard.reports.exportCsv")}
             </Button>
           </div>
           <Card>
             <CardHeader>
-              <CardTitle>Appointments by status</CardTitle>
+              <CardTitle>{t("dashboard.reports.appointmentsByStatus")}</CardTitle>
             </CardHeader>
             <CardContent className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -83,26 +85,26 @@ export default function ReportsPage() {
 
         <TabsContent value="patients" className="space-y-4">
           <div className="flex items-center justify-between">
-            <StatCard label="Total Patients" value={patients.data?.total ?? 0} icon={Users} />
+            <StatCard label={t("dashboard.reports.totalPatients")} value={patients.data?.total ?? 0} icon={Users} />
             <Button variant="outline" size="sm" onClick={() => downloadReportCsv("patients")}>
-              <Download className="h-3.5 w-3.5" /> Export CSV
+              <Download className="h-3.5 w-3.5" /> {t("dashboard.reports.exportCsv")}
             </Button>
           </div>
         </TabsContent>
 
         <TabsContent value="doctors" className="space-y-4">
-          <StatCard label="Active Doctors" value={doctors.data?.length ?? 0} icon={Stethoscope} />
+          <StatCard label={t("dashboard.reports.activeDoctors")} value={doctors.data?.length ?? 0} icon={Stethoscope} />
           <Card>
             <CardContent className="divide-y divide-border p-0">
               {doctors.data?.map((d, i) => (
                 <div key={i} className="flex items-center justify-between p-3 text-sm">
                   <div>
                     <p className="font-medium">{d.name}</p>
-                    <p className="text-xs text-muted-foreground">{d.department ?? "General"}</p>
+                    <p className="text-xs text-muted-foreground">{d.department ?? t("dashboard.reports.generalDept")}</p>
                   </div>
                   <div className="text-right text-xs text-muted-foreground">
-                    <p>{d.appointments} appointments</p>
-                    <p>{d.consultations} consultations</p>
+                    <p>{t("dashboard.reports.appointmentsCount", { count: d.appointments })}</p>
+                    <p>{t("dashboard.reports.consultationsCount", { count: d.consultations })}</p>
                   </div>
                 </div>
               ))}
@@ -112,18 +114,37 @@ export default function ReportsPage() {
 
         <TabsContent value="financial" className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Revenue" value={formatCurrency(financial.data?.revenue ?? 0)} icon={DollarSign} />
-            <StatCard label="Outstanding" value={formatCurrency(financial.data?.outstanding ?? 0)} icon={DollarSign} accent="warning" />
-            <StatCard label="Insurance Claimed" value={formatCurrency(financial.data?.insuranceClaimed ?? 0)} icon={DollarSign} />
-            <StatCard label="Insurance Approved" value={formatCurrency(financial.data?.insuranceApproved ?? 0)} icon={DollarSign} accent="success" />
+            <StatCard label={t("dashboard.reports.revenue")} value={formatCurrency(financial.data?.revenue ?? 0)} icon={DollarSign} />
+            <StatCard
+              label={t("dashboard.reports.outstanding")}
+              value={formatCurrency(financial.data?.outstanding ?? 0)}
+              icon={DollarSign}
+              accent="warning"
+            />
+            <StatCard
+              label={t("dashboard.reports.insuranceClaimed")}
+              value={formatCurrency(financial.data?.insuranceClaimed ?? 0)}
+              icon={DollarSign}
+            />
+            <StatCard
+              label={t("dashboard.reports.insuranceApproved")}
+              value={formatCurrency(financial.data?.insuranceApproved ?? 0)}
+              icon={DollarSign}
+              accent="success"
+            />
           </div>
         </TabsContent>
 
         <TabsContent value="inventory" className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <StatCard label="Total Items" value={inventory.data?.totalItems ?? 0} icon={Package} />
-            <StatCard label="Low Stock" value={inventory.data?.lowStockCount ?? 0} icon={Package} accent="destructive" />
-            <StatCard label="Total Value" value={formatCurrency(inventory.data?.totalValue ?? 0)} icon={DollarSign} />
+            <StatCard label={t("dashboard.reports.totalItems")} value={inventory.data?.totalItems ?? 0} icon={Package} />
+            <StatCard
+              label={t("dashboard.reports.lowStock")}
+              value={inventory.data?.lowStockCount ?? 0}
+              icon={Package}
+              accent="destructive"
+            />
+            <StatCard label={t("dashboard.reports.totalValue")} value={formatCurrency(inventory.data?.totalValue ?? 0)} icon={DollarSign} />
           </div>
         </TabsContent>
       </Tabs>

@@ -18,8 +18,10 @@ import { useAuth } from "@/lib/auth-context";
 import { STATUS_BADGE_VARIANT } from "@/lib/status-styles";
 import { ApiError } from "@/lib/api-client";
 import { formatDateTime } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 function NewLabOrderDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const { data: doctors } = useDoctors();
   const createOrder = useCreateLabOrder();
@@ -29,32 +31,32 @@ function NewLabOrderDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> New Lab Order
+          <Plus /> {t("dashboard.lab.newOrder")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New lab order</DialogTitle>
+          <DialogTitle>{t("dashboard.lab.newOrderDialogTitle")}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(async (v) => {
             try {
               await createOrder.mutateAsync(v);
-              toast.success("Lab order created");
+              toast.success(t("dashboard.lab.createdToast"));
               reset();
               setOpen(false);
             } catch (e) {
-              toast.error(e instanceof ApiError ? e.message : "Failed");
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.lab.createFailedToast"));
             }
           })}
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <Label>Patient</Label>
+            <Label>{t("dashboard.lab.patientLabel")}</Label>
             <Controller control={control} name="patientId" rules={{ required: true }} render={({ field }) => <PatientCombobox value={field.value} onChange={(id) => field.onChange(id)} />} />
           </div>
           <div className="space-y-1.5">
-            <Label>Ordering doctor</Label>
+            <Label>{t("dashboard.lab.orderingDoctorLabel")}</Label>
             <Controller
               control={control}
               name="doctorId"
@@ -62,12 +64,12 @@ function NewLabOrderDialog() {
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select doctor" />
+                    <SelectValue placeholder={t("dashboard.lab.selectDoctorPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {doctors?.map((d) => (
                       <SelectItem key={d.id} value={d.id}>
-                        Dr. {d.user.firstName} {d.user.lastName}
+                        {t("patientPortal.clinicProfile.doctorTitle", { name: `${d.user.firstName} ${d.user.lastName}` })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -76,11 +78,11 @@ function NewLabOrderDialog() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Test name</Label>
-            <Input {...register("testName", { required: true })} placeholder="Complete Blood Count" />
+            <Label>{t("dashboard.lab.testNameLabel")}</Label>
+            <Input {...register("testName", { required: true })} placeholder={t("dashboard.lab.testNamePlaceholder")} />
           </div>
           <DialogFooter>
-            <Button type="submit">Create order</Button>
+            <Button type="submit">{t("dashboard.lab.createOrder")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -92,13 +94,14 @@ export default function LabPage() {
   const { data: orders, isLoading } = useLabOrders();
   const updateOrder = useUpdateLabOrder();
   const { hasPermission } = useAuth();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Laboratory</h1>
-          <p className="text-sm text-muted-foreground">Track lab test orders and results</p>
+          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.lab.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dashboard.lab.subtitle")}</p>
         </div>
         {hasPermission("LAB_WRITE") && <NewLabOrderDialog />}
       </div>
@@ -107,11 +110,11 @@ export default function LabPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Test</TableHead>
-              <TableHead>Patient</TableHead>
-              <TableHead>Doctor</TableHead>
-              <TableHead>Ordered</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t("dashboard.lab.colTest")}</TableHead>
+              <TableHead>{t("dashboard.lab.colPatient")}</TableHead>
+              <TableHead>{t("dashboard.lab.colDoctor")}</TableHead>
+              <TableHead>{t("dashboard.lab.colOrdered")}</TableHead>
+              <TableHead>{t("dashboard.lab.colStatus")}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -119,7 +122,7 @@ export default function LabPage() {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  Loading...
+                  {t("dashboard.lab.loading")}
                 </TableCell>
               </TableRow>
             ) : orders && orders.length > 0 ? (
@@ -132,16 +135,16 @@ export default function LabPage() {
                     {o.patient.firstName} {o.patient.lastName}
                   </TableCell>
                   <TableCell>
-                    Dr. {o.doctor.user.firstName} {o.doctor.user.lastName}
+                    {t("patientPortal.clinicProfile.doctorTitle", { name: `${o.doctor.user.firstName} ${o.doctor.user.lastName}` })}
                   </TableCell>
                   <TableCell>{formatDateTime(o.orderedAt)}</TableCell>
                   <TableCell>
-                    <Badge variant={STATUS_BADGE_VARIANT[o.status] ?? "secondary"}>{o.status}</Badge>
+                    <Badge variant={STATUS_BADGE_VARIANT[o.status] ?? "secondary"}>{t(`workflowStatus.${o.status}`)}</Badge>
                   </TableCell>
                   <TableCell className="space-x-2">
                     {hasPermission("LAB_WRITE") && o.status === "ORDERED" && (
                       <Button size="sm" variant="outline" onClick={() => updateOrder.mutate({ id: o.id, action: "start" })}>
-                        Start
+                        {t("dashboard.lab.start")}
                       </Button>
                     )}
                     {hasPermission("LAB_WRITE") && o.status === "IN_PROGRESS" && (
@@ -150,7 +153,7 @@ export default function LabPage() {
                         variant="outline"
                         onClick={() => updateOrder.mutate({ id: o.id, action: "complete", data: { resultNotes: "Results within normal range" } })}
                       >
-                        Complete
+                        {t("dashboard.lab.complete")}
                       </Button>
                     )}
                   </TableCell>
@@ -159,7 +162,7 @@ export default function LabPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  No lab orders yet.
+                  {t("dashboard.lab.empty")}
                 </TableCell>
               </TableRow>
             )}

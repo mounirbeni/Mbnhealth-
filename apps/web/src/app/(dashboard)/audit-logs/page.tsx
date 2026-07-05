@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { formatDateTime } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 const ACTION_VARIANT: Record<string, "default" | "secondary" | "destructive" | "success" | "warning" | "outline"> = {
   CREATE: "success",
@@ -21,6 +22,7 @@ const ACTION_VARIANT: Record<string, "default" | "secondary" | "destructive" | "
 };
 
 export default function AuditLogsPage() {
+  const { t } = useLocale();
   const [page, setPage] = useState(1);
   const { data, isLoading } = useQuery({
     queryKey: ["audit-logs", page],
@@ -32,26 +34,26 @@ export default function AuditLogsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Audit Logs</h1>
-        <p className="text-sm text-muted-foreground">A complete record of security-relevant actions in your clinic</p>
+        <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.auditLogs.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("dashboard.auditLogs.subtitle")}</p>
       </div>
 
       <div className="rounded-xl border border-border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Action</TableHead>
-              <TableHead>Entity</TableHead>
-              <TableHead>User</TableHead>
-              <TableHead>IP Address</TableHead>
-              <TableHead>Timestamp</TableHead>
+              <TableHead>{t("dashboard.auditLogs.colAction")}</TableHead>
+              <TableHead>{t("dashboard.auditLogs.colEntity")}</TableHead>
+              <TableHead>{t("dashboard.auditLogs.colUser")}</TableHead>
+              <TableHead>{t("dashboard.auditLogs.colIp")}</TableHead>
+              <TableHead>{t("dashboard.auditLogs.colTimestamp")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
-                  Loading...
+                  {t("dashboard.auditLogs.loading")}
                 </TableCell>
               </TableRow>
             ) : data && data.items.length > 0 ? (
@@ -66,7 +68,9 @@ export default function AuditLogsPage() {
                     {log.entityType}
                     {log.entityId && <span className="text-xs text-muted-foreground"> · {log.entityId.slice(0, 8)}</span>}
                   </TableCell>
-                  <TableCell>{log.user ? `${log.user.firstName} ${log.user.lastName}` : "System"}</TableCell>
+                  <TableCell>
+                    {log.user ? `${log.user.firstName} ${log.user.lastName}` : t("dashboard.auditLogs.systemUser")}
+                  </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{log.ipAddress ?? "—"}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{formatDateTime(log.createdAt)}</TableCell>
                 </TableRow>
@@ -74,7 +78,7 @@ export default function AuditLogsPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
-                  No audit events yet.
+                  {t("dashboard.auditLogs.empty")}
                 </TableCell>
               </TableRow>
             )}
@@ -83,15 +87,13 @@ export default function AuditLogsPage() {
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Page {page} of {totalPages}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("dashboard.auditLogs.page", { page, totalPages })}</p>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            Previous
+            {t("dashboard.auditLogs.previous")}
           </Button>
           <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
-            Next
+            {t("dashboard.auditLogs.next")}
           </Button>
         </div>
       </div>

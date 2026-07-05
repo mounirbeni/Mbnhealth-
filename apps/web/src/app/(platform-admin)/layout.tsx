@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
+import { useLocale } from "@/lib/i18n/locale-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export default function PlatformAdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout } = useAuth();
+  const { t } = useLocale();
   const router = useRouter();
 
   useEffect(() => {
@@ -39,12 +42,15 @@ export default function PlatformAdminLayout({ children }: { children: React.Reac
             </div>
             <span className="font-semibold tracking-tight">MBN Health</span>
             <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
-              Platform Admin
+              {t("admin.badge")}
             </span>
           </div>
-          <Button variant="outline" size="sm" onClick={logout}>
-            Sign out
-          </Button>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher size="icon" />
+            <Button variant="outline" size="sm" onClick={logout}>
+              {t("admin.signOut")}
+            </Button>
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</main>

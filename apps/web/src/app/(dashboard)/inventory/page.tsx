@@ -14,8 +14,10 @@ import { useAdjustStock, useCreateInventoryItem, useInventory } from "@/hooks/us
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api-client";
 import { formatCurrency } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 function NewItemDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const createItem = useCreateInventoryItem();
   const { register, handleSubmit, reset } = useForm<{
@@ -31,12 +33,12 @@ function NewItemDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> New Item
+          <Plus /> {t("dashboard.inventory.newItem")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New inventory item</DialogTitle>
+          <DialogTitle>{t("dashboard.inventory.newItemDialogTitle")}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(async (v) => {
@@ -47,41 +49,41 @@ function NewItemDialog() {
                 reorderLevel: Number(v.reorderLevel) || 0,
                 unitCost: v.unitCost ? Number(v.unitCost) : undefined,
               });
-              toast.success("Item added to inventory");
+              toast.success(t("dashboard.inventory.addedToast"));
               reset();
               setOpen(false);
             } catch (e) {
-              toast.error(e instanceof ApiError ? e.message : "Failed");
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.inventory.addFailedToast"));
             }
           })}
           className="grid grid-cols-2 gap-3"
         >
           <div className="col-span-2 space-y-1.5">
-            <Label>Name</Label>
+            <Label>{t("dashboard.inventory.nameLabel")}</Label>
             <Input {...register("name", { required: true })} />
           </div>
           <div className="space-y-1.5">
-            <Label>Category</Label>
+            <Label>{t("dashboard.inventory.categoryLabel")}</Label>
             <Input {...register("category")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Unit</Label>
-            <Input {...register("unit")} placeholder="box, unit..." />
+            <Label>{t("dashboard.inventory.unitLabel")}</Label>
+            <Input {...register("unit")} placeholder={t("dashboard.inventory.unitPlaceholder")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Quantity</Label>
+            <Label>{t("dashboard.inventory.quantityLabel")}</Label>
             <Input type="number" {...register("quantity", { required: true })} />
           </div>
           <div className="space-y-1.5">
-            <Label>Reorder level</Label>
+            <Label>{t("dashboard.inventory.reorderLevelLabel")}</Label>
             <Input type="number" {...register("reorderLevel")} />
           </div>
           <div className="col-span-2 space-y-1.5">
-            <Label>Unit cost</Label>
+            <Label>{t("dashboard.inventory.unitCostLabel")}</Label>
             <Input type="number" step="0.01" {...register("unitCost")} />
           </div>
           <DialogFooter className="col-span-2">
-            <Button type="submit">Add item</Button>
+            <Button type="submit">{t("dashboard.inventory.addItem")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -93,13 +95,14 @@ export default function InventoryPage() {
   const { data: items, isLoading } = useInventory();
   const adjustStock = useAdjustStock();
   const { hasPermission } = useAuth();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Inventory</h1>
-          <p className="text-sm text-muted-foreground">Track supplies and stock levels</p>
+          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.inventory.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dashboard.inventory.subtitle")}</p>
         </div>
         {hasPermission("INVENTORY_WRITE") && <NewItemDialog />}
       </div>
@@ -108,11 +111,11 @@ export default function InventoryPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Item</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Unit cost</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t("dashboard.inventory.colItem")}</TableHead>
+              <TableHead>{t("dashboard.inventory.colCategory")}</TableHead>
+              <TableHead>{t("dashboard.inventory.colQuantity")}</TableHead>
+              <TableHead>{t("dashboard.inventory.colUnitCost")}</TableHead>
+              <TableHead>{t("dashboard.inventory.colStatus")}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -120,7 +123,7 @@ export default function InventoryPage() {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  Loading...
+                  {t("dashboard.inventory.loading")}
                 </TableCell>
               </TableRow>
             ) : items && items.length > 0 ? (
@@ -137,7 +140,9 @@ export default function InventoryPage() {
                     </TableCell>
                     <TableCell>{item.unitCost ? formatCurrency(Number(item.unitCost)) : "—"}</TableCell>
                     <TableCell>
-                      <Badge variant={low ? "destructive" : "success"}>{low ? "Low stock" : "In stock"}</Badge>
+                      <Badge variant={low ? "destructive" : "success"}>
+                        {low ? t("dashboard.inventory.lowStock") : t("dashboard.inventory.inStock")}
+                      </Badge>
                     </TableCell>
                     <TableCell className="space-x-1">
                       {hasPermission("INVENTORY_WRITE") && (
@@ -146,7 +151,7 @@ export default function InventoryPage() {
                             size="icon"
                             variant="ghost"
                             onClick={() => adjustStock.mutate({ id: item.id, data: { type: "RESTOCK", quantity: 10 } })}
-                            title="Restock +10"
+                            title={t("dashboard.inventory.restockTitle")}
                           >
                             <ArrowUpCircle className="h-4 w-4 text-success" />
                           </Button>
@@ -154,7 +159,7 @@ export default function InventoryPage() {
                             size="icon"
                             variant="ghost"
                             onClick={() => adjustStock.mutate({ id: item.id, data: { type: "CONSUMPTION", quantity: 1 } })}
-                            title="Use 1"
+                            title={t("dashboard.inventory.useOneTitle")}
                           >
                             <ArrowDownCircle className="h-4 w-4 text-warning" />
                           </Button>
@@ -167,7 +172,7 @@ export default function InventoryPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  No inventory items yet.
+                  {t("dashboard.inventory.empty")}
                 </TableCell>
               </TableRow>
             )}

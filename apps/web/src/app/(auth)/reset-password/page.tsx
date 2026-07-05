@@ -13,17 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { api, ApiError } from "@/lib/api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
-const schema = z
-  .object({
-    password: z.string().min(8, "At least 8 characters"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-type FormValues = z.infer<typeof schema>;
+type FormValues = { password: string; confirmPassword: string };
 
 export default function ResetPasswordPage() {
   return (
@@ -37,8 +29,18 @@ function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const { t } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const schema = z
+    .object({
+      password: z.string().min(8, t("auth.validation.passwordMinLength")),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("auth.resetPassword.mismatchError"),
+      path: ["confirmPassword"],
+    });
   const form = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (values: FormValues) => {
@@ -49,7 +51,7 @@ function ResetPasswordForm() {
       setDone(true);
       setTimeout(() => router.push("/login"), 2500);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Could not reset password");
+      toast.error(err instanceof ApiError ? err.message : t("auth.resetPassword.failedToast"));
     } finally {
       setIsSubmitting(false);
     }
@@ -59,12 +61,12 @@ function ResetPasswordForm() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Invalid link</CardTitle>
-          <CardDescription>This password reset link is missing its token.</CardDescription>
+          <CardTitle>{t("auth.resetPassword.invalidTitle")}</CardTitle>
+          <CardDescription>{t("auth.resetPassword.invalidDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="outline" className="w-full" asChild>
-            <Link href="/forgot-password">Request a new link</Link>
+            <Link href="/forgot-password">{t("auth.resetPassword.requestNewLink")}</Link>
           </Button>
         </CardContent>
       </Card>
@@ -76,8 +78,8 @@ function ResetPasswordForm() {
       <Card>
         <CardHeader className="items-center text-center">
           <CheckCircle2 className="h-10 w-10 text-primary" />
-          <CardTitle>Password updated</CardTitle>
-          <CardDescription>Redirecting you to sign in...</CardDescription>
+          <CardTitle>{t("auth.resetPassword.updatedTitle")}</CardTitle>
+          <CardDescription>{t("auth.resetPassword.redirecting")}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -86,20 +88,20 @@ function ResetPasswordForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Set a new password</CardTitle>
-        <CardDescription>Choose a new password for your account.</CardDescription>
+        <CardTitle>{t("auth.resetPassword.title")}</CardTitle>
+        <CardDescription>{t("auth.resetPassword.subtitle")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password">New password</Label>
+            <Label htmlFor="password">{t("auth.resetPassword.newPasswordLabel")}</Label>
             <Input id="password" type="password" placeholder="••••••••" {...form.register("password")} />
             {form.formState.errors.password && (
               <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <Label htmlFor="confirmPassword">{t("auth.resetPassword.confirmPasswordLabel")}</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -111,7 +113,7 @@ function ResetPasswordForm() {
             )}
           </div>
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Updating..." : "Update password"}
+            {isSubmitting ? t("auth.resetPassword.updating") : t("auth.resetPassword.updateButton")}
           </Button>
         </form>
       </CardContent>

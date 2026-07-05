@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAdminTenants, useSetTenantStatus, type TenantStatus } from "@/hooks/use-admin-tenants";
 import { ApiError } from "@/lib/api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
+import { INTL_LOCALE_TAGS } from "@/lib/i18n/locales";
 
 function useDebounced<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -33,6 +35,7 @@ const STATUS_VARIANT: Record<TenantStatus, "success" | "warning" | "secondary"> 
 };
 
 export default function PlatformAdminPage() {
+  const { t, locale } = useLocale();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounced(search, 300);
@@ -44,9 +47,9 @@ export default function PlatformAdminPage() {
   const onSetStatus = async (id: string, name: string, status: TenantStatus) => {
     try {
       await setStatus.mutateAsync({ id, status });
-      toast.success(`${name} is now ${status.toLowerCase()}`);
+      toast.success(t("admin.statusUpdatedToast", { name, status: t(`tenantStatus.${status}`) }));
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Could not update tenant status");
+      toast.error(err instanceof ApiError ? err.message : t("admin.statusUpdateFailedToast"));
     }
   };
 
@@ -55,18 +58,15 @@ export default function PlatformAdminPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Clinics on the platform</h1>
-        <p className="text-sm text-muted-foreground">
-          Every clinic tenant registered on MBN Health — search, review subscription status, and suspend or restore
-          access.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight">{t("admin.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("admin.subtitle")}</p>
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground rtl:left-auto rtl:right-3" />
         <Input
-          placeholder="Search clinics by name..."
-          className="pl-9"
+          placeholder={t("admin.searchPlaceholder")}
+          className="pl-9 rtl:pl-3 rtl:pr-9"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -78,9 +78,13 @@ export default function PlatformAdminPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            {data ? `${data.total} clinic${data.total === 1 ? "" : "s"}` : "Clinics"}
+            {data
+              ? data.total === 1
+                ? t("admin.clinicCountSingular")
+                : t("admin.clinicCount", { count: data.total })
+              : t("admin.clinicsFallback")}
           </CardTitle>
-          <CardDescription>Plan, subscription status, and usage at a glance.</CardDescription>
+          <CardDescription>{t("admin.tableSubtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -92,19 +96,19 @@ export default function PlatformAdminPage() {
           ) : !data?.items.length ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
               <Building2 className="h-8 w-8" />
-              <p>No clinics match your search.</p>
+              <p>{t("admin.noResults")}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Clinic</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Staff</TableHead>
-                  <TableHead>Patients</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("admin.colClinic")}</TableHead>
+                  <TableHead>{t("admin.colPlan")}</TableHead>
+                  <TableHead>{t("admin.colStatus")}</TableHead>
+                  <TableHead>{t("admin.colStaff")}</TableHead>
+                  <TableHead>{t("admin.colPatients")}</TableHead>
+                  <TableHead>{t("admin.colCreated")}</TableHead>
+                  <TableHead className="text-right">{t("admin.colActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -122,29 +126,29 @@ export default function PlatformAdminPage() {
                       <div className="text-xs text-muted-foreground">{tenant.subscription?.status ?? ""}</div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={STATUS_VARIANT[tenant.status]}>{tenant.status}</Badge>
+                      <Badge variant={STATUS_VARIANT[tenant.status]}>{t(`tenantStatus.${tenant.status}`)}</Badge>
                     </TableCell>
                     <TableCell>{tenant._count.users}</TableCell>
                     <TableCell>{tenant._count.patients}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(tenant.createdAt).toLocaleDateString()}
+                      {new Date(tenant.createdAt).toLocaleDateString(INTL_LOCALE_TAGS[locale])}
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline" size="sm">
-                            Manage
+                            {t("admin.manage")}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {tenant.status !== "ACTIVE" && (
                             <DropdownMenuItem onClick={() => onSetStatus(tenant.id, tenant.name, "ACTIVE")}>
-                              Activate
+                              {t("admin.activate")}
                             </DropdownMenuItem>
                           )}
                           {tenant.status !== "SUSPENDED" && (
                             <DropdownMenuItem onClick={() => onSetStatus(tenant.id, tenant.name, "SUSPENDED")}>
-                              Suspend
+                              {t("admin.suspend")}
                             </DropdownMenuItem>
                           )}
                           {tenant.status !== "ARCHIVED" && (
@@ -152,7 +156,7 @@ export default function PlatformAdminPage() {
                               className="text-destructive focus:text-destructive"
                               onClick={() => onSetStatus(tenant.id, tenant.name, "ARCHIVED")}
                             >
-                              Archive
+                              {t("admin.archive")}
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
@@ -166,12 +170,10 @@ export default function PlatformAdminPage() {
 
           {data && data.total > pageSize && (
             <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-              <span>
-                Page {data.page} of {totalPages}
-              </span>
+              <span>{t("admin.page", { page: data.page, totalPages })}</span>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                  Previous
+                  {t("admin.previous")}
                 </Button>
                 <Button
                   variant="outline"
@@ -179,7 +181,7 @@ export default function PlatformAdminPage() {
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => p + 1)}
                 >
-                  Next
+                  {t("admin.next")}
                 </Button>
               </div>
             </div>

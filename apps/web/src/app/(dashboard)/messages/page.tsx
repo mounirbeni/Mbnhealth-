@@ -25,8 +25,10 @@ import {
 import { useWhatsAppConfig, useWhatsAppConversations } from "@/hooks/use-whatsapp";
 import { formatDateTime } from "@/lib/utils";
 import { ApiError } from "@/lib/api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 function ThreadsTab() {
+  const { t } = useLocale();
   const { data: threads } = useThreads();
   const [activeThread, setActiveThread] = useState<string | null>(null);
   const { data: messages } = useThreadMessages(activeThread ?? undefined);
@@ -38,25 +40,27 @@ function ThreadsTab() {
       <Card className="md:col-span-1">
         <CardContent className="max-h-[28rem] divide-y divide-border overflow-y-auto p-0">
           {threads && threads.length > 0 ? (
-            threads.map((t) => (
+            threads.map((t2) => (
               <button
-                key={t.id}
-                onClick={() => setActiveThread(t.id)}
-                className={`w-full p-3 text-left text-sm hover:bg-accent ${activeThread === t.id ? "bg-accent" : ""}`}
+                key={t2.id}
+                onClick={() => setActiveThread(t2.id)}
+                className={`w-full p-3 text-left text-sm hover:bg-accent ${activeThread === t2.id ? "bg-accent" : ""}`}
               >
-                <p className="font-medium">{t.subject ?? "Untitled thread"}</p>
-                <p className="truncate text-xs text-muted-foreground">{t.messages?.[0]?.body ?? "No messages yet"}</p>
+                <p className="font-medium">{t2.subject ?? t("dashboard.messages.untitledThread")}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {t2.messages?.[0]?.body ?? t("dashboard.messages.noMessagesYet")}
+                </p>
               </button>
             ))
           ) : (
-            <p className="p-4 text-sm text-muted-foreground">No conversations yet.</p>
+            <p className="p-4 text-sm text-muted-foreground">{t("dashboard.messages.noConversations")}</p>
           )}
         </CardContent>
       </Card>
       <Card className="md:col-span-2">
         <CardContent className="flex h-[28rem] flex-col p-4">
           {!activeThread ? (
-            <p className="m-auto text-sm text-muted-foreground">Select a conversation</p>
+            <p className="m-auto text-sm text-muted-foreground">{t("dashboard.messages.selectConversation")}</p>
           ) : (
             <>
               <div className="flex-1 space-y-3 overflow-y-auto">
@@ -78,7 +82,7 @@ function ThreadsTab() {
                   setBody("");
                 }}
               >
-                <Input value={body} onChange={(e) => setBody(e.target.value)} placeholder="Type a message..." />
+                <Input value={body} onChange={(e) => setBody(e.target.value)} placeholder={t("dashboard.messages.typeMessagePlaceholder")} />
                 <Button type="submit" size="icon">
                   <Send className="h-4 w-4" />
                 </Button>
@@ -92,6 +96,7 @@ function ThreadsTab() {
 }
 
 function TemplatesTab() {
+  const { t } = useLocale();
   const { data: templates } = useMessageTemplates();
   const createTemplate = useCreateTemplate();
   const [open, setOpen] = useState(false);
@@ -104,32 +109,32 @@ function TemplatesTab() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button size="sm">
-            <Plus /> New Template
+            <Plus /> {t("dashboard.messages.newTemplate")}
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New message template</DialogTitle>
+            <DialogTitle>{t("dashboard.messages.newTemplateDialogTitle")}</DialogTitle>
           </DialogHeader>
           <form
             onSubmit={handleSubmit(async (v) => {
               try {
                 await createTemplate.mutateAsync(v);
-                toast.success("Template created");
+                toast.success(t("dashboard.messages.templateCreatedToast"));
                 reset();
                 setOpen(false);
               } catch (e) {
-                toast.error(e instanceof ApiError ? e.message : "Failed");
+                toast.error(e instanceof ApiError ? e.message : t("dashboard.messages.templateFailedToast"));
               }
             })}
             className="space-y-4"
           >
             <div className="space-y-1.5">
-              <Label>Name</Label>
+              <Label>{t("dashboard.messages.nameLabel")}</Label>
               <Input {...register("name", { required: true })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Channel</Label>
+              <Label>{t("dashboard.messages.channelLabel")}</Label>
               <Controller
                 control={control}
                 name="channel"
@@ -139,37 +144,37 @@ function TemplatesTab() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="WHATSAPP">WhatsApp</SelectItem>
-                      <SelectItem value="EMAIL">Email</SelectItem>
+                      <SelectItem value="WHATSAPP">{t("dashboard.messages.whatsappChannel")}</SelectItem>
+                      <SelectItem value="EMAIL">{t("dashboard.messages.emailChannel")}</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Subject (email only)</Label>
+              <Label>{t("dashboard.messages.subjectEmailOnlyLabel")}</Label>
               <Input {...register("subject")} />
             </div>
             <div className="space-y-1.5">
-              <Label>Body</Label>
-              <Textarea rows={3} {...register("body", { required: true })} placeholder="Hi {{patientName}}, ..." />
+              <Label>{t("dashboard.messages.bodyLabel")}</Label>
+              <Textarea rows={3} {...register("body", { required: true })} placeholder={t("dashboard.messages.bodyPlaceholder")} />
             </div>
             <DialogFooter>
-              <Button type="submit">Create template</Button>
+              <Button type="submit">{t("dashboard.messages.createTemplate")}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {templates?.map((t) => (
-          <Card key={t.id}>
+        {templates?.map((tpl) => (
+          <Card key={tpl.id}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <p className="font-medium">{t.name}</p>
-                <Badge variant="secondary">{t.channel}</Badge>
+                <p className="font-medium">{tpl.name}</p>
+                <Badge variant="secondary">{tpl.channel}</Badge>
               </div>
-              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{t.body}</p>
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{tpl.body}</p>
             </CardContent>
           </Card>
         ))}
@@ -179,6 +184,7 @@ function TemplatesTab() {
 }
 
 function WhatsAppTab() {
+  const { t } = useLocale();
   const { data: config } = useWhatsAppConfig();
   const { data: conversations } = useWhatsAppConversations();
 
@@ -196,17 +202,17 @@ function WhatsAppTab() {
             </div>
             <div>
               <p className="text-sm font-medium">
-                {config?.isActive ? "WhatsApp bot is connected" : "WhatsApp bot is not connected yet"}
+                {config?.isActive ? t("dashboard.messages.whatsappConnected") : t("dashboard.messages.whatsappNotConnected")}
               </p>
               <p className="text-xs text-muted-foreground">
-                {config?.displayPhoneNumber ?? config?.phoneNumberId ?? "No phone number configured"}
-                {config?.aiBotEnabled ? " · AI replies enabled" : " · AI replies off"}
+                {config?.displayPhoneNumber ?? config?.phoneNumberId ?? t("dashboard.messages.noPhoneConfigured")}
+                {config?.aiBotEnabled ? t("dashboard.messages.aiRepliesEnabled") : t("dashboard.messages.aiRepliesOff")}
               </p>
             </div>
           </div>
           <Button asChild size="sm" variant="outline">
             <Link href="/settings?tab=whatsapp">
-              <SettingsIcon className="h-3.5 w-3.5" /> Configure
+              <SettingsIcon className="h-3.5 w-3.5" /> {t("dashboard.messages.configure")}
             </Link>
           </Button>
         </CardContent>
@@ -232,7 +238,7 @@ function WhatsAppTab() {
                 <div className="flex items-center gap-2 text-right">
                   {c.lastMessage.respondedByAi && (
                     <Badge variant="secondary" className="gap-1">
-                      <Bot className="h-3 w-3" /> AI
+                      <Bot className="h-3 w-3" /> {t("dashboard.messages.aiBadge")}
                     </Badge>
                   )}
                   <span className="text-xs text-muted-foreground">{formatDateTime(c.lastMessage.sentAt)}</span>
@@ -241,8 +247,7 @@ function WhatsAppTab() {
             ))
           ) : (
             <p className="p-6 text-center text-sm text-muted-foreground">
-              No WhatsApp conversations yet. Once patients message your clinic&apos;s WhatsApp number, they&apos;ll show up
-              here.
+              {t("dashboard.messages.noWhatsappConversations")}
             </p>
           )}
         </CardContent>
@@ -252,6 +257,7 @@ function WhatsAppTab() {
 }
 
 function LogsTab() {
+  const { t } = useLocale();
   const { data: logs } = useCommunicationLogs();
   return (
     <Card>
@@ -263,12 +269,12 @@ function LogsTab() {
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
                 <span>{l.channel}</span>
               </div>
-              <Badge variant={l.status === "SENT" ? "success" : "secondary"}>{l.status}</Badge>
+              <Badge variant={l.status === "SENT" ? "success" : "secondary"}>{t(`workflowStatus.${l.status}`)}</Badge>
               <span className="text-xs text-muted-foreground">{formatDateTime(l.sentAt)}</span>
             </div>
           ))
         ) : (
-          <p className="p-6 text-center text-sm text-muted-foreground">No communications sent yet.</p>
+          <p className="p-6 text-center text-sm text-muted-foreground">{t("dashboard.messages.noCommunications")}</p>
         )}
       </CardContent>
     </Card>
@@ -276,18 +282,19 @@ function LogsTab() {
 }
 
 export default function MessagesPage() {
+  const { t } = useLocale();
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Messages</h1>
-        <p className="text-sm text-muted-foreground">Internal staff chat, reminder templates and delivery logs</p>
+        <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.messages.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("dashboard.messages.subtitle")}</p>
       </div>
       <Tabs defaultValue="whatsapp">
         <TabsList>
-          <TabsTrigger value="whatsapp">WhatsApp Bot</TabsTrigger>
-          <TabsTrigger value="threads">Staff Chat</TabsTrigger>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-          <TabsTrigger value="logs">Delivery Logs</TabsTrigger>
+          <TabsTrigger value="whatsapp">{t("dashboard.messages.whatsappTab")}</TabsTrigger>
+          <TabsTrigger value="threads">{t("dashboard.messages.staffChatTab")}</TabsTrigger>
+          <TabsTrigger value="templates">{t("dashboard.messages.templatesTab")}</TabsTrigger>
+          <TabsTrigger value="logs">{t("dashboard.messages.deliveryLogsTab")}</TabsTrigger>
         </TabsList>
         <TabsContent value="whatsapp">
           <WhatsAppTab />

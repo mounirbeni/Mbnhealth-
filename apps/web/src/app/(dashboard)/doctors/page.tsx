@@ -19,6 +19,7 @@ import { api } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-client";
 import { initials } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 interface DoctorFormValues {
   firstName: string;
@@ -31,6 +32,7 @@ interface DoctorFormValues {
 }
 
 function NewDoctorDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const { data: departments } = useDepartments();
   const queryClient = useQueryClient();
@@ -42,12 +44,12 @@ function NewDoctorDialog() {
         ...values,
         consultationFee: values.consultationFee ? Number(values.consultationFee) : undefined,
       });
-      toast.success("Doctor added");
+      toast.success(t("dashboard.doctors.addedToast"));
       queryClient.invalidateQueries({ queryKey: ["doctors"] });
       reset();
       setOpen(false);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Failed to add doctor");
+      toast.error(err instanceof ApiError ? err.message : t("dashboard.doctors.addFailedToast"));
     }
   };
 
@@ -55,40 +57,40 @@ function NewDoctorDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> New Doctor
+          <Plus /> {t("dashboard.doctors.newDoctor")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add doctor</DialogTitle>
+          <DialogTitle>{t("dashboard.doctors.addDoctorTitle")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>First name</Label>
+              <Label>{t("dashboard.doctors.firstNameLabel")}</Label>
               <Input {...register("firstName", { required: true })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Last name</Label>
+              <Label>{t("dashboard.doctors.lastNameLabel")}</Label>
               <Input {...register("lastName", { required: true })} />
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label>Email</Label>
+              <Label>{t("dashboard.doctors.emailLabel")}</Label>
               <Input type="email" {...register("email", { required: true })} />
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label>Temporary password</Label>
+              <Label>{t("dashboard.doctors.tempPasswordLabel")}</Label>
               <Input type="password" {...register("password", { required: true, minLength: 8 })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Department</Label>
+              <Label>{t("dashboard.doctors.departmentLabel")}</Label>
               <Controller
                 control={control}
                 name="departmentId"
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select" />
+                      <SelectValue placeholder={t("dashboard.doctors.selectPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       {departments?.map((d) => (
@@ -102,17 +104,17 @@ function NewDoctorDialog() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Consultation fee</Label>
+              <Label>{t("dashboard.doctors.consultationFeeLabel")}</Label>
               <Input type="number" {...register("consultationFee")} />
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label>Specialization</Label>
-              <Input {...register("specialization")} placeholder="Cardiology" />
+              <Label>{t("dashboard.doctors.specializationLabel")}</Label>
+              <Input {...register("specialization")} placeholder={t("dashboard.doctors.specializationPlaceholder")} />
             </div>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={formState.isSubmitting}>
-              Add doctor
+              {t("dashboard.doctors.addDoctor")}
             </Button>
           </DialogFooter>
         </form>
@@ -124,19 +126,22 @@ function NewDoctorDialog() {
 export default function DoctorsPage() {
   const { data: doctors, isLoading } = useDoctors();
   const { hasPermission } = useAuth();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Doctors</h1>
-          <p className="text-sm text-muted-foreground">{doctors?.length ?? 0} doctors on staff</p>
+          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.doctors.title")}</h1>
+          <p className="text-sm text-muted-foreground">
+            {t("dashboard.doctors.countOnStaff", { count: doctors?.length ?? 0 })}
+          </p>
         </div>
         {hasPermission("DOCTORS_WRITE") && <NewDoctorDialog />}
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">{t("dashboard.doctors.loading")}</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {doctors?.map((doctor) => (
@@ -147,9 +152,13 @@ export default function DoctorsPage() {
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">
-                    Dr. {doctor.user.firstName} {doctor.user.lastName}
+                    {t("patientPortal.clinicProfile.doctorTitle", {
+                      name: `${doctor.user.firstName} ${doctor.user.lastName}`,
+                    })}
                   </p>
-                  <p className="truncate text-sm text-muted-foreground">{doctor.specialization ?? "General Practice"}</p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {doctor.specialization ?? t("dashboard.doctors.generalPractice")}
+                  </p>
                   <div className="mt-2 flex items-center gap-2">
                     {doctor.department && (
                       <Badge variant="secondary" className="gap-1">
@@ -157,7 +166,7 @@ export default function DoctorsPage() {
                       </Badge>
                     )}
                     <Badge variant={doctor.user.isActive ? "success" : "secondary"}>
-                      {doctor.user.isActive ? "Active" : "Inactive"}
+                      {doctor.user.isActive ? t("common.active") : t("common.inactive")}
                     </Badge>
                   </div>
                 </div>

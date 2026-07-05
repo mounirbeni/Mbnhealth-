@@ -19,31 +19,59 @@ import { useUpsertWhatsAppConfig, useWhatsAppConfig } from "@/hooks/use-whatsapp
 import { api } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-client";
 import { formatDateTime } from "@/lib/utils";
-import { PRICING_PLANS, formatPlanPrice } from "@/lib/pricing";
+import { PRICING_PLANS } from "@/lib/pricing";
+import { useLocale } from "@/lib/i18n/locale-context";
+
+const PLAN_FEATURE_KEYS: Record<string, string[]> = {
+  STARTER: ["starterFeature1", "starterFeature2", "starterFeature3", "starterFeature4", "starterFeature5", "starterFeature6"],
+  PROFESSIONAL: [
+    "professionalFeature1",
+    "professionalFeature2",
+    "professionalFeature3",
+    "professionalFeature4",
+    "professionalFeature5",
+    "professionalFeature6",
+  ],
+  ENTERPRISE: [
+    "enterpriseFeature1",
+    "enterpriseFeature2",
+    "enterpriseFeature3",
+    "enterpriseFeature4",
+    "enterpriseFeature5",
+    "enterpriseFeature6",
+  ],
+};
+const PLAN_NAME_KEYS: Record<string, string> = { STARTER: "starterName", PROFESSIONAL: "professionalName", ENTERPRISE: "enterpriseName" };
+const PLAN_TAGLINE_KEYS: Record<string, string> = {
+  STARTER: "starterTagline",
+  PROFESSIONAL: "professionalTagline",
+  ENTERPRISE: "enterpriseTagline",
+};
 
 function ProfileTab() {
   const { user } = useAuth();
+  const { t } = useLocale();
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Your profile</CardTitle>
-        <CardDescription>Your personal account details.</CardDescription>
+        <CardTitle>{t("dashboard.settings.profile.title")}</CardTitle>
+        <CardDescription>{t("dashboard.settings.profile.subtitle")}</CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <Label>First name</Label>
+          <Label>{t("dashboard.settings.profile.firstNameLabel")}</Label>
           <Input value={user?.firstName ?? ""} disabled />
         </div>
         <div className="space-y-1.5">
-          <Label>Last name</Label>
+          <Label>{t("dashboard.settings.profile.lastNameLabel")}</Label>
           <Input value={user?.lastName ?? ""} disabled />
         </div>
         <div className="col-span-2 space-y-1.5">
-          <Label>Email</Label>
+          <Label>{t("dashboard.settings.profile.emailLabel")}</Label>
           <Input value={user?.email ?? ""} disabled />
         </div>
         <div className="space-y-1.5">
-          <Label>Role</Label>
+          <Label>{t("dashboard.settings.profile.roleLabel")}</Label>
           <Input value={user?.roleName ?? ""} disabled />
         </div>
       </CardContent>
@@ -55,6 +83,7 @@ function ClinicTab() {
   const { data: tenant } = useTenant();
   const updateTenant = useUpdateTenant();
   const { hasPermission } = useAuth();
+  const { t } = useLocale();
   const { register, handleSubmit, formState } = useForm({
     values: tenant
       ? {
@@ -70,9 +99,9 @@ function ClinicTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Clinic settings</CardTitle>
+        <CardTitle>{t("dashboard.settings.clinic.title")}</CardTitle>
         <CardDescription>
-          Plan: <Badge variant="secondary">{tenant?.subscription?.plan ?? "—"}</Badge>
+          {t("dashboard.settings.clinic.planLabel")} <Badge variant="secondary">{tenant?.subscription?.plan ?? "—"}</Badge>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -80,42 +109,42 @@ function ClinicTab() {
           onSubmit={handleSubmit(async (v) => {
             try {
               await updateTenant.mutateAsync(v);
-              toast.success("Clinic settings updated");
+              toast.success(t("dashboard.settings.clinic.updatedToast"));
             } catch (e) {
-              toast.error(e instanceof ApiError ? e.message : "Failed to update");
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.settings.clinic.updateFailedToast"));
             }
           })}
           className="grid grid-cols-2 gap-4"
         >
           <div className="col-span-2 space-y-1.5">
-            <Label>Clinic name</Label>
+            <Label>{t("dashboard.settings.clinic.clinicNameLabel")}</Label>
             <Input {...register("name")} disabled={!hasPermission("SETTINGS_MANAGE")} />
           </div>
           <div className="col-span-2 space-y-1.5">
-            <Label>Address</Label>
+            <Label>{t("dashboard.settings.clinic.addressLabel")}</Label>
             <Input {...register("address")} disabled={!hasPermission("SETTINGS_MANAGE")} />
           </div>
           <div className="space-y-1.5">
-            <Label>City</Label>
+            <Label>{t("dashboard.settings.clinic.cityLabel")}</Label>
             <Input
               {...register("city")}
-              placeholder="e.g. Casablanca"
+              placeholder={t("dashboard.settings.clinic.cityPlaceholder")}
               disabled={!hasPermission("SETTINGS_MANAGE")}
             />
-            <p className="text-xs text-muted-foreground">Used so patients can filter by city in the public directory.</p>
+            <p className="text-xs text-muted-foreground">{t("dashboard.settings.clinic.cityHelper")}</p>
           </div>
           <div className="space-y-1.5">
-            <Label>Phone</Label>
+            <Label>{t("dashboard.settings.clinic.phoneLabel")}</Label>
             <Input {...register("phone")} disabled={!hasPermission("SETTINGS_MANAGE")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Email</Label>
+            <Label>{t("dashboard.settings.clinic.emailLabel")}</Label>
             <Input {...register("email")} disabled={!hasPermission("SETTINGS_MANAGE")} />
           </div>
           {hasPermission("SETTINGS_MANAGE") && (
             <div className="col-span-2">
               <Button type="submit" disabled={formState.isSubmitting}>
-                Save changes
+                {t("dashboard.settings.clinic.saveChanges")}
               </Button>
             </div>
           )}
@@ -127,6 +156,7 @@ function ClinicTab() {
 
 function SecurityTab() {
   const { user } = useAuth();
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const [setupData, setSetupData] = useState<{ qrCodeDataUrl: string; secret: string } | null>(null);
   const [code, setCode] = useState("");
@@ -141,27 +171,27 @@ function SecurityTab() {
       const data = await api.post<{ qrCodeDataUrl: string; secret: string }>("/auth/mfa/setup");
       setSetupData(data);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Failed to start MFA setup");
+      toast.error(e instanceof ApiError ? e.message : t("dashboard.settings.security.mfaSetupFailedToast"));
     }
   };
 
   const confirmMfa = async () => {
     try {
       await api.post("/auth/mfa/confirm", { code });
-      toast.success("Two-factor authentication enabled");
+      toast.success(t("dashboard.settings.security.mfaEnabledToast"));
       setSetupData(null);
       setCode("");
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Invalid code");
+      toast.error(e instanceof ApiError ? e.message : t("dashboard.settings.security.mfaInvalidCodeToast"));
     }
   };
 
   const disableMfa = async () => {
     try {
       await api.post("/auth/mfa/disable");
-      toast.success("Two-factor authentication disabled");
+      toast.success(t("dashboard.settings.security.mfaDisabledToast"));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Failed");
+      toast.error(e instanceof ApiError ? e.message : t("dashboard.settings.security.mfaDisableFailedToast"));
     }
   };
 
@@ -175,8 +205,8 @@ function SecurityTab() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Two-factor authentication</CardTitle>
-            <CardDescription>Add an extra layer of security using an authenticator app.</CardDescription>
+            <CardTitle>{t("dashboard.settings.security.twoFactorTitle")}</CardTitle>
+            <CardDescription>{t("dashboard.settings.security.twoFactorDesc")}</CardDescription>
           </div>
           <Switch checked={!!user} disabled />
         </CardHeader>
@@ -184,20 +214,31 @@ function SecurityTab() {
           {setupData ? (
             <div className="space-y-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={setupData.qrCodeDataUrl} alt="MFA QR code" className="h-40 w-40 rounded-lg border border-border" />
-              <p className="text-xs text-muted-foreground">Or enter this code manually: {setupData.secret}</p>
+              <img
+                src={setupData.qrCodeDataUrl}
+                alt={t("dashboard.settings.security.qrAlt")}
+                className="h-40 w-40 rounded-lg border border-border"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("dashboard.settings.security.manualCodeLabel", { secret: setupData.secret })}
+              </p>
               <div className="flex gap-2">
-                <Input placeholder="123456" value={code} onChange={(e) => setCode(e.target.value)} maxLength={6} />
-                <Button onClick={confirmMfa}>Confirm</Button>
+                <Input
+                  placeholder={t("dashboard.settings.security.codePlaceholder")}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  maxLength={6}
+                />
+                <Button onClick={confirmMfa}>{t("dashboard.settings.security.confirm")}</Button>
               </div>
             </div>
           ) : (
             <div className="flex gap-2">
               <Button onClick={startMfaSetup}>
-                <ShieldCheck className="h-4 w-4" /> Enable 2FA
+                <ShieldCheck className="h-4 w-4" /> {t("dashboard.settings.security.enable2fa")}
               </Button>
               <Button variant="outline" onClick={disableMfa}>
-                Disable 2FA
+                {t("dashboard.settings.security.disable2fa")}
               </Button>
             </div>
           )}
@@ -206,8 +247,8 @@ function SecurityTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Active sessions</CardTitle>
-          <CardDescription>Devices currently signed in to your account.</CardDescription>
+          <CardTitle>{t("dashboard.settings.security.activeSessionsTitle")}</CardTitle>
+          <CardDescription>{t("dashboard.settings.security.activeSessionsDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="divide-y divide-border p-0">
           {sessions && sessions.length > 0 ? (
@@ -216,9 +257,10 @@ function SecurityTab() {
                 <div className="flex items-center gap-3">
                   <Smartphone className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm font-medium">{s.userAgent ?? "Unknown device"}</p>
+                    <p className="text-sm font-medium">{s.userAgent ?? t("dashboard.settings.security.unknownDevice")}</p>
                     <p className="text-xs text-muted-foreground">
-                      {s.ipAddress} · Last active {formatDateTime(s.lastActiveAt)}
+                      {s.ipAddress} ·{" "}
+                      {t("dashboard.settings.security.lastActive", { date: formatDateTime(s.lastActiveAt) })}
                     </p>
                   </div>
                 </div>
@@ -228,7 +270,7 @@ function SecurityTab() {
               </div>
             ))
           ) : (
-            <p className="p-6 text-center text-sm text-muted-foreground">No active sessions.</p>
+            <p className="p-6 text-center text-sm text-muted-foreground">{t("dashboard.settings.security.noActiveSessions")}</p>
           )}
         </CardContent>
       </Card>
@@ -240,6 +282,7 @@ function WhatsAppTab() {
   const { data: config } = useWhatsAppConfig();
   const upsertConfig = useUpsertWhatsAppConfig();
   const { hasPermission } = useAuth();
+  const { t } = useLocale();
   const canManage = hasPermission("SETTINGS_MANAGE");
   const webhookUrl = `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/api/v1/whatsapp/webhook`;
 
@@ -260,23 +303,23 @@ function WhatsAppTab() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>WhatsApp Business Cloud API</CardTitle>
+          <CardTitle>{t("dashboard.settings.whatsapp.title")}</CardTitle>
           <CardDescription>
-            Connect a real WhatsApp Business phone number from{" "}
+            {t("dashboard.settings.whatsapp.descBefore")}{" "}
             <a
               href="https://developers.facebook.com/apps"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-0.5 text-primary hover:underline"
             >
-              Meta for Developers <ExternalLink className="h-3 w-3" />
+              {t("dashboard.settings.whatsapp.metaLink")} <ExternalLink className="h-3 w-3" />
             </a>{" "}
-            to send real reminders and let patients chat with your AI assistant.
+            {t("dashboard.settings.whatsapp.descAfter")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-4 rounded-lg border border-border bg-muted/40 p-3 text-xs">
-            <p className="font-medium">Webhook URL to paste into your Meta App&apos;s WhatsApp configuration:</p>
+            <p className="font-medium">{t("dashboard.settings.whatsapp.webhookLabel")}</p>
             <code className="mt-1 block break-all rounded bg-background px-2 py-1">{webhookUrl}</code>
           </div>
           <form
@@ -285,19 +328,19 @@ function WhatsAppTab() {
                 const payload = { ...v, accessToken: v.accessToken || undefined };
                 if (!payload.accessToken) delete (payload as any).accessToken;
                 await upsertConfig.mutateAsync(payload);
-                toast.success("WhatsApp configuration saved");
+                toast.success(t("dashboard.settings.whatsapp.savedToast"));
               } catch (e) {
-                toast.error(e instanceof ApiError ? e.message : "Failed to save");
+                toast.error(e instanceof ApiError ? e.message : t("dashboard.settings.whatsapp.saveFailedToast"));
               }
             })}
             className="grid grid-cols-2 gap-4"
           >
             <div className="space-y-1.5">
-              <Label htmlFor="phoneNumberId">Phone number ID</Label>
+              <Label htmlFor="phoneNumberId">{t("dashboard.settings.whatsapp.phoneNumberIdLabel")}</Label>
               <Input id="phoneNumberId" {...register("phoneNumberId", { required: true })} disabled={!canManage} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="displayPhoneNumber">Display phone number</Label>
+              <Label htmlFor="displayPhoneNumber">{t("dashboard.settings.whatsapp.displayPhoneLabel")}</Label>
               <Input
                 id="displayPhoneNumber"
                 {...register("displayPhoneNumber")}
@@ -306,11 +349,14 @@ function WhatsAppTab() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="businessAccountId">Business account ID (optional)</Label>
+              <Label htmlFor="businessAccountId">{t("dashboard.settings.whatsapp.businessAccountIdLabel")}</Label>
               <Input id="businessAccountId" {...register("businessAccountId")} disabled={!canManage} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="accessToken">Access token {config && "(leave blank to keep current)"}</Label>
+              <Label htmlFor="accessToken">
+                {t("dashboard.settings.whatsapp.accessTokenLabel")}
+                {config && t("dashboard.settings.whatsapp.accessTokenKeepCurrent")}
+              </Label>
               <Input
                 id="accessToken"
                 type="password"
@@ -320,25 +366,22 @@ function WhatsAppTab() {
             </div>
             <div className="col-span-2 flex items-center justify-between rounded-lg border border-border p-3">
               <div>
-                <p className="text-sm font-medium">Connection active</p>
-                <p className="text-xs text-muted-foreground">Turn off to pause all outbound WhatsApp sends for this clinic.</p>
+                <p className="text-sm font-medium">{t("dashboard.settings.whatsapp.connectionActive")}</p>
+                <p className="text-xs text-muted-foreground">{t("dashboard.settings.whatsapp.connectionActiveDesc")}</p>
               </div>
               <Switch checked={watch("isActive")} onCheckedChange={(v) => setValue("isActive", v)} disabled={!canManage} />
             </div>
             <div className="col-span-2 flex items-center justify-between rounded-lg border border-border p-3">
               <div>
-                <p className="text-sm font-medium">AI assistant replies</p>
-                <p className="text-xs text-muted-foreground">
-                  When on, incoming messages get an automatic limited-capability AI reply (clinic FAQ + the
-                  patient&apos;s own upcoming appointments). When off, messages are just logged for staff to answer.
-                </p>
+                <p className="text-sm font-medium">{t("dashboard.settings.whatsapp.aiReplies")}</p>
+                <p className="text-xs text-muted-foreground">{t("dashboard.settings.whatsapp.aiRepliesDesc")}</p>
               </div>
               <Switch checked={watch("aiBotEnabled")} onCheckedChange={(v) => setValue("aiBotEnabled", v)} disabled={!canManage} />
             </div>
             {canManage && (
               <div className="col-span-2">
                 <Button type="submit" disabled={formState.isSubmitting}>
-                  Save WhatsApp settings
+                  {t("dashboard.settings.whatsapp.save")}
                 </Button>
               </div>
             )}
@@ -352,6 +395,7 @@ function WhatsAppTab() {
 function BillingTab() {
   const { data: tenant } = useTenant();
   const { hasPermission } = useAuth();
+  const { t } = useLocale();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   const startCheckout = async (plan: "STARTER" | "PROFESSIONAL" | "ENTERPRISE") => {
@@ -360,7 +404,7 @@ function BillingTab() {
       const res = await api.post<{ url: string }>("/billing/subscription/checkout", { plan });
       window.location.href = res.url;
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Checkout is not available yet");
+      toast.error(e instanceof ApiError ? e.message : t("dashboard.settings.billing.checkoutFailedToast"));
     } finally {
       setLoadingPlan(null);
     }
@@ -371,18 +415,18 @@ function BillingTab() {
       const res = await api.post<{ url: string }>("/billing/subscription/portal");
       window.location.href = res.url;
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Billing portal is not available yet");
+      toast.error(e instanceof ApiError ? e.message : t("dashboard.settings.billing.portalFailedToast"));
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Subscription</CardTitle>
+        <CardTitle>{t("dashboard.settings.billing.title")}</CardTitle>
         <CardDescription>
-          Current plan: <Badge variant="secondary">{tenant?.subscription?.plan ?? "—"}</Badge>{" "}
+          {t("dashboard.settings.billing.currentPlan")} <Badge variant="secondary">{tenant?.subscription?.plan ?? "—"}</Badge>{" "}
           <Badge variant={tenant?.subscription?.status === "ACTIVE" ? "success" : "outline"}>
-            {tenant?.subscription?.status ?? "—"}
+            {tenant?.subscription?.status ? t(`tenantStatus.${tenant.subscription.status}`) : "—"}
           </Badge>
         </CardDescription>
       </CardHeader>
@@ -392,32 +436,37 @@ function BillingTab() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {PRICING_PLANS.map((plan) => {
                 const isCurrent = tenant?.subscription?.plan === plan.id;
+                const planName = t(`marketing.pricing.${PLAN_NAME_KEYS[plan.id]}`);
                 return (
                   <Card key={plan.id} className={plan.highlighted ? "border-primary shadow-sm" : undefined}>
                     <CardHeader className="pb-2">
                       <CardTitle className="flex items-center justify-between text-base">
-                        {plan.name}
-                        {isCurrent && <Badge variant="success">Current</Badge>}
+                        {planName}
+                        {isCurrent && <Badge variant="success">{t("dashboard.settings.billing.current")}</Badge>}
                       </CardTitle>
-                      <CardDescription>{plan.tagline}</CardDescription>
-                      <p className="pt-1 text-lg font-semibold">{formatPlanPrice(plan)}</p>
+                      <CardDescription>{t(`marketing.pricing.${PLAN_TAGLINE_KEYS[plan.id]}`)}</CardDescription>
+                      <p className="pt-1 text-lg font-semibold">
+                        {plan.priceMad === null
+                          ? t("marketing.pricing.customPricing")
+                          : t("marketing.pricing.perMonth", { price: plan.priceMad })}
+                      </p>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <ul className="space-y-1.5 text-sm text-muted-foreground">
-                        {plan.features.map((feature) => (
-                          <li key={feature} className="flex items-start gap-1.5">
+                        {PLAN_FEATURE_KEYS[plan.id].map((key) => (
+                          <li key={key} className="flex items-start gap-1.5">
                             <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                            {feature}
+                            {t(`marketing.pricing.${key}`)}
                           </li>
                         ))}
                       </ul>
                       {plan.priceMad === null ? (
                         <Button className="w-full" variant={isCurrent ? "outline" : "default"} disabled={isCurrent} asChild={!isCurrent}>
                           {isCurrent ? (
-                            "Current plan"
+                            t("dashboard.settings.billing.currentPlanButton")
                           ) : (
                             <a href="mailto:sales@mbnhealth.com?subject=Enterprise%20plan%20inquiry">
-                              <CreditCard className="h-3.5 w-3.5" /> Contact sales
+                              <CreditCard className="h-3.5 w-3.5" /> {t("dashboard.settings.billing.contactSales")}
                             </a>
                           )}
                         </Button>
@@ -429,7 +478,9 @@ function BillingTab() {
                           onClick={() => startCheckout(plan.id)}
                         >
                           <CreditCard className="h-3.5 w-3.5" />
-                          {isCurrent ? "Current plan" : `Upgrade to ${plan.name}`}
+                          {isCurrent
+                            ? t("dashboard.settings.billing.currentPlanButton")
+                            : t("dashboard.settings.billing.upgradeToButton", { name: planName })}
                         </Button>
                       )}
                     </CardContent>
@@ -438,15 +489,12 @@ function BillingTab() {
               })}
             </div>
             <Button variant="ghost" onClick={openPortal}>
-              Manage billing & invoices
+              {t("dashboard.settings.billing.manageBilling")}
             </Button>
-            <p className="text-xs text-muted-foreground">
-              Checkout requires Stripe to be configured by the platform operator (STRIPE_SECRET_KEY and price IDs) —
-              until then this will show a clear error instead of pretending to charge you.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("dashboard.settings.billing.checkoutNote")}</p>
           </>
         ) : (
-          <p className="text-sm text-muted-foreground">Only the clinic owner can manage billing.</p>
+          <p className="text-sm text-muted-foreground">{t("dashboard.settings.billing.ownerOnly")}</p>
         )}
       </CardContent>
     </Card>
@@ -456,22 +504,23 @@ function BillingTab() {
 export default function SettingsPage() {
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") ?? "profile";
+  const { t } = useLocale();
 
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage your profile, clinic, and security preferences.</p>
+        <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.settings.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("dashboard.settings.subtitle")}</p>
       </div>
       <Tabs defaultValue={defaultTab}>
         <TabsList className="flex-wrap">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="clinic">Clinic</TabsTrigger>
+          <TabsTrigger value="profile">{t("dashboard.settings.profileTab")}</TabsTrigger>
+          <TabsTrigger value="clinic">{t("dashboard.settings.clinicTab")}</TabsTrigger>
           <TabsTrigger value="whatsapp">
-            <MessageCircle className="h-3.5 w-3.5" /> WhatsApp Bot
+            <MessageCircle className="h-3.5 w-3.5" /> {t("dashboard.settings.whatsappTab")}
           </TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="billing">{t("dashboard.settings.billingTab")}</TabsTrigger>
+          <TabsTrigger value="security">{t("dashboard.settings.securityTab")}</TabsTrigger>
         </TabsList>
         <TabsContent value="profile">
           <ProfileTab />

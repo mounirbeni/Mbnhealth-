@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClinicLogo } from "@/components/patient/clinic-logo";
 import { patientApi } from "@/lib/patient-api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 interface ClinicSearchResult {
   slug: string;
@@ -75,6 +76,7 @@ export default function FindClinicPage() {
 function FindClinicContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLocale();
 
   const [query, setQuery] = useState(searchParams.get("query") ?? "");
   const [specialty, setSpecialty] = useState(searchParams.get("specialty") ?? "");
@@ -122,17 +124,15 @@ function FindClinicContent() {
     <div className="space-y-8">
       {/* Hero */}
       <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 sm:p-8">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Find the right clinic, book in seconds</h1>
-        <p className="mt-2 max-w-xl text-muted-foreground">
-          Search clinics by name, city, or specialty — see real availability and confirm your appointment instantly.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("patientPortal.findClinic.heroTitle")}</h1>
+        <p className="mt-2 max-w-xl text-muted-foreground">{t("patientPortal.findClinic.heroSubtitle")}</p>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           <div className="relative sm:col-span-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground rtl:left-auto rtl:right-3" />
             <Input
-              className="bg-background pl-9"
-              placeholder="Clinic name or address..."
+              className="bg-background pl-9 rtl:pl-3 rtl:pr-9"
+              placeholder={t("patientPortal.findClinic.searchPlaceholder")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -142,11 +142,11 @@ function FindClinicContent() {
             <SelectTrigger className="bg-background">
               <div className="flex items-center gap-2 truncate">
                 <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <SelectValue placeholder="Any city" />
+                <SelectValue placeholder={t("patientPortal.findClinic.anyCity")} />
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ANY}>Any city</SelectItem>
+              <SelectItem value={ANY}>{t("patientPortal.findClinic.anyCity")}</SelectItem>
               {filters?.cities.map((c) => (
                 <SelectItem key={c} value={c}>
                   {c}
@@ -159,11 +159,11 @@ function FindClinicContent() {
             <SelectTrigger className="bg-background">
               <div className="flex items-center gap-2 truncate">
                 <Stethoscope className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <SelectValue placeholder="Any specialty" />
+                <SelectValue placeholder={t("patientPortal.findClinic.anySpecialty")} />
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ANY}>Any specialty</SelectItem>
+              <SelectItem value={ANY}>{t("patientPortal.findClinic.anySpecialty")}</SelectItem>
               {filters?.specialties.map((s) => (
                 <SelectItem key={s} value={s}>
                   {s}
@@ -195,12 +195,19 @@ function FindClinicContent() {
       {/* Results header */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {isLoading ? "Searching..." : `${data?.length ?? 0} clinic${data?.length === 1 ? "" : "s"} found`}
-          {isFetching && !isLoading && <span className="ml-1 text-muted-foreground/60">· updating…</span>}
+          {isLoading
+            ? t("patientPortal.findClinic.searching")
+            : t(
+                data?.length === 1 ? "patientPortal.findClinic.resultFound" : "patientPortal.findClinic.resultsFound",
+                { count: data?.length ?? 0 },
+              )}
+          {isFetching && !isLoading && (
+            <span className="ml-1 text-muted-foreground/60">{t("patientPortal.findClinic.updating")}</span>
+          )}
         </p>
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters}>
-            <X className="h-3.5 w-3.5" /> Clear filters
+            <X className="h-3.5 w-3.5" /> {t("patientPortal.findClinic.clearFilters")}
           </Button>
         )}
       </div>
@@ -215,13 +222,11 @@ function FindClinicContent() {
       ) : !data || data.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-16 text-center">
           <SearchX className="h-8 w-8 text-muted-foreground" />
-          <p className="font-medium">No clinics match your search</p>
-          <p className="max-w-sm text-sm text-muted-foreground">
-            Try a different city or specialty, or clear your filters to see every clinic.
-          </p>
+          <p className="font-medium">{t("patientPortal.findClinic.noResultsTitle")}</p>
+          <p className="max-w-sm text-sm text-muted-foreground">{t("patientPortal.findClinic.noResultsDesc")}</p>
           {hasActiveFilters && (
             <Button variant="outline" size="sm" onClick={clearFilters}>
-              Clear filters
+              {t("patientPortal.findClinic.clearFilters")}
             </Button>
           )}
         </div>
@@ -254,17 +259,23 @@ function FindClinicContent() {
                         </Badge>
                       ))}
                       {clinic.specialties.length > 4 && (
-                        <Badge variant="outline">+{clinic.specialties.length - 4} more</Badge>
+                        <Badge variant="outline">
+                          {t("patientPortal.findClinic.moreSpecialties", { count: clinic.specialties.length - 4 })}
+                        </Badge>
                       )}
                     </div>
                   )}
                   <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3">
                     <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
-                      {clinic.doctorCount} doctor{clinic.doctorCount === 1 ? "" : "s"}
+                      {t(
+                        clinic.doctorCount === 1 ? "patientPortal.findClinic.doctorCount" : "patientPortal.findClinic.doctorsCount",
+                        { count: clinic.doctorCount },
+                      )}
                     </span>
                     <span className="flex items-center gap-1 text-sm font-medium text-primary opacity-80 transition-opacity group-hover:opacity-100">
-                      View clinic <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                      {t("patientPortal.findClinic.viewClinic")}{" "}
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform rtl:rotate-180 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
                     </span>
                   </div>
                 </CardContent>

@@ -64,6 +64,12 @@
     @apply bg-background text-foreground;
     font-feature-settings: "cv11", "ss01";
   }
+
+  /* Inter has no Arabic glyphs, so RTL content needs the Arabic-covering
+     font ahead of it in the stack instead of falling through to the OS default. */
+  [dir="rtl"] body {
+    font-family: var(--font-arabic), var(--font-sans), system-ui, sans-serif;
+  }
 }
 
 @layer utilities {

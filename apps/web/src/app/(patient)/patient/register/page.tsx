@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePatientAuth } from "@/lib/patient-auth-context";
 import { ApiError } from "@/lib/patient-api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export default function PatientRegisterPage() {
   return (
@@ -24,6 +25,7 @@ function PatientRegisterForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/find-a-clinic";
   const { register } = usePatientAuth();
+  const { t } = useLocale();
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,7 +39,7 @@ function PatientRegisterForm() {
       await register(form);
       router.push(next);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Registration failed");
+      toast.error(err instanceof ApiError ? err.message : t("patientPortal.register.registrationFailedToast"));
     } finally {
       setIsSubmitting(false);
     }
@@ -47,41 +49,41 @@ function PatientRegisterForm() {
     <div className="mx-auto max-w-sm">
       <Card>
         <CardHeader>
-          <CardTitle>Create your account</CardTitle>
-          <CardDescription>One account lets you book with any clinic on MBN Health.</CardDescription>
+          <CardTitle>{t("patientPortal.register.title")}</CardTitle>
+          <CardDescription>{t("patientPortal.register.subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First name</Label>
+                <Label htmlFor="firstName">{t("patientPortal.register.firstName")}</Label>
                 <Input id="firstName" value={form.firstName} onChange={update("firstName")} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last name</Label>
+                <Label htmlFor="lastName">{t("patientPortal.register.lastName")}</Label>
                 <Input id="lastName" value={form.lastName} onChange={update("lastName")} required />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("common.email")}</Label>
               <Input id="email" type="email" value={form.email} onChange={update("email")} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone (optional)</Label>
+              <Label htmlFor="phone">{t("patientPortal.register.phoneOptional")}</Label>
               <Input id="phone" value={form.phone} onChange={update("phone")} placeholder="+212 6..." />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("common.password")}</Label>
               <Input id="password" type="password" minLength={8} value={form.password} onChange={update("password")} required />
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Creating account..." : "Create account"}
+              {isSubmitting ? t("patientPortal.register.creating") : t("patientPortal.register.create")}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
+            {t("patientPortal.register.alreadyHaveAccount")}{" "}
             <Link href={`/patient/login?next=${encodeURIComponent(next)}`} className="font-medium text-primary hover:underline">
-              Sign in
+              {t("common.signIn")}
             </Link>
           </p>
         </CardContent>

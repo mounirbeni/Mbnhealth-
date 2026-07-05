@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { patientApi } from "@/lib/patient-api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export default function PatientForgotPasswordPage() {
+  const { t } = useLocale();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
@@ -30,37 +32,34 @@ export default function PatientForgotPasswordPage() {
         {sent ? (
           <>
             <CardHeader>
-              <CardTitle>Check your email</CardTitle>
-              <CardDescription>
-                If an account exists for that email, we&apos;ve sent a link to reset your password. It expires in 1
-                hour.
-              </CardDescription>
+              <CardTitle>{t("patientPortal.forgotPassword.checkEmailTitle")}</CardTitle>
+              <CardDescription>{t("patientPortal.forgotPassword.checkEmailDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="outline" className="w-full" asChild>
-                <Link href="/patient/login">Back to sign in</Link>
+                <Link href="/patient/login">{t("patientPortal.forgotPassword.backToSignIn")}</Link>
               </Button>
             </CardContent>
           </>
         ) : (
           <>
             <CardHeader>
-              <CardTitle>Forgot your password?</CardTitle>
-              <CardDescription>Enter your email and we&apos;ll send you a reset link.</CardDescription>
+              <CardTitle>{t("patientPortal.forgotPassword.title")}</CardTitle>
+              <CardDescription>{t("patientPortal.forgotPassword.subtitle")}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={onSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("common.email")}</Label>
                   <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Sending..." : "Send reset link"}
+                  {isSubmitting ? t("patientPortal.forgotPassword.sending") : t("patientPortal.forgotPassword.sendButton")}
                 </Button>
               </form>
               <p className="mt-4 text-center text-sm text-muted-foreground">
                 <Link href="/patient/login" className="font-medium text-primary hover:underline">
-                  Back to sign in
+                  {t("patientPortal.forgotPassword.backToSignIn")}
                 </Link>
               </p>
             </CardContent>

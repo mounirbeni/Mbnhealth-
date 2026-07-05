@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { patientApi } from "@/lib/patient-api-client";
 import { usePatientAuth } from "@/lib/patient-auth-context";
 import { formatDateTime } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 interface ClinicBookings {
   clinic: { name: string; slug: string; logoUrl: string | null };
@@ -26,6 +27,7 @@ interface ClinicBookings {
 export default function PatientAppointmentsPage() {
   const router = useRouter();
   const { patient, isLoading: authLoading } = usePatientAuth();
+  const { t } = useLocale();
 
   useEffect(() => {
     if (!authLoading && !patient) router.replace("/patient/login?next=/patient/appointments");
@@ -42,19 +44,19 @@ export default function PatientAppointmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">My appointments</h1>
-        <p className="text-muted-foreground">Across every clinic you&apos;ve booked with.</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t("patientPortal.appointments.title")}</h1>
+        <p className="text-muted-foreground">{t("patientPortal.appointments.subtitle")}</p>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
       ) : !data || data.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No appointments yet.{" "}
+          {t("patientPortal.appointments.empty")}{" "}
           <Link href="/find-a-clinic" className="text-primary hover:underline">
-            Find a clinic
+            {t("patientPortal.appointments.findClinicLink")}
           </Link>{" "}
-          to book your first one.
+          {t("patientPortal.appointments.findFirstSuffix")}
         </p>
       ) : (
         <div className="space-y-6">
@@ -67,11 +69,15 @@ export default function PatientAppointmentsPage() {
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <div>
                         <CardTitle className="text-base">
-                          Dr. {appt.doctor.user.firstName} {appt.doctor.user.lastName}
+                          {t("patientPortal.clinicProfile.doctorTitle", {
+                            name: `${appt.doctor.user.firstName} ${appt.doctor.user.lastName}`,
+                          })}
                         </CardTitle>
                         <CardDescription>{appt.doctor.specialization}</CardDescription>
                       </div>
-                      <Badge variant={appt.status === "COMPLETED" ? "success" : "secondary"}>{appt.status}</Badge>
+                      <Badge variant={appt.status === "COMPLETED" ? "success" : "secondary"}>
+                        {t(`appointmentStatus.${appt.status}`)}
+                      </Badge>
                     </CardHeader>
                     <CardContent className="text-sm text-muted-foreground">
                       {formatDateTime(appt.startTime)}

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ClinicLogo } from "@/components/patient/clinic-logo";
 import { patientApi } from "@/lib/patient-api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 interface ClinicProfile {
   slug: string;
@@ -53,6 +54,7 @@ function DoctorCardSkeleton() {
 }
 
 export default function ClinicProfilePage({ params }: { params: { slug: string } }) {
+  const { t } = useLocale();
   const { data: clinic, isLoading } = useQuery({
     queryKey: ["clinic-profile", params.slug],
     queryFn: () => patientApi.get<ClinicProfile>(`/public/clinics/${params.slug}`, { skipAuth: true }),
@@ -73,10 +75,10 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
   if (!clinic) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="font-medium">Clinic not found</p>
+        <p className="font-medium">{t("patientPortal.clinicProfile.notFound")}</p>
         <Button variant="outline" size="sm" asChild>
           <Link href="/find-a-clinic">
-            <ArrowLeft className="h-3.5 w-3.5" /> Back to search
+            <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" /> {t("patientPortal.clinicProfile.backToSearch")}
           </Link>
         </Button>
       </div>
@@ -88,7 +90,7 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
   return (
     <div className="space-y-8">
       <Link href="/find-a-clinic" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to search
+        <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" /> {t("patientPortal.clinicProfile.backToSearch")}
       </Link>
 
       {/* Header */}
@@ -140,7 +142,7 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
       <div>
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
           <CalendarCheck className="h-4.5 w-4.5 text-primary" />
-          Book an appointment
+          {t("patientPortal.clinicProfile.bookAppointment")}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {clinic.doctors.map((doctor) => {
@@ -163,7 +165,7 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
                     </Avatar>
                     <div className="min-w-0">
                       <CardTitle className="truncate text-base">
-                        Dr. {doctor.firstName} {doctor.lastName}
+                        {t("patientPortal.clinicProfile.doctorTitle", { name: `${doctor.firstName} ${doctor.lastName}` })}
                       </CardTitle>
                       <CardDescription className="truncate">
                         {doctor.specialization}
@@ -176,11 +178,13 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
                   {doctor.bio && <p className="line-clamp-3 flex-1 text-sm text-muted-foreground">{doctor.bio}</p>}
                   <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3">
                     <span className="text-sm font-medium text-foreground">
-                      {doctor.consultationFee ? `${doctor.consultationFee} MAD / visit` : "Fee on request"}
+                      {doctor.consultationFee
+                        ? t("patientPortal.clinicProfile.feePerVisit", { fee: doctor.consultationFee })
+                        : t("patientPortal.clinicProfile.feeOnRequest")}
                     </span>
                     <Button size="sm" asChild>
                       <Link href={`/clinics/${clinic.slug}/book/${doctor.id}`}>
-                        Book <ArrowRight className="h-3.5 w-3.5" />
+                        {t("patientPortal.clinicProfile.book")} <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
                       </Link>
                     </Button>
                   </div>
@@ -189,7 +193,7 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
             );
           })}
           {clinic.doctors.length === 0 && (
-            <p className="text-sm text-muted-foreground">This clinic hasn&apos;t listed any doctors yet.</p>
+            <p className="text-sm text-muted-foreground">{t("patientPortal.clinicProfile.noDoctors")}</p>
           )}
         </div>
       </div>

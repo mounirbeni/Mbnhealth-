@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { patientApi, ApiError } from "@/lib/patient-api-client";
 import { usePatientAuth } from "@/lib/patient-auth-context";
+import { useLocale } from "@/lib/i18n/locale-context";
+import { INTL_LOCALE_TAGS } from "@/lib/i18n/locales";
 
 interface Slot {
   start: string;
@@ -36,10 +38,6 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function formatSlotTime(iso: string) {
-  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
-}
-
 export default function BookAppointmentPage({ params }: { params: { slug: string; doctorId: string } }) {
   return (
     <Suspense fallback={null}>
@@ -53,6 +51,10 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { patient, isLoading: authLoading } = usePatientAuth();
+  const { t, locale } = useLocale();
+  const intlLocale = INTL_LOCALE_TAGS[locale];
+  const formatSlotTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString(intlLocale, { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
   // A sign-in/register detour navigates away and back to this page, which
   // remounts it and would otherwise drop the slot the patient already
   // picked — restore it from the URL instead of making them reselect.
@@ -99,10 +101,10 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
         reason: reason || undefined,
         dob: dob || undefined,
       });
-      toast.success("Appointment booked!");
+      toast.success(t("patientPortal.booking.bookedToast"));
       router.push("/patient/appointments");
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Could not book this appointment");
+      toast.error(e instanceof ApiError ? e.message : t("patientPortal.booking.bookErrorToast"));
     } finally {
       setSubmitting(false);
     }
@@ -115,9 +117,9 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
           href={`/clinics/${params.slug}`}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to clinic
+          <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" /> {t("patientPortal.booking.backToClinic")}
         </Link>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight">Book an appointment</h1>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight">{t("patientPortal.booking.title")}</h1>
       </div>
 
       {doctor && (
@@ -134,14 +136,16 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate font-semibold">
-              Dr. {doctor.firstName} {doctor.lastName}
+              {t("patientPortal.clinicProfile.doctorTitle", { name: `${doctor.firstName} ${doctor.lastName}` })}
             </p>
             <p className="truncate text-sm text-muted-foreground">
               {doctor.specialization} · {clinic!.name}
             </p>
           </div>
           {doctor.consultationFee && (
-            <span className="shrink-0 text-sm font-medium text-muted-foreground">{doctor.consultationFee} MAD</span>
+            <span className="shrink-0 text-sm font-medium text-muted-foreground">
+              {t("patientPortal.booking.feeAmount", { fee: doctor.consultationFee })}
+            </span>
           )}
         </div>
       )}
@@ -152,9 +156,9 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
               1
             </span>
-            Choose a date & time
+            {t("patientPortal.booking.step1Title")}
           </CardTitle>
-          <CardDescription>Available 30-minute slots for this doctor.</CardDescription>
+          <CardDescription>{t("patientPortal.booking.step1Desc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
@@ -176,7 +180,7 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
           ) : !data || data.slots.length === 0 ? (
             <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-8 text-center">
               <CalendarX2 className="h-6 w-6 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">No availability on this date — try another day.</p>
+              <p className="text-sm text-muted-foreground">{t("patientPortal.booking.noAvailability")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-2">
@@ -206,11 +210,16 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
                 2
               </span>
-              Confirm your appointment
+              {t("patientPortal.booking.step2Title")}
             </CardTitle>
             <CardDescription className="flex items-center gap-1.5">
               <CalendarClock className="h-3.5 w-3.5" />
-              {new Date(selectedSlot.start).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" })}
+              {new Date(selectedSlot.start).toLocaleDateString(intlLocale, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                timeZone: "UTC",
+              })}
               {" · "}
               {formatSlotTime(selectedSlot.start)}
             </CardDescription>
@@ -218,14 +227,16 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
           <CardContent className="space-y-4">
             {!authLoading && !patient && (
               <div className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
-                Sign in or create a free account to confirm this booking.
+                {t("patientPortal.booking.signInPrompt")}
                 <div className="mt-2 flex gap-2">
                   <Button size="sm" asChild>
-                    <Link href={`/patient/login?next=${encodeURIComponent(returnUrl)}`}>Sign in</Link>
+                    <Link href={`/patient/login?next=${encodeURIComponent(returnUrl)}`}>
+                      {t("patientPortal.booking.signInButton")}
+                    </Link>
                   </Button>
                   <Button size="sm" variant="outline" asChild>
                     <Link href={`/patient/register?next=${encodeURIComponent(returnUrl)}`}>
-                      Create account
+                      {t("patientPortal.booking.createAccountButton")}
                     </Link>
                   </Button>
                 </div>
@@ -233,17 +244,22 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="reason">Reason for visit (optional)</Label>
-              <Input id="reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Routine checkup" />
+              <Label htmlFor="reason">{t("patientPortal.booking.reasonLabel")}</Label>
+              <Input
+                id="reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder={t("patientPortal.booking.reasonPlaceholder")}
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dob">Date of birth</Label>
+              <Label htmlFor="dob">{t("patientPortal.booking.dobLabel")}</Label>
               <Input id="dob" type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
-              <p className="text-xs text-muted-foreground">Only needed the first time you book with this clinic.</p>
+              <p className="text-xs text-muted-foreground">{t("patientPortal.booking.dobHelper")}</p>
             </div>
             <Button className="w-full" disabled={!patient || submitting} onClick={confirmBooking}>
               <CheckCircle2 className="h-4 w-4" />
-              {submitting ? "Booking..." : "Confirm appointment"}
+              {submitting ? t("patientPortal.booking.booking") : t("patientPortal.booking.confirmButton")}
             </Button>
           </CardContent>
         </Card>

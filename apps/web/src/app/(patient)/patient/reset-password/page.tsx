@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { patientApi, ApiError } from "@/lib/patient-api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export default function PatientResetPasswordPage() {
   return (
@@ -22,6 +23,7 @@ export default function PatientResetPasswordPage() {
 function PatientResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLocale();
   const token = searchParams.get("token");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -32,11 +34,11 @@ function PatientResetPasswordForm() {
     e.preventDefault();
     if (!token) return;
     if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+      toast.error(t("patientPortal.resetPassword.tooShortToast"));
       return;
     }
     if (password !== confirmPassword) {
-      toast.error("Passwords don't match");
+      toast.error(t("patientPortal.resetPassword.mismatchToast"));
       return;
     }
     setIsSubmitting(true);
@@ -45,7 +47,7 @@ function PatientResetPasswordForm() {
       setDone(true);
       setTimeout(() => router.push("/patient/login"), 2500);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Could not reset password");
+      toast.error(err instanceof ApiError ? err.message : t("patientPortal.resetPassword.failedToast"));
     } finally {
       setIsSubmitting(false);
     }
@@ -57,31 +59,31 @@ function PatientResetPasswordForm() {
         {!token ? (
           <>
             <CardHeader>
-              <CardTitle>Invalid link</CardTitle>
-              <CardDescription>This password reset link is missing its token.</CardDescription>
+              <CardTitle>{t("patientPortal.resetPassword.invalidTitle")}</CardTitle>
+              <CardDescription>{t("patientPortal.resetPassword.invalidDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="outline" className="w-full" asChild>
-                <Link href="/patient/forgot-password">Request a new link</Link>
+                <Link href="/patient/forgot-password">{t("patientPortal.resetPassword.requestNewLink")}</Link>
               </Button>
             </CardContent>
           </>
         ) : done ? (
           <CardHeader className="items-center text-center">
             <CheckCircle2 className="h-10 w-10 text-primary" />
-            <CardTitle>Password updated</CardTitle>
-            <CardDescription>Redirecting you to sign in...</CardDescription>
+            <CardTitle>{t("patientPortal.resetPassword.updatedTitle")}</CardTitle>
+            <CardDescription>{t("patientPortal.resetPassword.redirecting")}</CardDescription>
           </CardHeader>
         ) : (
           <>
             <CardHeader>
-              <CardTitle>Set a new password</CardTitle>
-              <CardDescription>Choose a new password for your account.</CardDescription>
+              <CardTitle>{t("patientPortal.resetPassword.title")}</CardTitle>
+              <CardDescription>{t("patientPortal.resetPassword.subtitle")}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={onSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="password">New password</Label>
+                  <Label htmlFor="password">{t("patientPortal.resetPassword.newPassword")}</Label>
                   <Input
                     id="password"
                     type="password"
@@ -91,7 +93,7 @@ function PatientResetPasswordForm() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm password</Label>
+                  <Label htmlFor="confirmPassword">{t("patientPortal.resetPassword.confirmPassword")}</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -101,7 +103,7 @@ function PatientResetPasswordForm() {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Updating..." : "Update password"}
+                  {isSubmitting ? t("patientPortal.resetPassword.updating") : t("patientPortal.resetPassword.updateButton")}
                 </Button>
               </form>
             </CardContent>

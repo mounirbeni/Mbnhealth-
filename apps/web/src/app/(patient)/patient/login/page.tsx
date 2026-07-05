@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePatientAuth } from "@/lib/patient-auth-context";
 import { ApiError } from "@/lib/patient-api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export default function PatientLoginPage() {
   return (
@@ -24,6 +25,7 @@ function PatientLoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/find-a-clinic";
   const { login } = usePatientAuth();
+  const { t } = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +37,7 @@ function PatientLoginForm() {
       await login(email, password);
       router.push(next);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Sign in failed");
+      toast.error(err instanceof ApiError ? err.message : t("patientPortal.login.signInFailedToast"));
     } finally {
       setIsSubmitting(false);
     }
@@ -45,20 +47,20 @@ function PatientLoginForm() {
     <div className="mx-auto max-w-sm">
       <Card>
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
-          <CardDescription>Access your appointments across every clinic.</CardDescription>
+          <CardTitle>{t("patientPortal.login.title")}</CardTitle>
+          <CardDescription>{t("patientPortal.login.subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("common.email")}</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("common.password")}</Label>
                 <Link href="/patient/forgot-password" className="text-xs font-medium text-primary hover:underline">
-                  Forgot password?
+                  {t("patientPortal.login.forgotPassword")}
                 </Link>
               </div>
               <Input
@@ -70,13 +72,13 @@ function PatientLoginForm() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Signing in..." : "Sign in"}
+              {isSubmitting ? t("patientPortal.login.signingIn") : t("common.signIn")}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            New here?{" "}
+            {t("patientPortal.login.newHere")}{" "}
             <Link href={`/patient/register?next=${encodeURIComponent(next)}`} className="font-medium text-primary hover:underline">
-              Create an account
+              {t("patientPortal.login.createAccount")}
             </Link>
           </p>
         </CardContent>

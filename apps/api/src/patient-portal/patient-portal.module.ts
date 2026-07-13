@@ -5,6 +5,8 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AppointmentsModule } from "../appointments/appointments.module";
 import { ClinicDirectoryController } from "./directory/clinic-directory.controller";
 import { ClinicDirectoryService } from "./directory/clinic-directory.service";
+import { ClinicListingsController } from "./listings/clinic-listings.controller";
+import { ClinicListingsService } from "./listings/clinic-listings.service";
 import { PatientAuthController } from "./auth/patient-auth.controller";
 import { PatientAuthService } from "./auth/patient-auth.service";
 import { PatientJwtStrategy } from "./auth/strategies/patient-jwt.strategy";
@@ -25,7 +27,4 @@ import { PlanLimitsService } from "../common/plan-limits/plan-limits.service";
       }),
     }),
   ],
-  controllers: [ClinicDirectoryController, PatientAuthController, PatientBookingsController],
-  providers: [ClinicDirectoryService, PatientAuthService, PatientJwtStrategy, PatientBookingsService, PlanLimitsService],
-})
-export class PatientPortalModule {}
+  controllers: [ClinicDirectoryController, ClinicListingsController, PatientAuthController, Patie

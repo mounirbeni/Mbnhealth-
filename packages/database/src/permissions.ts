@@ -8,7 +8,7 @@ import { Permission, SystemRoleName } from "../generated/client";
 export const DEFAULT_ROLE_PERMISSIONS: Record<SystemRoleName, Permission[]> = {
   SUPER_ADMIN: Object.values(Permission),
   CLINIC_OWNER: Object.values(Permission).filter(
-    (p) => p !== Permission.SYSTEM_MANAGE_TENANTS,
+    (p) => p !== Permission.SYSTEM_MANAGE_TENANTS && p !== Permission.DIRECTORY_MANAGE,
   ),
   MANAGER: [
     Permission.DASHBOARD_VIEW,

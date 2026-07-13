@@ -21,8 +21,38 @@ import {
   type Invoice,
 } from "../generated/client";
 import { DEFAULT_ROLE_PERMISSIONS } from "../src/permissions";
+import { CLINIC_LISTINGS, VERIFIED_AT } from "./data/clinic-directory";
 
 const prisma = new PrismaClient();
+
+async function seedClinicDirectory() {
+  console.log(`Seeding public clinic directory (${CLINIC_LISTINGS.length} sourced listings)...`);
+  for (const listing of CLINIC_LISTINGS) {
+    await prisma.clinicListing.upsert({
+      where: { slug: listing.slug },
+      update: {},
+      create: {
+        slug: listing.slug,
+        name: listing.name,
+        specialties: listing.specialties,
+        city: listing.city,
+        neighborhood: listing.neighborhood ?? null,
+        address: listing.address ?? null,
+        latitude: listing.latitude ?? null,
+        longitude: listing.longitude ?? null,
+        googleMapsUrl:
+          listing.latitude != null && listing.longitude != null
+            ? `https://www.google.com/maps?q=${listing.latitude},${listing.longitude}`
+            : null,
+        phone: listing.phone ?? null,
+        status: "ACTIVE",
+        sourceUrl: listing.sourceUrl,
+        sourceType: "PUBLIC_DIRECTORY",
+        verifiedAt: VERIFIED_AT,
+      },
+    });
+  }
+}
 
 const DEMO_PASSWORD = "Passw0rd!123";
 
@@ -778,32 +808,4 @@ async function main() {
           mon: ["09:00", "17:00"],
           tue: ["09:00", "17:00"],
           wed: ["09:00", "17:00"],
-          thu: ["09:00", "17:00"],
-          fri: ["09:00", "13:00"],
-        },
-      },
-    });
-  }
-
-  console.log("Seed complete.");
-  console.log("─────────────────────────────────────────");
-  console.log("Demo login credentials (all roles share the password below):");
-  console.log(`  Password: ${DEMO_PASSWORD}`);
-  console.log("  Super Admin:  superadmin@mbnhealth.com");
-  console.log("  Clinic Owner: owner@demo-clinic.com");
-  console.log("  Manager:      manager@demo-clinic.com");
-  console.log("  Receptionist: reception@demo-clinic.com");
-  console.log("  Accountant:   accountant@demo-clinic.com");
-  console.log("  Laboratory:   lab@demo-clinic.com");
-  console.log("  Doctor:       dr.hicham@demo-clinic.com");
-  console.log("─────────────────────────────────────────");
-}
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+          thu: ["09:00", "1

@@ -65,7 +65,7 @@ const PLAN_TAGLINE_KEYS: Record<string, string> = {
 
 function MockBrowserFrame({ children, label }: { children: React.ReactNode; label: string }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+    <div className="surface-elevated overflow-hidden rounded-xl border border-border bg-card">
       <div className="flex items-center gap-2 border-b border-border bg-muted/50 px-4 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
         <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
@@ -114,15 +114,15 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent" />
+      <section className="relative overflow-hidden bg-grid-fade">
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] bg-gradient-to-b from-primary/12 via-primary/5 to-transparent" />
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-          <div className="mx-auto max-w-3xl text-center">
-            <Badge variant="secondary" className="mb-5">{t("marketing.hero.badge")}</Badge>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+          <div className="mx-auto max-w-3xl animate-fade-in-up text-center">
+            <Badge variant="secondary" className="mb-5 border border-border/60">{t("marketing.hero.badge")}</Badge>
+            <h1 className="text-display-sm text-balance sm:text-display">
               {t("marketing.hero.titleLine1")} <span className="text-primary">{t("marketing.hero.titleLine2Accent")}</span>
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">{t("marketing.hero.subtitle")}</p>
+            <p className="mx-auto mt-5 max-w-xl text-balance text-lg text-muted-foreground">{t("marketing.hero.subtitle")}</p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button size="lg" asChild>
                 <Link href="/login?clinic=demo-clinic">{t("marketing.hero.tryDemo")}</Link>
@@ -144,7 +144,7 @@ export default function LandingPage() {
       </section>
 
       {/* Product demo mockup */}
-      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+      <section className="mx-auto max-w-6xl animate-scale-in px-4 pb-20 sm:px-6">
         <MockBrowserFrame label={t("marketing.demoMockup.label")}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Card className="sm:col-span-2">
@@ -410,10 +410,4 @@ export default function LandingPage() {
             <a href="mailto:sales@mbnhealth.com" className="hover:text-foreground">{t("marketing.footer.contact")}</a>
             <Link href="/privacy" className="hover:text-foreground">{t("patientPortal.footer.privacy")}</Link>
             <Link href="/terms" className="hover:text-foreground">{t("patientPortal.footer.terms")}</Link>
-            <Link href="/login" className="hover:text-foreground">{t("marketing.nav.login")}</Link>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-}
+            <Link href="/login" className="hover:text-foreground">{t("marketing.nav.lo

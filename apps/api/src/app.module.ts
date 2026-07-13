@@ -33,6 +33,7 @@ import { AiBotModule } from "./ai-bot/ai-bot.module";
 import { RemindersModule } from "./reminders/reminders.module";
 import { BillingSubscriptionModule } from "./billing-subscription/billing-subscription.module";
 import { PatientPortalModule } from "./patient-portal/patient-portal.module";
+import { DirectoryAdminModule } from "./directory-admin/directory-admin.module";
 import { HealthController } from "./health/health.controller";
 import { RootController } from "./health/root.controller";
 
@@ -77,6 +78,7 @@ import { RootController } from "./health/root.controller";
     RemindersModule,
     BillingSubscriptionModule,
     PatientPortalModule,
+    DirectoryAdminModule,
   ],
   controllers: [HealthController, RootController],
   providers: [
@@ -90,9 +92,4 @@ import { RootController } from "./health/root.controller";
         whitelist: true,
         transform: true,
         forbidNonWhitelisted: true,
-        transformOptions: { enableImplicitConversion: true },
-      }),
-    },
-  ],
-})
-export class AppModule {}
+      

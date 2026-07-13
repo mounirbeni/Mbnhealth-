@@ -84,6 +84,7 @@ model Tenant {
   sessions            Session[]
   whatsAppConfig      WhatsAppConfig?
   patientAccountLinks PatientAccountLink[]
+  claimedListing      ClinicListing?
 
   @@map("tenants")
 }
@@ -157,6 +158,7 @@ enum Permission {
   AUDIT_LOG_VIEW
   SETTINGS_MANAGE
   SUBSCRIPTION_MANAGE
+  DIRECTORY_MANAGE
 }
 
 model Role {
@@ -1018,6 +1020,7 @@ model PatientAccount {
 
   links               PatientAccountLink[]
   passwordResetTokens PatientPasswordResetToken[]
+  listingInquiries    ClinicListingInquiry[]
 
   @@map("patient_accounts")
 }
@@ -1048,3 +1051,157 @@ model PatientAccountLink {
   @@unique([patientAccountId, tenantId])
   @@map("patient_account_links")
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// PUBLIC CLINIC DIRECTORY (Find a Clinic — Morocco-wide)
+// ────────────────────────────────────────────────────────────────────────────
+//
+// Deliberately separate from `Tenant`. `Tenant` rows are paying MBN Health
+// customers with a full operational dashboard (staff, EHR, billing, etc).
+// `ClinicListing` rows are real, independently-sourced private clinics
+// (cabinets médicaux) across Morocco — most of them have never signed up for
+// MBN Health at all. They exist so patients can discover and request an
+// appointment at any real clinic, not just ones already on the platform.
+//
+// Every field here must trace back to a public source (Google Maps listing,
+// official clinic/doctor website, or a public healthcare directory). Unknown
+// fields are left null rather than guessed — see `sourceUrl`/`sourceType`/
+// `verifiedAt` for provenance. A listing can later be `claimed` by a real
+// Tenant once that clinic actually joins the platform, at which point its
+// booking flow can be upgraded from a lead-gen inquiry to live scheduling.
+
+enum ClinicListingStatus {
+  ACTIVE // publicly visible, sourced and verified
+  UNVERIFIED // imported but not yet manually verified — hidden from search
+  CLOSED // confirmed permanently closed
+}
+
+enum ClinicListingSourceType {
+  GOOGLE_MAPS
+  OFFICIAL_WEBSITE
+  PUBLIC_DIRECTORY
+  OTHER
+}
+
+model ClinicListing {
+  id           String              @id @default(cuid())
+  slug         String              @unique
+  name         String
+  specialties  String[] // e.g. ["Cardiologie"] — medical specialties only, never inferred
+  city         String
+  neighborhood String?
+  address      String?
+  latitude     Decimal?            @db.Decimal(9, 6)
+  longitude    Decimal?            @db.Decimal(9, 6)
+  googleMapsUrl String?
+  phone        String?
+  email        String?
+  website      String?
+  openingHours Json? // { mon: ["09:00","18:00"], ... } — absent key/value = unknown, not "closed"
+  languages    String[] // spoken languages, only when publicly stated
+  rating       Decimal?            @db.Decimal(2, 1) // 0.0–5.0, copied from source at verifiedAt
+  reviewCount  Int?
+  consultationPriceMinMad Decimal? @db.Decimal(10, 2)
+  consultationPriceMaxMad Decimal? @db.Decimal(10, 2)
+  wheelchairAccessible    Boolean? // null = unknown, NOT false
+  acceptsInsurance        Boolean? // null = unknown, NOT false
+  aboutText    String?
+  status       ClinicListingStatus @default(UNVERIFIED)
+
+  sourceUrl  String? // primary public source used to populate this record
+  sourceType ClinicListingSourceType?
+  verifiedAt DateTime? // when a human last cross-checked this record against sourceUrl
+
+  claimedTenantId String? @unique
+  claimedTenant   Tenant? @relation(fields: [claimedTenantId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  photos    ClinicListingPhoto[]
+  doctors   ClinicListingDoctor[]
+  faqs      ClinicListingFaq[]
+  inquiries ClinicListingInquiry[]
+
+  @@index([city])
+  @@index([status])
+  @@map("clinic_listings")
+}
+
+model ClinicListingPhoto {
+  id              String        @id @default(cuid())
+  clinicListingId String
+  clinicListing   ClinicListing @relation(fields: [clinicListingId], references: [id], onDelete: Cascade)
+  url             String
+  caption         String?
+  sourceUrl       String?
+  sortOrder       Int           @default(0)
+  createdAt       DateTime      @default(now())
+
+  @@index([clinicListingId])
+  @@map("clinic_listing_photos")
+}
+
+model ClinicListingDoctor {
+  id                 String        @id @default(cuid())
+  clinicListingId    String
+  clinicListing      ClinicListing @relation(fields: [clinicListingId], references: [id], onDelete: Cascade)
+  name               String
+  specialty          String?
+  languages          String[]
+  bio                String?
+  qualifications     String?
+  experienceText     String?
+  consultationHours  String?
+  photoUrl           String?
+  registrationNumber String?
+  sourceUrl          String?
+  createdAt          DateTime      @default(now())
+
+  @@index([clinicListingId])
+  @@map("clinic_listing_doctors")
+}
+
+model ClinicListingFaq {
+  id              String        @id @default(cuid())
+  clinicListingId String
+  clinicListing   ClinicListing @relation(fields: [clinicListingId], references: [id], onDelete: Cascade)
+  question        String
+  answer          String
+  sortOrder       Int           @default(0)
+
+  @@index([clinicListingId])
+  @@map("clinic_listing_faqs")
+}
+
+enum ListingInquiryStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+// A patient-initiated appointment request against a real-world clinic that
+// may or may not be an MBN Health tenant. Unlike `Appointment`, this is a
+// lead/request, not a scheduled slot — the clinic confirms it manually
+// (by phone/email today; through a dashboard once/if they claim the listing).
+model ClinicListingInquiry {
+  id                String                @id @default(cuid())
+  clinicListingId   String
+  clinicListing     ClinicListing         @relation(fields: [clinicListingId], references: [id], onDelete: Cascade)
+  patientAccountId  String?
+  patientAccount    PatientAccount?       @relation(fields: [patientAccountId], references: [id])
+  fullName          String
+  phone             String
+  email             String?
+  preferredDate     DateTime?
+  notes             String?
+  status            ListingInquiryStatus  @default(PENDING)
+  reviewedAt        DateTime?
+  reviewNote        String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  @@index([clinicListingId, status])
+  @@map("clinic_lis

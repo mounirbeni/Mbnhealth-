@@ -4,80 +4,58 @@
 
 @layer base {
   :root {
+    /* Neutral scale: cool zinc rather than blue-tinted slate — reads closer
+       to Linear/Vercel/Notion than the default shadcn blue theme. */
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --foreground: 240 10% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 240 10% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 199 89% 48%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 94%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --success: 142 71% 45%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 11%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 199 89% 48%;
-    --radius: 0.625rem;
+    --popover-foreground: 240 10% 8%;
+    /* Primary: a refined indigo-violet instead of a generic sky blue. */
+    --primary: 235 58% 59%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 12%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 235 58% 96%;
+    --accent-foreground: 235 58% 30%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 60% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 92% 48%;
+    --warning-foreground: 0 0% 100%;
+    --border: 240 6% 90%;
+    --input: 240 6% 88%;
+    --ring: 235 58% 59%;
+    --radius: 0.75rem;
+
+    /* Elevation: soft, low-opacity shadows tinted with the neutral hue
+       instead of pure black (Stripe/Linear-style), used via the
+       `surface-card` / `surface-elevated` utilities below. */
+    --shadow-color: 240 30% 10%;
+    --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.04);
+    --shadow-sm: 0 1px 3px hsl(var(--shadow-color) / 0.06), 0 1px 2px hsl(var(--shadow-color) / 0.04);
+    --shadow-md: 0 4px 12px hsl(var(--shadow-color) / 0.08), 0 2px 4px hsl(var(--shadow-color) / 0.04);
+    --shadow-lg: 0 12px 32px hsl(var(--shadow-color) / 0.12), 0 4px 8px hsl(var(--shadow-color) / 0.04);
   }
 
   .dark {
-    --background: 222 47% 7%;
-    --foreground: 210 40% 98%;
-    --card: 222 45% 9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 45% 9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 199 89% 55%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 20%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --success: 142 71% 45%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 11%;
-    --border: 217 33% 20%;
-    --input: 217 33% 20%;
-    --ring: 199 89% 55%;
-  }
-
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "cv11", "ss01";
-  }
-
-  /* Inter has no Arabic glyphs, so RTL content needs the Arabic-covering
-     font ahead of it in the stack instead of falling through to the OS default. */
-  [dir="rtl"] body {
-    font-family: var(--font-arabic), var(--font-sans), system-ui, sans-serif;
-  }
-}
-
-@layer utilities {
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-border rounded-full;
-  }
-}
+    --background: 240 10% 6%;
+    --foreground: 240 10% 96%;
+    --card: 240 9% 9%;
+    --card-foreground: 240 10% 96%;
+    --popover: 240 9% 9%;
+    --popover-foreground: 240 10% 96%;
+    --primary: 235 70% 70%;
+    --primary-foreground: 240 15% 10%;
+    --secondary: 240 6% 15%;
+    --secondary-foreground: 240 10% 96%;
+    --muted: 240 6% 15%;
+    --muted-foreground: 240 5% 64%;
+    --accent: 235 40% 20%;
+    --accent-foreground: 235 70% 85%;
+    --destructive: 0 63% 42%;
+    --destructive-foreground: 0 0

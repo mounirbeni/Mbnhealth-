@@ -4,12 +4,25 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, MapPin, Search, SearchX, Stethoscope, Users, X } from "lucide-react";
+import {
+  ArrowRight,
+  Clock,
+  MapPin,
+  Phone,
+  Search,
+  SearchX,
+  ShieldCheck,
+  Star,
+  Stethoscope,
+  Users,
+  X,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClinicLogo } from "@/components/patient/clinic-logo";
 import { patientApi } from "@/lib/patient-api-client";
 import { useLocale } from "@/lib/i18n/locale-context";
@@ -29,6 +42,23 @@ interface ClinicSearchResult {
 interface Filters {
   cities: string[];
   specialties: string[];
+}
+
+interface DirectoryListingCard {
+  slug: string;
+  name: string;
+  specialties: string[];
+  city: string;
+  neighborhood: string | null;
+  address: string | null;
+  phone: string | null;
+  rating: string | null;
+  reviewCount: number | null;
+  wheelchairAccessible: boolean | null;
+  acceptsInsurance: boolean | null;
+  openNow: boolean | null;
+  coverPhotoUrl: string | null;
+  isOnPlatform: boolean;
 }
 
 const ANY = "__any__";
@@ -83,21 +113,39 @@ function FindClinicContent() {
   const [city, setCity] = useState(searchParams.get("city") ?? "");
   const debouncedQuery = useDebounced(query, 300);
 
+  // "platform" = MBN Health tenant clinics (existing, bookable in real time).
+  // "all" = the Morocco-wide directory of independently sourced real clinics,
+  // most of which aren't MBN Health customers — see ClinicListing.
+  const [tab, setTab] = useState<"platform" | "all">((searchParams.get("tab") as "platform" | "all") ?? "platform");
+  const [openNow, setOpenNow] = useState(false);
+  const [wheelchairAccessible, setWheelchairAccessible] = useState(false);
+  const [acceptsInsurance, setAcceptsInsurance] = useState(false);
+  const [sort, setSort] = useState<"rating" | "reviews" | "name">("name");
+
   // Keep the URL shareable/back-button-friendly without spamming history entries.
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedQuery) params.set("query", debouncedQuery);
     if (specialty) params.set("specialty", specialty);
     if (city) params.set("city", city);
+    if (tab !== "platform") params.set("tab", tab);
     const qs = params.toString();
     router.replace(qs ? `/find-a-clinic?${qs}` : "/find-a-clinic", { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery, specialty, city]);
+  }, [debouncedQuery, specialty, city, tab]);
 
   const { data: filters } = useQuery({
     queryKey: ["clinic-filters"],
     queryFn: () => patientApi.get<Filters>("/public/clinics/filters", { skipAuth: true }),
     staleTime: 5 * 60 * 1000,
+    enabled: tab === "platform",
+  });
+
+  const { data: directoryFilters } = useQuery({
+    queryKey: ["directory-filters"],
+    queryFn: () => patientApi.get<Filters>("/public/directory/filters", { skipAuth: true }),
+    staleTime: 5 * 60 * 1000,
+    enabled: tab === "all",
   });
 
   const { data, isLoading, isFetching } = useQuery({
@@ -111,13 +159,43 @@ function FindClinicContent() {
         })}`,
         { skipAuth: true },
       ),
+    enabled: tab === "platform",
   });
 
-  const hasActiveFilters = Boolean(query || specialty || city);
+  const {
+    data: directoryData,
+    isLoading: directoryLoading,
+    isFetching: directoryFetching,
+  } = useQuery({
+    queryKey: ["directory-search", debouncedQuery, specialty, city, openNow, wheelchairAccessible, acceptsInsurance, sort],
+    queryFn: () =>
+      patientApi.get<DirectoryListingCard[]>(
+        `/public/directory?${new URLSearchParams({
+          ...(debouncedQuery ? { query: debouncedQuery } : {}),
+          ...(specialty ? { specialty } : {}),
+          ...(city ? { city } : {}),
+          ...(openNow ? { openNow: "true" } : {}),
+          ...(wheelchairAccessible ? { wheelchairAccessible: "true" } : {}),
+          ...(acceptsInsurance ? { acceptsInsurance: "true" } : {}),
+          sort,
+        })}`,
+        { skipAuth: true },
+      ),
+    enabled: tab === "all",
+  });
+
+  const activeFilters = tab === "platform" ? filters : directoryFilters;
+  const hasActiveFilters = Boolean(
+    query || specialty || city || (tab === "all" && (openNow || wheelchairAccessible || acceptsInsurance)),
+  );
   const clearFilters = () => {
     setQuery("");
     setSpecialty("");
     setCity("");
+    setOpenNow(false);
+    setWheelchairAccessible(false);
+    setAcceptsInsurance(false);
+    setSort("name");
   };
 
   return (
@@ -126,6 +204,13 @@ function FindClinicContent() {
       <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 sm:p-8">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("patientPortal.findClinic.heroTitle")}</h1>
         <p className="mt-2 max-w-xl text-muted-foreground">{t("patientPortal.findClinic.heroSubtitle")}</p>
+
+        <Tabs value={tab} onValueChange={(v) => setTab(v as "platform" | "all")} className="mt-5">
+          <TabsList>
+            <TabsTrigger value="platform">{t("patientPortal.directory.tabPlatform")}</TabsTrigger>
+            <TabsTrigger value="all">{t("patientPortal.directory.tabAll")}</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           <div className="relative sm:col-span-1">
@@ -147,7 +232,7 @@ function FindClinicContent() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ANY}>{t("patientPortal.findClinic.anyCity")}</SelectItem>
-              {filters?.cities.map((c) => (
+              {activeFilters?.cities.map((c) => (
                 <SelectItem key={c} value={c}>
                   {c}
                 </SelectItem>
@@ -164,7 +249,7 @@ function FindClinicContent() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ANY}>{t("patientPortal.findClinic.anySpecialty")}</SelectItem>
-              {filters?.specialties.map((s) => (
+              {activeFilters?.specialties.map((s) => (
                 <SelectItem key={s} value={s}>
                   {s}
                 </SelectItem>
@@ -173,9 +258,9 @@ function FindClinicContent() {
           </Select>
         </div>
 
-        {!!filters?.specialties.length && (
+        {!!activeFilters?.specialties.length && (
           <div className="mt-4 flex flex-wrap gap-1.5">
-            {filters.specialties.slice(0, 6).map((s) => (
+            {activeFilters.specialties.slice(0, 6).map((s) => (
               <button
                 key={s}
                 onClick={() => setSpecialty(specialty === s ? "" : s)}
@@ -190,100 +275,37 @@ function FindClinicContent() {
             ))}
           </div>
         )}
-      </div>
 
-      {/* Results header */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {isLoading
-            ? t("patientPortal.findClinic.searching")
-            : t(
-                data?.length === 1 ? "patientPortal.findClinic.resultFound" : "patientPortal.findClinic.resultsFound",
-                { count: data?.length ?? 0 },
-              )}
-          {isFetching && !isLoading && (
-            <span className="ml-1 text-muted-foreground/60">{t("patientPortal.findClinic.updating")}</span>
-          )}
-        </p>
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            <X className="h-3.5 w-3.5" /> {t("patientPortal.findClinic.clearFilters")}
-          </Button>
-        )}
-      </div>
-
-      {/* Results */}
-      {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <ClinicCardSkeleton key={i} />
-          ))}
-        </div>
-      ) : !data || data.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-16 text-center">
-          <SearchX className="h-8 w-8 text-muted-foreground" />
-          <p className="font-medium">{t("patientPortal.findClinic.noResultsTitle")}</p>
-          <p className="max-w-sm text-sm text-muted-foreground">{t("patientPortal.findClinic.noResultsDesc")}</p>
-          {hasActiveFilters && (
-            <Button variant="outline" size="sm" onClick={clearFilters}>
-              {t("patientPortal.findClinic.clearFilters")}
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div className="grid gap-5 sm:grid-cols-2">
-          {data.map((clinic) => (
-            <Link key={clinic.slug} href={`/clinics/${clinic.slug}`} className="group block h-full">
-              <Card className="h-full overflow-hidden transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-lg">
-                <div className="h-1.5" style={{ backgroundColor: clinic.primaryColor ?? "#0EA5E9" }} />
-                <CardHeader className="pb-3">
-                  <div className="flex items-start gap-3.5">
-                    <ClinicLogo logoUrl={clinic.logoUrl} name={clinic.name} color={clinic.primaryColor} />
-                    <div className="min-w-0 flex-1">
-                      <CardTitle className="truncate text-lg group-hover:text-primary">{clinic.name}</CardTitle>
-                      {(clinic.address || clinic.city) && (
-                        <CardDescription className="mt-0.5 flex items-start gap-1.5">
-                          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                          <span className="line-clamp-1">{clinic.address ?? clinic.city}</span>
-                        </CardDescription>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pb-4">
-                  {clinic.specialties.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {clinic.specialties.slice(0, 4).map((s) => (
-                        <Badge key={s} variant="secondary">
-                          {s}
-                        </Badge>
-                      ))}
-                      {clinic.specialties.length > 4 && (
-                        <Badge variant="outline">
-                          {t("patientPortal.findClinic.moreSpecialties", { count: clinic.specialties.length - 4 })}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                  <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3">
-                    <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Users className="h-3.5 w-3.5" />
-                      {t(
-                        clinic.doctorCount === 1 ? "patientPortal.findClinic.doctorCount" : "patientPortal.findClinic.doctorsCount",
-                        { count: clinic.doctorCount },
-                      )}
-                    </span>
-                    <span className="flex items-center gap-1 text-sm font-medium text-primary opacity-80 transition-opacity group-hover:opacity-100">
-                      {t("patientPortal.findClinic.viewClinic")}{" "}
-                      <ArrowRight className="h-3.5 w-3.5 transition-transform rtl:rotate-180 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+        {tab === "all" && (
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/60 pt-4">
+            <button
+              onClick={() => setOpenNow((v) => !v)}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                openNow
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground"
+              }`}
+            >
+              <Clock className="h-3.5 w-3.5" /> {t("patientPortal.directory.filterOpenNow")}
+            </button>
+            <button
+              onClick={() => setWheelchairAccessible((v) => !v)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                wheelchairAccessible
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground"
+              }`}
+            >
+              {t("patientPortal.directory.filterWheelchairAccessible")}
+            </button>
+            <button
+              onClick={() => setAcceptsInsurance((v) => !v)}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                acceptsInsurance
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground"
+              }`}
+            >
+              <ShieldCheck className="h-3.5 w-3.5" /> {t("patientPortal.directory.filterAcceptsInsurance")}
+            </button>
+  

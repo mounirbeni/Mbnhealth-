@@ -1054,4 +1054,44 @@ const en = {
         title: "WhatsApp Business Cloud API",
         descBefore: "Connect a real WhatsApp Business phone number from",
         metaLink: "Meta for Developers",
-        descAfter: "to send real reminders
+        descAfter: "to send real reminders and let patients chat with your AI assistant.",
+        webhookLabel: "Webhook URL to paste into your Meta App's WhatsApp configuration:",
+        phoneNumberIdLabel: "Phone number ID",
+        displayPhoneLabel: "Display phone number",
+        businessAccountIdLabel: "Business account ID (optional)",
+        accessTokenLabel: "Access token",
+        accessTokenKeepCurrent: " (leave blank to keep current)",
+        connectionActive: "Connection active",
+        connectionActiveDesc: "Turn off to pause all outbound WhatsApp sends for this clinic.",
+        aiReplies: "AI assistant replies",
+        aiRepliesDesc:
+          "When on, incoming messages get an automatic limited-capability AI reply (clinic FAQ + the patient's own upcoming appointments). When off, messages are just logged for staff to answer.",
+        save: "Save WhatsApp settings",
+        savedToast: "WhatsApp configuration saved",
+        saveFailedToast: "Failed to save",
+      },
+      billing: {
+        title: "Subscription",
+        currentPlan: "Current plan:",
+        current: "Current",
+        currentPlanButton: "Current plan",
+        upgradeToButton: "Upgrade to {name}",
+        contactSales: "Contact sales",
+        manageBilling: "Manage billing & invoices",
+        checkoutNote:
+          "Checkout requires Stripe to be configured by the platform operator (STRIPE_SECRET_KEY and price IDs) — until then this will show a clear error instead of pretending to charge you.",
+        ownerOnly: "Only the clinic owner can manage billing.",
+        checkoutFailedToast: "Checkout is not available yet",
+        portalFailedToast: "Billing portal is not available yet",
+      },
+    },
+  },
+} as const;
+
+export default en;
+
+// Keeps the exact key/nesting shape of `en` but relaxes every leaf to
+// `string`, so ar.ts/fr.ts must provide the same keys while being free to
+// hold any translated text rather than the literal English strings.
+type DeepString<T> = T extends string ? string : { [K in keyof T]: DeepString<T[K]> };
+export type Messages = DeepString<typeof en>;

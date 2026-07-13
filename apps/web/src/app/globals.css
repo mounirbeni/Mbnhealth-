@@ -58,4 +58,71 @@
     --accent: 235 40% 20%;
     --accent-foreground: 235 70% 85%;
     --destructive: 0 63% 42%;
-    --destructive-foreground: 0 0
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 55% 45%;
+    --success-foreground: 152 60% 8%;
+    --warning: 32 92% 55%;
+    --warning-foreground: 32 60% 8%;
+    --border: 240 6% 18%;
+    --input: 240 6% 20%;
+    --ring: 235 70% 70%;
+
+    --shadow-color: 240 60% 2%;
+    --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.4);
+    --shadow-sm: 0 1px 3px hsl(var(--shadow-color) / 0.5), 0 1px 2px hsl(var(--shadow-color) / 0.4);
+    --shadow-md: 0 4px 12px hsl(var(--shadow-color) / 0.5), 0 2px 4px hsl(var(--shadow-color) / 0.4);
+    --shadow-lg: 0 16px 40px hsl(var(--shadow-color) / 0.6), 0 4px 8px hsl(var(--shadow-color) / 0.4);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+  }
+
+  /* Inter has no Arabic glyphs, so RTL content needs the Arabic-covering
+     font ahead of it in the stack instead of falling through to the OS default. */
+  [dir="rtl"] body {
+    font-family: var(--font-arabic), var(--font-sans), system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  /* Premium surface treatments used across redesigned screens. */
+  .surface-card {
+    @apply rounded-xl border border-border bg-card shadow-[var(--shadow-sm)] transition-shadow duration-200;
+  }
+  .surface-card-hover {
+    @apply hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200;
+  }
+  .surface-elevated {
+    box-shadow: var(--shadow-lg);
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .bg-grid-fade {
+    background-image:
+      linear-gradient(to bottom, hsl(var(--background)) 0%, transparent 12%, transparent 88%, hsl(var(--background)) 100%),
+      linear-gradient(hsl(var(--border) / 0.6) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.6) 1px, transparent 1px);
+    background-size: 100% 100%, 48px 48px, 48px 48px;
+  }
+}

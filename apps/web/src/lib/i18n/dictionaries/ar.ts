@@ -1044,4 +1044,46 @@ const ar: Messages = {
         mfaDisableFailedToast: "فشلت العملية",
         activeSessionsTitle: "الجلسات النشطة",
         activeSessionsDesc: "الأجهزة المسجّلة الدخول حاليًا إلى حسابك.",
-        unknownDevice: "
+        unknownDevice: "جهاز غير معروف",
+        lastActive: "آخر نشاط {date}",
+        noActiveSessions: "لا توجد جلسات نشطة.",
+      },
+      whatsapp: {
+        title: "واجهة WhatsApp Business Cloud API",
+        descBefore: "اربط رقم هاتف WhatsApp Business حقيقيًا من",
+        metaLink: "Meta for Developers",
+        descAfter: "لإرسال تذكيرات حقيقية والسماح للمرضى بالمحادثة مع مساعدك الذكي.",
+        webhookLabel: "رابط Webhook لإدراجه في إعدادات WhatsApp لتطبيق Meta الخاص بك:",
+        phoneNumberIdLabel: "معرّف رقم الهاتف",
+        displayPhoneLabel: "رقم الهاتف المعروض",
+        businessAccountIdLabel: "معرّف حساب الأعمال (اختياري)",
+        accessTokenLabel: "رمز الوصول",
+        accessTokenKeepCurrent: " (اتركه فارغًا للاحتفاظ بالحالي)",
+        connectionActive: "الاتصال نشط",
+        connectionActiveDesc: "أوقف التفعيل لإيقاف جميع رسائل واتساب الصادرة لهذه العيادة مؤقتًا.",
+        aiReplies: "ردود المساعد الذكي",
+        aiRepliesDesc:
+          "عند التفعيل، تحصل الرسائل الواردة تلقائيًا على رد محدود القدرات من الذكاء الاصطناعي (الأسئلة الشائعة للعيادة + مواعيد المريض القادمة). عند الإيقاف، تُسجَّل الرسائل فقط ليردّ عليها الموظفون.",
+        save: "حفظ إعدادات واتساب",
+        savedToast: "تم حفظ إعدادات واتساب",
+        saveFailedToast: "فشل الحفظ",
+      },
+      billing: {
+        title: "الاشتراك",
+        currentPlan: "الخطة الحالية:",
+        current: "الحالية",
+        currentPlanButton: "الخطة الحالية",
+        upgradeToButton: "الترقية إلى {name}",
+        contactSales: "تواصل مع المبيعات",
+        manageBilling: "إدارة الفوترة والفواتير",
+        checkoutNote:
+          "يتطلب الدفع تهيئة Stripe من قبل مشغّل المنصة (STRIPE_SECRET_KEY ومعرّفات الأسعار) — وإلى أن يتم ذلك، سيظهر خطأ واضح بدلاً من التظاهر بتحصيل الرسوم.",
+        ownerOnly: "يمكن لمالك العيادة فقط إدارة الفوترة.",
+        checkoutFailedToast: "الدفع غير متاح بعد",
+        portalFailedToast: "بوابة الفوترة غير متاحة بعد",
+      },
+    },
+  },
+};
+
+export default ar;

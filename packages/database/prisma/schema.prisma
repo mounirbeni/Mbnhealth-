@@ -1204,4 +1204,5 @@ model ClinicListingInquiry {
   updatedAt         DateTime              @updatedAt
 
   @@index([clinicListingId, status])
-  @@map("clinic_lis
+  @@map("clinic_listing_inquiries")
+}

@@ -808,4 +808,34 @@ async function main() {
           mon: ["09:00", "17:00"],
           tue: ["09:00", "17:00"],
           wed: ["09:00", "17:00"],
-          thu: ["09:00", "1
+          thu: ["09:00", "17:00"],
+          fri: ["09:00", "13:00"],
+        },
+      },
+    });
+  }
+
+  await seedClinicDirectory();
+
+  console.log("Seed complete.");
+  console.log("─────────────────────────────────────────");
+  console.log("Demo login credentials (all roles share the password below):");
+  console.log(`  Password: ${DEMO_PASSWORD}`);
+  console.log("  Super Admin:  superadmin@mbnhealth.com");
+  console.log("  Clinic Owner: owner@demo-clinic.com");
+  console.log("  Manager:      manager@demo-clinic.com");
+  console.log("  Receptionist: reception@demo-clinic.com");
+  console.log("  Accountant:   accountant@demo-clinic.com");
+  console.log("  Laboratory:   lab@demo-clinic.com");
+  console.log("  Doctor:       dr.hicham@demo-clinic.com");
+  console.log("─────────────────────────────────────────");
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

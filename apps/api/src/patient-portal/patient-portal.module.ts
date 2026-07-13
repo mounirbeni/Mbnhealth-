@@ -27,4 +27,14 @@ import { PlanLimitsService } from "../common/plan-limits/plan-limits.service";
       }),
     }),
   ],
-  controllers: [ClinicDirectoryController, ClinicListingsController, PatientAuthController, Patie
+  controllers: [ClinicDirectoryController, ClinicListingsController, PatientAuthController, PatientBookingsController],
+  providers: [
+    ClinicDirectoryService,
+    ClinicListingsService,
+    PatientAuthService,
+    PatientJwtStrategy,
+    PatientBookingsService,
+    PlanLimitsService,
+  ],
+})
+export class PatientPortalModule {}

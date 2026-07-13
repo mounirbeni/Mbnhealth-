@@ -92,4 +92,9 @@ import { RootController } from "./health/root.controller";
         whitelist: true,
         transform: true,
         forbidNonWhitelisted: true,
-      
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    },
+  ],
+})
+export class AppModule {}

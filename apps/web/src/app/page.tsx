@@ -410,4 +410,10 @@ export default function LandingPage() {
             <a href="mailto:sales@mbnhealth.com" className="hover:text-foreground">{t("marketing.footer.contact")}</a>
             <Link href="/privacy" className="hover:text-foreground">{t("patientPortal.footer.privacy")}</Link>
             <Link href="/terms" className="hover:text-foreground">{t("patientPortal.footer.terms")}</Link>
-            <Link href="/login" className="hover:text-foreground">{t("marketing.nav.lo
+            <Link href="/login" className="hover:text-foreground">{t("marketing.nav.login")}</Link>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

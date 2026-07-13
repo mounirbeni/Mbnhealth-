@@ -1050,4 +1050,44 @@ const fr: Messages = {
         activeSessionsDesc: "Appareils actuellement connectés à votre compte.",
         unknownDevice: "Appareil inconnu",
         lastActive: "Dernière activité {date}",
-        noActiveSessions: "Aucune session 
+        noActiveSessions: "Aucune session active.",
+      },
+      whatsapp: {
+        title: "API WhatsApp Business Cloud",
+        descBefore: "Connectez un vrai numéro WhatsApp Business depuis",
+        metaLink: "Meta for Developers",
+        descAfter: "pour envoyer de vrais rappels et permettre aux patients de discuter avec votre assistant IA.",
+        webhookLabel: "URL de webhook à coller dans la configuration WhatsApp de votre application Meta :",
+        phoneNumberIdLabel: "ID du numéro de téléphone",
+        displayPhoneLabel: "Numéro de téléphone affiché",
+        businessAccountIdLabel: "ID du compte professionnel (facultatif)",
+        accessTokenLabel: "Jeton d'accès",
+        accessTokenKeepCurrent: " (laisser vide pour conserver l'actuel)",
+        connectionActive: "Connexion active",
+        connectionActiveDesc: "Désactivez pour suspendre tous les envois WhatsApp sortants de cette clinique.",
+        aiReplies: "Réponses de l'assistant IA",
+        aiRepliesDesc:
+          "Lorsque activé, les messages entrants reçoivent automatiquement une réponse IA à capacité limitée (FAQ de la clinique + les propres rendez-vous à venir du patient). Lorsque désactivé, les messages sont simplement enregistrés pour que le personnel y réponde.",
+        save: "Enregistrer les paramètres WhatsApp",
+        savedToast: "Configuration WhatsApp enregistrée",
+        saveFailedToast: "Échec de l'enregistrement",
+      },
+      billing: {
+        title: "Abonnement",
+        currentPlan: "Plan actuel :",
+        current: "Actuel",
+        currentPlanButton: "Plan actuel",
+        upgradeToButton: "Passer à {name}",
+        contactSales: "Contacter les ventes",
+        manageBilling: "Gérer la facturation et les factures",
+        checkoutNote:
+          "Le paiement nécessite que Stripe soit configuré par l'opérateur de la plateforme (STRIPE_SECRET_KEY et les ID de prix) — en attendant, un message d'erreur clair s'affichera au lieu de prétendre facturer.",
+        ownerOnly: "Seul le propriétaire de la clinique peut gérer la facturation.",
+        checkoutFailedToast: "Le paiement n'est pas encore disponible",
+        portalFailedToast: "Le portail de facturation n'est pas encore disponible",
+      },
+    },
+  },
+};
+
+export default fr;

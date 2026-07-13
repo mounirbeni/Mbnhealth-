@@ -308,4 +308,195 @@ function FindClinicContent() {
             >
               <ShieldCheck className="h-3.5 w-3.5" /> {t("patientPortal.directory.filterAcceptsInsurance")}
             </button>
-  
+            <div className="ms-auto">
+              <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+                <SelectTrigger className="h-8 w-auto gap-1.5 bg-background text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">A–Z</SelectItem>
+                  <SelectItem value="rating">{t("patientPortal.directory.filterHighestRated")}</SelectItem>
+                  <SelectItem value="reviews">{t("patientPortal.directory.filterMostReviewed")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {tab === "all" && <p className="text-xs text-muted-foreground">{t("patientPortal.directory.sourceNote")}</p>}
+
+      {/* Results header */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {(tab === "platform" ? isLoading : directoryLoading)
+            ? t("patientPortal.findClinic.searching")
+            : t(
+                (tab === "platform" ? data : directoryData)?.length === 1
+                  ? "patientPortal.findClinic.resultFound"
+                  : "patientPortal.findClinic.resultsFound",
+                { count: (tab === "platform" ? data : directoryData)?.length ?? 0 },
+              )}
+          {(tab === "platform" ? isFetching && !isLoading : directoryFetching && !directoryLoading) && (
+            <span className="ml-1 text-muted-foreground/60">{t("patientPortal.findClinic.updating")}</span>
+          )}
+        </p>
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
+            <X className="h-3.5 w-3.5" /> {t("patientPortal.findClinic.clearFilters")}
+          </Button>
+        )}
+      </div>
+
+      {/* Results */}
+      {tab === "all" ? (
+        directoryLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <ClinicCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : !directoryData || directoryData.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-16 text-center">
+            <SearchX className="h-8 w-8 text-muted-foreground" />
+            <p className="font-medium">{t("patientPortal.findClinic.noResultsTitle")}</p>
+            <p className="max-w-sm text-sm text-muted-foreground">{t("patientPortal.findClinic.noResultsDesc")}</p>
+            {hasActiveFilters && (
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                {t("patientPortal.findClinic.clearFilters")}
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2">
+            {directoryData.map((clinic) => (
+              <Link key={clinic.slug} href={`/directory/${clinic.slug}`} className="group block h-full">
+                <Card className="surface-card surface-card-hover h-full overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="truncate text-lg group-hover:text-primary">{clinic.name}</CardTitle>
+                        {(clinic.address || clinic.city) && (
+                          <CardDescription className="mt-0.5 flex items-start gap-1.5">
+                            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                            <span className="line-clamp-1">{clinic.address ?? clinic.city}</span>
+                          </CardDescription>
+                        )}
+                      </div>
+                      <Badge variant={clinic.isOnPlatform ? "default" : "outline"} className="shrink-0">
+                        {clinic.isOnPlatform
+                          ? t("patientPortal.directory.badgeOnPlatform")
+                          : t("patientPortal.directory.badgeOffPlatform")}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pb-4">
+                    {clinic.specialties.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {clinic.specialties.slice(0, 4).map((s) => (
+                          <Badge key={s} variant="secondary">
+                            {s}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-3">
+                        {clinic.rating && (
+                          <span className="flex items-center gap-1">
+                            <Star className="h-3.5 w-3.5 fill-warning text-warning" />
+                            {clinic.rating}
+                            {clinic.reviewCount ? ` (${clinic.reviewCount})` : ""}
+                          </span>
+                        )}
+                        {clinic.phone && (
+                          <span className="hidden items-center gap-1 sm:flex">
+                            <Phone className="h-3.5 w-3.5" /> {clinic.phone}
+                          </span>
+                        )}
+                      </span>
+                      <span className="flex items-center gap-1 font-medium text-primary opacity-80 transition-opacity group-hover:opacity-100">
+                        {t("patientPortal.findClinic.viewClinic")}{" "}
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform rtl:rotate-180 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )
+      ) : isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <ClinicCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : !data || data.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-16 text-center">
+          <SearchX className="h-8 w-8 text-muted-foreground" />
+          <p className="font-medium">{t("patientPortal.findClinic.noResultsTitle")}</p>
+          <p className="max-w-sm text-sm text-muted-foreground">{t("patientPortal.findClinic.noResultsDesc")}</p>
+          {hasActiveFilters && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              {t("patientPortal.findClinic.clearFilters")}
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="grid gap-5 sm:grid-cols-2">
+          {data.map((clinic) => (
+            <Link key={clinic.slug} href={`/clinics/${clinic.slug}`} className="group block h-full">
+              <Card className="h-full overflow-hidden transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-lg">
+                <div className="h-1.5" style={{ backgroundColor: clinic.primaryColor ?? "#0EA5E9" }} />
+                <CardHeader className="pb-3">
+                  <div className="flex items-start gap-3.5">
+                    <ClinicLogo logoUrl={clinic.logoUrl} name={clinic.name} color={clinic.primaryColor} />
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="truncate text-lg group-hover:text-primary">{clinic.name}</CardTitle>
+                      {(clinic.address || clinic.city) && (
+                        <CardDescription className="mt-0.5 flex items-start gap-1.5">
+                          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                          <span className="line-clamp-1">{clinic.address ?? clinic.city}</span>
+                        </CardDescription>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-4">
+                  {clinic.specialties.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {clinic.specialties.slice(0, 4).map((s) => (
+                        <Badge key={s} variant="secondary">
+                          {s}
+                        </Badge>
+                      ))}
+                      {clinic.specialties.length > 4 && (
+                        <Badge variant="outline">
+                          {t("patientPortal.findClinic.moreSpecialties", { count: clinic.specialties.length - 4 })}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                  <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3">
+                    <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <Users className="h-3.5 w-3.5" />
+                      {t(
+                        clinic.doctorCount === 1 ? "patientPortal.findClinic.doctorCount" : "patientPortal.findClinic.doctorsCount",
+                        { count: clinic.doctorCount },
+                      )}
+                    </span>
+                    <span className="flex items-center gap-1 text-sm font-medium text-primary opacity-80 transition-opacity group-hover:opacity-100">
+                      {t("patientPortal.findClinic.viewClinic")}{" "}
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform rtl:rotate-180 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

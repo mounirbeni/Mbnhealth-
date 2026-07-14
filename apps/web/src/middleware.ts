@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 // is needed — just visit http://care.localhost:3000.
 const PATIENT_HOST = process.env.PATIENT_HOST ?? process.env.NEXT_PUBLIC_PATIENT_HOST ?? "care.localhost:3000";
 
-const PATIENT_PATH_PREFIXES = ["/find-a-clinic", "/clinics", "/patient"];
+const PATIENT_PATH_PREFIXES = ["/find-a-clinic", "/clinics", "/directory", "/patient"];
 
 // Legal pages make sense on both the clinic app and the patient portal, so
 // they're exempt from the host-based wall in both directions.

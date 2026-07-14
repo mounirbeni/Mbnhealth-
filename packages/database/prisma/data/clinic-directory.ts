@@ -1,27 +1,32 @@
 // Curated, sourced dataset of real private clinics (cabinets médicaux) in
 // Morocco for the public "Find a Clinic" directory.
 //
-// SCOPE: this is a starter set for two cities (Casablanca, Rabat), not a
-// nationwide catalog — expanding coverage requires the same
-// research-and-verify process for each additional city.
+// SCOPE: starter coverage for seven cities (Casablanca, Rabat, Marrakech,
+// Fès, Tanger, Agadir, Meknès), not a nationwide catalog — expanding
+// coverage requires the same research-and-verify process for each
+// additional city.
 //
 // PROVENANCE: every record was compiled from the individual clinic listing
-// page on www.pharmacieenpermanence.ma (a public Moroccan medical directory)
-// on 2026-07-13. `sourceUrl` on each record points at the exact page used.
-// Only fields that were present on that source page are filled in — fields
-// the source didn't publish (email, website, opening hours, photos, rating,
-// review count, languages, pricing, accessibility) are deliberately left
-// empty rather than guessed, per MBN Health's no-fabrication data policy.
-// GPS coordinates are only included for listings where the source page
-// published an embedded map; the rest are left null.
+// page on www.pharmacieenpermanence.ma (a public Moroccan medical directory).
+// `sourceUrl` on each record points at the exact page used, and `verifiedAt`
+// records the date that page was checked — see VERIFIED_AT (2026-07-13,
+// Casablanca/Rabat) and VERIFIED_AT_BATCH_2 (2026-07-14, the five newer
+// cities) below. Only fields that were present on that source page are
+// filled in — fields the source didn't publish (email, website, opening
+// hours, photos, rating, review count, languages, pricing, accessibility)
+// are deliberately left empty rather than guessed, per MBN Health's
+// no-fabrication data policy. GPS coordinates are only included for
+// listings where the source page published an embedded map; the rest are
+// left null.
 //
 // Before this data is shown to real patients in production, each listing
 // should also be spot-checked against Google Maps / the clinic's own
 // channels and, ideally, a confirmation call — `verifiedAt` here reflects
-// only that the record matches its `sourceUrl` as of the date above, not an
+// only that the record matches its `sourceUrl` as of that date, not an
 // independent call to the clinic.
 
 export const VERIFIED_AT = new Date("2026-07-13T00:00:00.000Z");
+export const VERIFIED_AT_BATCH_2 = new Date("2026-07-14T00:00:00.000Z");
 const SOURCE = "https://www.pharmacieenpermanence.ma";
 
 export interface ClinicListingSeed {
@@ -35,6 +40,8 @@ export interface ClinicListingSeed {
   longitude?: number;
   phone?: string;
   sourceUrl: string;
+  /** Defaults to VERIFIED_AT when omitted — set explicitly for later-added batches. */
+  verifiedAt?: Date;
 }
 
 export const CLINIC_LISTINGS: ClinicListingSeed[] = [
@@ -297,5 +304,310 @@ export const CLINIC_LISTINGS: ClinicListingSeed[] = [
     address: "352 Avenue Mohamed V, Quartier Hassan, Rabat",
     phone: "0661291040",
     sourceUrl: `${SOURCE}/docteur/cabinet-medical/rabat/dr-bengebara-moncef-chirurgien-proctologue`,
+  },
+
+  // ── Marrakech ─────────────────────────────────────────────────────────────
+  {
+    slug: "dr-belmoukari-hajar-psychiatre-marrakech",
+    name: "Dr. Belmoukari Hajar – Psychiatre-Psychothérapeute",
+    specialties: ["Psychiatrie"],
+    city: "Marrakech",
+    address: "3ème étage, Hay Massira 1 A, Immeuble 79, Appartement N°4, Marrakech",
+    phone: "0524343389",
+    sourceUrl: `${SOURCE}/docteur/cabinet-medical/marrakech/dr-belmoukari-hajar-psychiatre-psychotherapeute`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "dr-mouna-zaki-gynecologue-marrakech",
+    name: "Dr Mouna Zaki – Gynécologue",
+    specialties: ["Gynécologie"],
+    city: "Marrakech",
+    address: "Appartement 10, 3e étage, Résidence Zitouna, Avenue Abdelkrim Khattabi, Marrakech",
+    sourceUrl: `${SOURCE}/docteur/cabinet-medical/marrakech/dr-mouna-zaki-gynecologue-marrakech`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "centre-de-sante-agdal-marrakech",
+    name: "Centre de Santé Agdal",
+    specialties: [],
+    city: "Marrakech",
+    address: "Rue Bab Doukkala, Marrakech",
+    phone: "0524387961",
+    sourceUrl: `${SOURCE}/docteur/centre-medical/marrakech/centre-de-sante-agdal`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "harit-osteopathe-marrakech",
+    name: "Harit Ostéopathe",
+    specialties: ["Ostéopathie"],
+    city: "Marrakech",
+    neighborhood: "Guéliz",
+    address: "Rue Ibn Sina, Semlalia, Guéliz, Marrakech",
+    phone: "0600998995",
+    sourceUrl: `${SOURCE}/docteur/osteopathe/marrakech/harit-osteopathe`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "gynolife-clinic-saarah-el-bouyousfi-marrakech",
+    name: "Gynolife Clinic – Dr Saarah El Bouyousfi",
+    specialties: ["Gynécologie-Obstétrique"],
+    city: "Marrakech",
+    neighborhood: "Guéliz",
+    address: "Centre d'Affaires Jnane Guéliz, Immeuble M, N°3 Rue Errouda, Marrakech",
+    phone: "0666127510",
+    sourceUrl: `${SOURCE}/docteur/gynecologue-obstetricien/marrakech/gynolife-clinic-by-dr-saarah-el-bouyousfi`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "cabinet-ophtalmologie-sanaa-talha-naciri-marrakech",
+    name: "Cabinet d'Ophtalmologie – Dr Sanaa Talha Naciri",
+    specialties: ["Ophtalmologie"],
+    city: "Marrakech",
+    address: "Résidence Adam Plaza, 48 Rue Yougoslavie, Marrakech",
+    sourceUrl: `${SOURCE}/docteur/ophtalmologiste/marrakech/cabinet-d-ophtalmologie-dr-sanaa-talha-naciri`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "cabinet-cardiologie-rachid-lina-marrakech",
+    name: "Cabinet de Cardiologie – Dr Rachid Lina",
+    specialties: ["Cardiologie"],
+    city: "Marrakech",
+    address: "Appartement 20, au-dessus du Laboratoire Majorelle, Boulevard Allal Al Fassi, Marrakech",
+    phone: "0525536383",
+    sourceUrl: `${SOURCE}/docteur/cardiologue/marrakech/cabinet-de-cardiologie-dr-rachid-lina`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "cabinet-dermatologue-sara-batoul-mouafik-marrakech",
+    name: "Cabinet Dermatologue – Dr Sara Batoul Mouafik",
+    specialties: ["Dermatologie"],
+    city: "Marrakech",
+    address: "Résidence Saïda, Appartement 18, Avenue 4ème D.M.M., Camp El Ghoul, Marrakech",
+    phone: "0524421600",
+    sourceUrl: `${SOURCE}/docteur/dermatologue/marrakech/cabinet-dermatologue-dr-sara-batoul-mouafik-dermatologue-marrakech`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "dr-ourahay-bachir-chirurgien-pediatre-marrakech",
+    name: "Dr Ourahay Bachir – Chirurgien Pédiatre",
+    specialties: ["Chirurgie pédiatrique"],
+    city: "Marrakech",
+    address: "Appartement 23, 4e étage, Jardin d'Abrar, Marrakech",
+    sourceUrl: `${SOURCE}/docteur/chirurgien-pediatrique/marrakech/dr-ourahay-bachir-chirurgien-pediatre-marrakech`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+
+  // ── Fès ───────────────────────────────────────────────────────────────────
+  {
+    slug: "cabinet-paramedical-mbarek-fes",
+    name: "Cabinet Paramédical M'Barek",
+    specialties: [],
+    city: "Fès",
+    address: "8 bis Avenue Imam Ali, Fès",
+    phone: "0535626860",
+    sourceUrl: `${SOURCE}/docteur/cabinet-medical/fes/cabinet-paramedical-m-barek`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "cabinet-medecine-interne-meliani-kaoutar-fes",
+    name: "Cabinet de Médecine Interne – Dr Meliani Kaoutar",
+    specialties: ["Médecine interne"],
+    city: "Fès",
+    address: "81 Boulevard Mohammed V, Fès",
+    phone: "0663198393",
+    sourceUrl: `${SOURCE}/docteur/interniste/fes/cabinet-de-medecine-interne-de-dr-meliani-kaoutar`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "cabinet-dermatologie-kawtar-inani-fes",
+    name: "Cabinet de Dermatologie – Dr Kawtar Inani",
+    specialties: ["Dermatologie"],
+    city: "Fès",
+    address: "Avenue Mohammed Es Slaoui, Fès",
+    phone: "0535651110",
+    sourceUrl: `${SOURCE}/docteur/medecin/fes/cabinet-de-dermatologie-dr-kawtar-inani`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "cabinet-neurologie-yahyaoui-ali-fes",
+    name: "Cabinet de Neurologie – Dr Yahyaoui Ali",
+    specialties: ["Neurologie"],
+    city: "Fès",
+    address: "5e étage, Bureau N°21, Espace Bureaux Le Moulin, Avenue des Forces Armées Royales, Fès",
+    phone: "0663616009",
+    sourceUrl: `${SOURCE}/docteur/cabinet-medical/fes/cabinet-de-neurologie-dr-yahyaoui-ali`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "cabinet-fadi-abu-mattar-gynecologue-fes",
+    name: "Cabinet Dr Fadi Abu Mattar – Gynécologue-Obstétricien",
+    specialties: ["Gynécologie-Obstétrique"],
+    city: "Fès",
+    neighborhood: "Agdal",
+    address: "N17, Espace Zanzibar, 2e étage, Rue Abdelkrim El Khattabi, Boulevard Mohammed V, Fès Agdal, Fès",
+    phone: "0535624906",
+    sourceUrl: `${SOURCE}/docteur/gynecologue-obstetricien/fes/cabinet-dr-fadi-abu-mattar`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "clinique-benmoussa-fes",
+    name: "Clinique Benmoussa",
+    specialties: [],
+    city: "Fès",
+    address: "Boulevard Slaoui, 87 Rue Omar Al Idrissi, Fès",
+    phone: "0535626464",
+    sourceUrl: `${SOURCE}/docteur/clinique/fes/clinique-benmoussa`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+
+  // ── Tanger ────────────────────────────────────────────────────────────────
+  {
+    slug: "cabinet-allergologie-jouhri-tanger",
+    name: "Cabinet d'Allergologie – Dr M. Jouhri",
+    specialties: ["Allergologie"],
+    city: "Tanger",
+    address: "Rue Rachid Rida, Tanger",
+    phone: "0539944817",
+    sourceUrl: `${SOURCE}/docteur/allergologue/tanger/cabinet-d-allergologie-du-dr-m-jouhri`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "dr-id-hammou-wassima-dermatologue-tanger",
+    name: "Dr Id Hammou Wassima – Dermatologue",
+    specialties: ["Dermatologie"],
+    city: "Tanger",
+    address: "5 Rue Zellaka, Tanger",
+    phone: "0539342489",
+    sourceUrl: `${SOURCE}/docteur/dermatologue/tanger/dr-id-hammou-wassima`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "medidental-clinic-tanger",
+    name: "Medidental Clinic",
+    specialties: ["Dentisterie"],
+    city: "Tanger",
+    address: "26 Rue Ibn Zaidoun, Tanger",
+    phone: "0539952020",
+    sourceUrl: `${SOURCE}/docteur/cabinet-dentaire/tanger/medidental-clinic`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "cabinet-gynecologie-samia-mahmoud-tanger",
+    name: "Cabinet de Gynécologie-Obstétrique – Dr Samia Mahmoud",
+    specialties: ["Gynécologie-Obstétrique"],
+    city: "Tanger",
+    address: "Business Center 2, Rond-Point, 157 Rue de Fès, Tanger",
+    sourceUrl: `${SOURCE}/docteur/cabinet-medical/tanger/cabinet-de-gynecologie-obstetrique-dr-samia-mahmoud`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "cabinet-cardiologie-mouad-karboubi-tanger",
+    name: "Cabinet de Cardiologie – Dr Mouad Karboubi",
+    specialties: ["Cardiologie"],
+    city: "Tanger",
+    address: "N°6, Immeuble Riad Zalga 1B, Boulevard Royaume d'Arabie Saoudite, Tanger",
+    sourceUrl: `${SOURCE}/docteur/cardiologue/tanger/cardiologue-dr-mouad-karboubi`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+
+  // ── Agadir ────────────────────────────────────────────────────────────────
+  {
+    slug: "dr-hafid-imane-pediatre-agadir",
+    name: "Dr Hafid Imane – Pédiatre",
+    specialties: ["Pédiatrie"],
+    city: "Agadir",
+    address: "Immeuble A, N°42 Avenue Kadi Ayad, Agadir",
+    sourceUrl: `${SOURCE}/docteur/cabinet-medical/agadir/dr-hafid-imane-pediatre-immeuble-yasmine-4eme-etage`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "dr-hafida-bougrini-cardiologue-agadir",
+    name: "Dr Hafida Bougrini – Cardiologue",
+    specialties: ["Cardiologie"],
+    city: "Agadir",
+    phone: "0528221407",
+    sourceUrl: `${SOURCE}/docteur/cabinet-medical/agadir/dr-hafida-bougrini-cardiologue`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "clinique-orl-moulay-youssef-agadir",
+    name: "Clinique Spécialisée Moulay Youssef – Dr M'Hammed Khaoua",
+    specialties: ["ORL (Oto-rhino-laryngologie)"],
+    city: "Agadir",
+    address: "Avenue Moulay Youssef, Agadir",
+    phone: "0528847555",
+    sourceUrl: `${SOURCE}/docteur/clinique-orl/agadir/clinique-specialisee-moulay-youssef-dr-m-hammed-khaoua`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "dr-mouradi-ahmed-endocrinologue-agadir",
+    name: "Dr Mouradi Ahmed – Endocrinologie et Diabétologie",
+    specialties: ["Endocrinologie"],
+    city: "Agadir",
+    phone: "0528238438",
+    sourceUrl: `${SOURCE}/docteur/endocrinologue/agadir/dr-mouradi-ahmed-endocrinologie-et-diabetologie`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "cabinet-neurologie-mustapha-chaqda-agadir",
+    name: "Cabinet de Neurologie – Dr Mustapha Chaqda",
+    specialties: ["Neurologie"],
+    city: "Agadir",
+    address: "N°520, Immeuble Maison de l'Avocat, 1 Boulevard Hassan II, Agadir",
+    sourceUrl: `${SOURCE}/docteur/neurologue/agadir/cabinet-de-neurologie-dr-mustapha-chaqda`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "dr-mohamed-el-abidi-dentiste-agadir",
+    name: "Dr Mohamed El Abidi – Cabinet Dentaire",
+    specialties: ["Dentisterie"],
+    city: "Agadir",
+    address: "3 Cité Dakhla, Agadir",
+    phone: "0528223799",
+    sourceUrl: `${SOURCE}/docteur/cabinet-dentaire/agadir/dr-mohamed-el-abidi`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+
+  // ── Meknès ────────────────────────────────────────────────────────────────
+  {
+    slug: "cabinet-gynecologie-hajar-haddouchane-meknes",
+    name: "Cabinet de Gynécologie – Dr Hajar Haddouchane",
+    specialties: ["Gynécologie"],
+    city: "Meknès",
+    address: "32 Boulevard Allal Ben Abdallah, Meknès",
+    sourceUrl: `${SOURCE}/docteur/cabinet-medical/meknes/cabinet-de-gynecologie-dr-hajar-haddouchane-meknes`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "dr-khaldouni-imane-meknes",
+    name: "Dr Khaldouni Imane",
+    specialties: [],
+    city: "Meknès",
+    neighborhood: "Ville Nouvelle",
+    address: "N°12, Immeuble 26, 3e étage, Boulevard Idriss II, Ville Nouvelle, Meknès",
+    phone: "0535520400",
+    sourceUrl: `${SOURCE}/docteur/cabinet-medical/meknes/dr-khaldouni-imane`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "clinique-toulal-meknes",
+    name: "Clinique Toulal",
+    specialties: [],
+    city: "Meknès",
+    address: "Immeuble N I-71, Riad Toulal, Meknès",
+    phone: "0535480025",
+    sourceUrl: `${SOURCE}/docteur/clinique/meknes/clinique-toulal`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
+  },
+  {
+    slug: "cabinet-dentaire-benabderrahmane-asmae-meknes",
+    name: "Cabinet Dentaire – Dr Benabderrahmane Asmae",
+    specialties: ["Dentisterie"],
+    city: "Meknès",
+    neighborhood: "Hamria",
+    address: "Rue Abou Al Hassan Al Marini, Résidence Amira 2, 3e étage, Appartement N°7, Hamria, Meknès",
+    phone: "0535512929",
+    sourceUrl: `${SOURCE}/docteur/cabinet-dentaire/meknes/cabinet-dr-benabderrahmane-asmae`,
+    verifiedAt: VERIFIED_AT_BATCH_2,
   },
 ];

@@ -24,7 +24,7 @@ export async function seedClinicDirectory(prisma: PrismaClient) {
         status: "ACTIVE",
         sourceUrl: listing.sourceUrl,
         sourceType: "PUBLIC_DIRECTORY",
-        verifiedAt: VERIFIED_AT,
+        verifiedAt: listing.verifiedAt ?? VERIFIED_AT,
       },
     });
   }

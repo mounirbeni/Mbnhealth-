@@ -34,7 +34,7 @@ export default function AuditLogsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.auditLogs.title")}</h1>
+        <h1 className="text-page-title">{t("dashboard.auditLogs.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("dashboard.auditLogs.subtitle")}</p>
       </div>
 

@@ -132,7 +132,7 @@ export default function DoctorsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.doctors.title")}</h1>
+          <h1 className="text-page-title">{t("dashboard.doctors.title")}</h1>
           <p className="text-sm text-muted-foreground">
             {t("dashboard.doctors.countOnStaff", { count: doctors?.length ?? 0 })}
           </p>

@@ -201,7 +201,7 @@ export default function PatientDetailPage() {
           <AvatarFallback className="text-lg">{initials(patient.firstName, patient.lastName)}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <h1 className="text-xl font-semibold tracking-tight">
+          <h1 className="text-page-title">
             {patient.firstName} {patient.lastName}
           </h1>
           <p className="text-sm text-muted-foreground">

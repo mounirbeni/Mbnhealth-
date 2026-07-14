@@ -15,6 +15,7 @@ import {
   startOfWeek,
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ import { AppointmentDetailSheet } from "./appointment-detail-sheet";
 import type { Appointment } from "@/types";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api-client";
+import { transitionBase } from "@/lib/motion";
 
 const START_HOUR = 8;
 const END_HOUR = 19;
@@ -180,15 +182,18 @@ export function CalendarView() {
                     const top = (startMinutes / 60) * HOUR_HEIGHT;
                     const height = Math.max(20, (durationMinutes / 60) * HOUR_HEIGHT - 2);
                     return (
-                      <div
+                      <motion.div
                         key={a.id}
+                        layout
+                        transition={transitionBase}
+                        whileHover={{ scale: 1.02 }}
                         draggable
                         onDragStart={() => {
                           window.__mbnDraggedAppointment = a;
                         }}
                         onClick={() => setSelectedAppointment(a)}
                         style={{ top, height }}
-                        className="absolute left-1 right-1 cursor-pointer overflow-hidden rounded-md border border-primary/20 bg-primary/10 px-1.5 py-1 text-[11px] leading-tight text-primary shadow-sm transition-transform hover:scale-[1.02]"
+                        className="absolute left-1 right-1 cursor-pointer overflow-hidden rounded-md border border-primary/20 bg-primary/10 px-1.5 py-1 text-[11px] leading-tight text-primary shadow-sm"
                       >
                         <p className="truncate font-medium">
                           {format(start, "HH:mm")} {a.patient.firstName} {a.patient.lastName}
@@ -197,7 +202,7 @@ export function CalendarView() {
                         <Badge variant={STATUS_BADGE_VARIANT[a.status] ?? "secondary"} className="mt-0.5 px-1 py-0 text-[9px]">
                           {a.status}
                         </Badge>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>

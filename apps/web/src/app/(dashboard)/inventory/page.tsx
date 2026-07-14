@@ -101,7 +101,7 @@ export default function InventoryPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.inventory.title")}</h1>
+          <h1 className="text-page-title">{t("dashboard.inventory.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("dashboard.inventory.subtitle")}</p>
         </div>
         {hasPermission("INVENTORY_WRITE") && <NewItemDialog />}

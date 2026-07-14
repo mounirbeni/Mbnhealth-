@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CalendarView } from "@/components/appointments/calendar-view";
 import { AppointmentFormDialog } from "@/components/appointments/appointment-form-dialog";
+import { ReceptionQueue } from "@/components/appointments/reception-queue";
 import { useWaitlist } from "@/hooks/use-appointments";
 import { useAuth } from "@/lib/auth-context";
 import { formatDate, initials } from "@/lib/utils";
@@ -19,11 +20,13 @@ export default function AppointmentsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.appointments.title")}</h1>
+          <h1 className="text-page-title">{t("dashboard.appointments.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("dashboard.appointments.subtitle")}</p>
         </div>
         {hasPermission("APPOINTMENTS_WRITE") && <AppointmentFormDialog />}
       </div>
+
+      <ReceptionQueue />
 
       <Tabs defaultValue="calendar">
         <TabsList>

@@ -22,6 +22,7 @@ import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api-client";
 import { initials, formatDateTime } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { useCommandPalette } from "@/components/layout/command-palette-context";
 
 interface Notification {
   id: string;
@@ -36,6 +37,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const { t } = useLocale();
+  const { setOpen: setCommandPaletteOpen } = useCommandPalette();
 
   const { data: unread } = useQuery({
     queryKey: ["notifications", "unread-count"],
@@ -51,11 +53,11 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/95 px-4 backdrop-blur">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuClick}>
+        <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
           <Menu className="h-5 w-5" />
         </Button>
         <button
-          onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }))}
+          onClick={() => setCommandPaletteOpen(true)}
           className="hidden items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent sm:flex"
         >
           <Search className="h-4 w-4" />

@@ -1,5 +1,6 @@
 import { type LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
@@ -8,6 +9,8 @@ interface StatCardProps {
   icon: LucideIcon;
   accent?: "primary" | "success" | "warning" | "destructive";
   hint?: string;
+  isLoading?: boolean;
+  className?: string;
 }
 
 const accentClasses = {
@@ -17,13 +20,17 @@ const accentClasses = {
   destructive: "bg-destructive/10 text-destructive",
 };
 
-export function StatCard({ label, value, icon: Icon, accent = "primary", hint }: StatCardProps) {
+export function StatCard({ label, value, icon: Icon, accent = "primary", hint, isLoading, className }: StatCardProps) {
   return (
-    <Card>
+    <Card className={cn("surface-card-hover", className)}>
       <CardContent className="flex items-start justify-between gap-2 p-5">
-        <div>
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p>
+        <div className="min-w-0">
+          <p className="truncate text-sm text-muted-foreground">{label}</p>
+          {isLoading ? (
+            <Skeleton className="mt-1.5 h-7 w-20" />
+          ) : (
+            <p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p>
+          )}
           {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
         </div>
         <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", accentClasses[accent])}>

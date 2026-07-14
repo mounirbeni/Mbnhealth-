@@ -184,6 +184,16 @@ function FindClinicContent() {
     enabled: tab === "all",
   });
 
+  // Platform clinics use English specialties entered by clinic staff; the
+  // sourced directory uses French specialties — the two vocabularies don't
+  // overlap, so a specialty/city picked on one tab silently matches nothing
+  // on the other. Clear filter selections that don't carry over on tab switch.
+  const handleTabChange = (next: "platform" | "all") => {
+    setTab(next);
+    setSpecialty("");
+    setCity("");
+  };
+
   const activeFilters = tab === "platform" ? filters : directoryFilters;
   const hasActiveFilters = Boolean(
     query || specialty || city || (tab === "all" && (openNow || wheelchairAccessible || acceptsInsurance)),
@@ -205,7 +215,7 @@ function FindClinicContent() {
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("patientPortal.findClinic.heroTitle")}</h1>
         <p className="mt-2 max-w-xl text-muted-foreground">{t("patientPortal.findClinic.heroSubtitle")}</p>
 
-        <Tabs value={tab} onValueChange={(v) => setTab(v as "platform" | "all")} className="mt-5">
+        <Tabs value={tab} onValueChange={(v) => handleTabChange(v as "platform" | "all")} className="mt-5">
           <TabsList>
             <TabsTrigger value="platform">{t("patientPortal.directory.tabPlatform")}</TabsTrigger>
             <TabsTrigger value="all">{t("patientPortal.directory.tabAll")}</TabsTrigger>

@@ -141,6 +141,7 @@ const en = {
       filterAcceptsInsurance: "Accepts insurance",
       filterWheelchairAccessible: "Wheelchair accessible",
       sourceNote: "Clinic details are compiled from public listings — call ahead to confirm before visiting.",
+      notYetRated: "Not yet rated",
       requestAppointment: "Request an appointment",
       requestIntro: "This clinic isn't on MBN Health yet — your request is sent directly, and the clinic will contact you to confirm.",
       requestSent: "Request sent. The clinic will contact you to confirm your appointment.",

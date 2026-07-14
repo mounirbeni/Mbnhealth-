@@ -35,6 +35,7 @@ function toCard(listing: {
   openingHours: unknown;
   photos: { url: string }[];
   claimedTenantId: string | null;
+  _count: { doctors: number };
 }) {
   return {
     slug: listing.slug,
@@ -51,6 +52,7 @@ function toCard(listing: {
     openNow: isOpenNow(listing.openingHours),
     coverPhotoUrl: listing.photos[0]?.url ?? null,
     isOnPlatform: Boolean(listing.claimedTenantId),
+    doctorsCount: listing._count.doctors,
     source: "directory" as const,
   };
 }
@@ -103,6 +105,7 @@ export class ClinicListingsService {
         openingHours: true,
         claimedTenantId: true,
         photos: { select: { url: true }, orderBy: { sortOrder: "asc" }, take: 1 },
+        _count: { select: { doctors: true } },
       },
     });
 
@@ -155,6 +158,7 @@ export class ClinicListingsService {
         openingHours: true,
         claimedTenantId: true,
         photos: { select: { url: true }, orderBy: { sortOrder: "asc" }, take: 1 },
+        _count: { select: { doctors: true } },
       },
       take: 4,
     });

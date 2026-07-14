@@ -143,6 +143,7 @@ const fr: Messages = {
       filterAcceptsInsurance: "Accepte les assurances",
       filterWheelchairAccessible: "Accessible en fauteuil roulant",
       sourceNote: "Les informations sont issues d'annuaires publics — appelez avant de vous déplacer pour confirmer.",
+      notYetRated: "Pas encore noté",
       requestAppointment: "Demander un rendez-vous",
       requestIntro: "Ce cabinet n'est pas encore sur MBN Health — votre demande est envoyée directement, et le cabinet vous contactera pour confirmer.",
       requestSent: "Demande envoyée. Le cabinet vous contactera pour confirmer votre rendez-vous.",

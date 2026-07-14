@@ -59,6 +59,7 @@ interface DirectoryListingCard {
   openNow: boolean | null;
   coverPhotoUrl: string | null;
   isOnPlatform: boolean;
+  doctorsCount: number;
 }
 
 const ANY = "__any__";
@@ -410,13 +411,29 @@ function FindClinicContent() {
                         ))}
                       </div>
                     )}
-                    <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-3">
-                        {clinic.rating && (
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3 text-sm text-muted-foreground">
+                      <span className="flex flex-wrap items-center gap-3">
+                        <span className="flex items-center gap-1">
+                          <Star
+                            className={
+                              clinic.rating
+                                ? "h-3.5 w-3.5 fill-warning text-warning"
+                                : "h-3.5 w-3.5 text-muted-foreground/40"
+                            }
+                          />
+                          {clinic.rating
+                            ? `${clinic.rating}${clinic.reviewCount ? ` (${clinic.reviewCount})` : ""}`
+                            : t("patientPortal.directory.notYetRated")}
+                        </span>
+                        {clinic.doctorsCount > 0 && (
                           <span className="flex items-center gap-1">
-                            <Star className="h-3.5 w-3.5 fill-warning text-warning" />
-                            {clinic.rating}
-                            {clinic.reviewCount ? ` (${clinic.reviewCount})` : ""}
+                            <Users className="h-3.5 w-3.5" />
+                            {t(
+                              clinic.doctorsCount === 1
+                                ? "patientPortal.findClinic.doctorCount"
+                                : "patientPortal.findClinic.doctorsCount",
+                              { count: clinic.doctorsCount },
+                            )}
                           </span>
                         )}
                         {clinic.phone && (

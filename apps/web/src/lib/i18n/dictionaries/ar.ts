@@ -141,6 +141,7 @@ const ar: Messages = {
       filterAcceptsInsurance: "يقبل التأمين",
       filterWheelchairAccessible: "مهيأ لذوي الاحتياجات الخاصة",
       sourceNote: "المعلومات مجمّعة من أدلة عامة — يُرجى الاتصال للتأكيد قبل الزيارة.",
+      notYetRated: "لم يتم تقييمه بعد",
       requestAppointment: "طلب موعد",
       requestIntro: "هذه العيادة ليست بعد على MBN Health — سيُرسل طلبك مباشرة، وستتواصل معك العيادة للتأكيد.",
       requestSent: "تم إرسال الطلب. ستتواصل معك العيادة لتأكيد موعدك.",

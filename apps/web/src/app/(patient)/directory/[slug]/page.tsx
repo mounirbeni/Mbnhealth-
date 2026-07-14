@@ -48,6 +48,7 @@ interface ListingCard {
   openNow: boolean | null;
   coverPhotoUrl: string | null;
   isOnPlatform: boolean;
+  doctorsCount: number;
 }
 
 interface ListingDetail extends ListingCard {
@@ -155,12 +156,23 @@ function ListingCardMini({ clinic }: { clinic: ListingCard }) {
           <CardTitle className="truncate text-sm">{clinic.name}</CardTitle>
           {clinic.address && <p className="line-clamp-1 text-xs text-muted-foreground">{clinic.address}</p>}
         </CardHeader>
-        <CardContent className="pb-3 pt-0">
+        <CardContent className="space-y-1.5 pb-3 pt-0">
           {clinic.specialties.length > 0 && (
             <Badge variant="secondary" className="text-[11px]">
               {clinic.specialties[0]}
             </Badge>
           )}
+          <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Star className={clinic.rating ? "h-3 w-3 fill-warning text-warning" : "h-3 w-3 text-muted-foreground/40"} />
+              {clinic.rating ?? "—"}
+            </span>
+            {clinic.doctorsCount > 0 && (
+              <span className="flex items-center gap-1">
+                <Stethoscope className="h-3 w-3" /> {clinic.doctorsCount}
+              </span>
+            )}
+          </div>
         </CardContent>
       </Card>
     </Link>
@@ -217,10 +229,16 @@ export default async function DirectoryListingPage({ params }: { params: { slug:
                     <Phone className="h-3.5 w-3.5" /> {listing.phone}
                   </a>
                 )}
-                {listing.rating && (
+                <span className="flex items-center gap-1.5">
+                  <Star className={listing.rating ? "h-3.5 w-3.5 fill-warning text-warning" : "h-3.5 w-3.5 text-muted-foreground/40"} />
+                  {listing.rating
+                    ? `${listing.rating} ${listing.reviewCount ? `(${listing.reviewCount})` : ""}`
+                    : "Not yet rated"}
+                </span>
+                {listing.doctors.length > 0 && (
                   <span className="flex items-center gap-1.5">
-                    <Star className="h-3.5 w-3.5 fill-warning text-warning" />
-                    {listing.rating} {listing.reviewCount ? `(${listing.reviewCount})` : ""}
+                    <Stethoscope className="h-3.5 w-3.5" />
+                    {listing.doctors.length === 1 ? "1 doctor" : `${listing.doctors.length} doctors`}
                   </span>
                 )}
               </div>

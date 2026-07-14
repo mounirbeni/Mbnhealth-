@@ -64,7 +64,7 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
     return (
       <div className="space-y-6">
         <div className="h-32 animate-pulse rounded-2xl bg-muted" />
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
           <DoctorCardSkeleton />
           <DoctorCardSkeleton />
         </div>
@@ -144,7 +144,7 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
           <CalendarCheck className="h-4.5 w-4.5 text-primary" />
           {t("patientPortal.clinicProfile.bookAppointment")}
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
           {clinic.doctors.map((doctor) => {
             // The department can legitimately share its name with the doctor's
             // specialization (e.g. an "Orthopedics" doctor in the "Orthopedics"

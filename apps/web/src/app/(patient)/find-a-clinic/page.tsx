@@ -217,13 +217,17 @@ function FindClinicContent() {
         <p className="mt-2 max-w-xl text-muted-foreground">{t("patientPortal.findClinic.heroSubtitle")}</p>
 
         <Tabs value={tab} onValueChange={(v) => handleTabChange(v as "platform" | "all")} className="mt-5">
-          <TabsList>
-            <TabsTrigger value="platform">{t("patientPortal.directory.tabPlatform")}</TabsTrigger>
-            <TabsTrigger value="all">{t("patientPortal.directory.tabAll")}</TabsTrigger>
+          <TabsList className="grid h-auto w-full grid-cols-2 sm:inline-grid sm:h-9 sm:w-auto">
+            <TabsTrigger value="platform" className="h-auto whitespace-normal py-2 text-center sm:h-7 sm:whitespace-nowrap sm:py-1">
+              {t("patientPortal.directory.tabPlatform")}
+            </TabsTrigger>
+            <TabsTrigger value="all" className="h-auto whitespace-normal py-2 text-center sm:h-7 sm:whitespace-nowrap sm:py-1">
+              {t("patientPortal.directory.tabAll")}
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        <div className="mt-6 grid gap-3 grid-cols-1 sm:grid-cols-3">
           <div className="relative sm:col-span-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground rtl:left-auto rtl:right-3" />
             <Input
@@ -362,7 +366,7 @@ function FindClinicContent() {
       {/* Results */}
       {tab === "all" ? (
         directoryLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => (
               <ClinicCardSkeleton key={i} />
             ))}
@@ -379,7 +383,7 @@ function FindClinicContent() {
             )}
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-5 grid-cols-1 sm:grid-cols-2">
             {directoryData.map((clinic) => (
               <Link key={clinic.slug} href={`/directory/${clinic.slug}`} className="group block h-full">
                 <Card className="surface-card surface-card-hover h-full overflow-hidden">
@@ -454,7 +458,7 @@ function FindClinicContent() {
           </div>
         )
       ) : isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <ClinicCardSkeleton key={i} />
           ))}
@@ -471,7 +475,7 @@ function FindClinicContent() {
           )}
         </div>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5 grid-cols-1 sm:grid-cols-2">
           {data.map((clinic) => (
             <Link key={clinic.slug} href={`/clinics/${clinic.slug}`} className="group block h-full">
               <Card className="h-full overflow-hidden transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-lg">

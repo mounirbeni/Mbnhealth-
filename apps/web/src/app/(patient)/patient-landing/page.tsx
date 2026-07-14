@@ -68,7 +68,7 @@ export default function PatientLandingPage() {
       {/* How it works */}
       <section>
         <h2 className="mb-6 text-center text-xl font-semibold">{t("patientPortal.landing.howItWorks")}</h2>
-        <div className="grid gap-6 sm:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-3">
           {STEPS.map((step, i) => (
             <div key={step.key} className="text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -85,7 +85,7 @@ export default function PatientLandingPage() {
 
       {/* Value props */}
       <section>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
           {VALUE_PROPS.map((item) => (
             <Card key={item.key}>
               <CardHeader className="flex-row items-start gap-3 space-y-0">

@@ -146,7 +146,7 @@ export default function LandingPage() {
       {/* Product demo mockup */}
       <section className="mx-auto max-w-6xl animate-scale-in px-4 pb-20 sm:px-6">
         <MockBrowserFrame label={t("marketing.demoMockup.label")}>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
             <Card className="sm:col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">{t("marketing.demoMockup.todayAppointments")}</CardTitle>
@@ -187,7 +187,7 @@ export default function LandingPage() {
           <h2 className="text-3xl font-bold tracking-tight">{t("marketing.features.title")}</h2>
           <p className="mt-3 text-muted-foreground">{t("marketing.features.subtitle")}</p>
         </div>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURE_KEYS.map((key, i) => {
             const Icon = FEATURE_ICONS[i];
             return (
@@ -275,7 +275,7 @@ export default function LandingPage() {
           <h2 className="text-3xl font-bold tracking-tight">{t("marketing.pricing.title")}</h2>
           <p className="mt-3 text-muted-foreground">{t("marketing.pricing.subtitle")}</p>
         </div>
-        <div className="mt-10 grid gap-6 sm:grid-cols-3">
+        <div className="mt-10 grid gap-6 grid-cols-1 sm:grid-cols-3">
           {PRICING_PLANS.map((plan) => (
             <Card key={plan.id} className={plan.highlighted ? "relative border-primary shadow-lg" : undefined}>
               {plan.highlighted && (
@@ -321,7 +321,7 @@ export default function LandingPage() {
             <h2 className="text-3xl font-bold tracking-tight">{t("marketing.testimonials.title")}</h2>
             <p className="mt-3 text-muted-foreground">{t("marketing.testimonials.subtitle")}</p>
           </div>
-          <div className="mt-10 grid gap-5 sm:grid-cols-3">
+          <div className="mt-10 grid gap-5 grid-cols-1 sm:grid-cols-3">
             {TESTIMONIAL_KEYS.map((key) => (
               <Card key={key}>
                 <CardContent className="pt-6">

@@ -138,7 +138,7 @@ export function DirectoryListingContent({ listing }: { listing: ListingDetail })
           {listing.doctors.length > 0 && (
             <section>
               <h2 className="mb-3 text-lg font-semibold">{t("patientPortal.directory.doctorsTitle")}</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                 {listing.doctors.map((doctor) => (
                   <Card key={doctor.id} className="surface-card">
                     <CardHeader className="pb-2">
@@ -257,7 +257,7 @@ export function DirectoryListingContent({ listing }: { listing: ListingDetail })
           {listing.nearby.length > 0 && (
             <section>
               <h2 className="mb-3 text-lg font-semibold">{t("patientPortal.directory.nearbyTitle")}</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                 {listing.nearby.map((n) => (
                   <ListingCardMini key={n.slug} clinic={n} />
                 ))}

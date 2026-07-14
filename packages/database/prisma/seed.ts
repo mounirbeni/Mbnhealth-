@@ -21,38 +21,9 @@ import {
   type Invoice,
 } from "../generated/client";
 import { DEFAULT_ROLE_PERMISSIONS } from "../src/permissions";
-import { CLINIC_LISTINGS, VERIFIED_AT } from "./data/clinic-directory";
+import { seedClinicDirectory } from "./seed-clinic-directory";
 
 const prisma = new PrismaClient();
-
-async function seedClinicDirectory() {
-  console.log(`Seeding public clinic directory (${CLINIC_LISTINGS.length} sourced listings)...`);
-  for (const listing of CLINIC_LISTINGS) {
-    await prisma.clinicListing.upsert({
-      where: { slug: listing.slug },
-      update: {},
-      create: {
-        slug: listing.slug,
-        name: listing.name,
-        specialties: listing.specialties,
-        city: listing.city,
-        neighborhood: listing.neighborhood ?? null,
-        address: listing.address ?? null,
-        latitude: listing.latitude ?? null,
-        longitude: listing.longitude ?? null,
-        googleMapsUrl:
-          listing.latitude != null && listing.longitude != null
-            ? `https://www.google.com/maps?q=${listing.latitude},${listing.longitude}`
-            : null,
-        phone: listing.phone ?? null,
-        status: "ACTIVE",
-        sourceUrl: listing.sourceUrl,
-        sourceType: "PUBLIC_DIRECTORY",
-        verifiedAt: VERIFIED_AT,
-      },
-    });
-  }
-}
 
 const DEMO_PASSWORD = "Passw0rd!123";
 
@@ -815,7 +786,7 @@ async function main() {
     });
   }
 
-  await seedClinicDirectory();
+  await seedClinicDirectory(prisma);
 
   console.log("Seed complete.");
   console.log("─────────────────────────────────────────");

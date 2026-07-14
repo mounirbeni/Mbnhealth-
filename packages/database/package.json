@@ -10,6 +10,7 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "studio": "prisma studio",
     "seed": "ts-node --transpile-only prisma/seed.ts",
+    "seed:clinic-directory": "ts-node --transpile-only prisma/seed-clinic-directory.ts",
     "build": "prisma generate && tsc -p tsconfig.build.json"
   },
   "dependencies": {

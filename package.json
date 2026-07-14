@@ -19,6 +19,7 @@
     "prisma:generate": "npm run prisma:generate --workspace=packages/database",
     "prisma:migrate": "npm run prisma:migrate --workspace=packages/database",
     "prisma:seed": "npm run seed --workspace=packages/database",
+    "prisma:seed:clinic-directory": "npm run seed:clinic-directory --workspace=packages/database",
     "prisma:studio": "npm run studio --workspace=packages/database"
   },
   "devDependencies": {

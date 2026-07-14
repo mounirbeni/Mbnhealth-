@@ -1,108 +1,77 @@
 "use client";
 
-import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Command } from "cmdk";
 import { LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import {
+  Command,
+  CommandDialogOverlay,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 import { NAV_ITEMS } from "@/lib/nav-config";
 import { useAuth } from "@/lib/auth-context";
-import { cn } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { useCommandPalette } from "@/components/layout/command-palette-context";
 
 export function CommandPalette() {
-  const [open, setOpen] = React.useState(false);
+  const { open, setOpen } = useCommandPalette();
   const router = useRouter();
   const { hasPermission, logout } = useAuth();
   const { setTheme } = useTheme();
   const { t } = useLocale();
-
-  React.useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setOpen((o) => !o);
-      }
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, []);
 
   const go = (href: string) => {
     router.push(href);
     setOpen(false);
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 pt-24" onClick={() => setOpen(false)}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg animate-fade-in">
-        <Command
-          className={cn(
-            "overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-2xl",
-          )}
-        >
-          <Command.Input
-            autoFocus
-            placeholder={t("dashboard.commandPalette.searchPlaceholder")}
-            className="w-full border-b border-border bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground"
-          />
-          <Command.List className="max-h-80 overflow-y-auto p-2">
-            <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
-              {t("dashboard.commandPalette.noResults")}
-            </Command.Empty>
-            <Command.Group
-              heading={t("dashboard.commandPalette.navigate")}
-              className="px-2 py-1 text-xs font-medium text-muted-foreground"
+    <CommandDialogOverlay open={open} onOpenChange={setOpen}>
+      <Command className="shadow-2xl">
+        <CommandInput autoFocus placeholder={t("dashboard.commandPalette.searchPlaceholder")} />
+        <CommandList>
+          <CommandEmpty>{t("dashboard.commandPalette.noResults")}</CommandEmpty>
+          <CommandGroup heading={t("dashboard.commandPalette.navigate")}>
+            {NAV_ITEMS.filter((item) => hasPermission(item.permission)).map((item) => (
+              <CommandItem key={item.href} onSelect={() => go(item.href)}>
+                <item.icon className="h-4 w-4" />
+                {t(`dashboard.nav.${item.labelKey}`)}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          <CommandGroup heading={t("dashboard.commandPalette.actions")}>
+            <CommandItem
+              onSelect={() => {
+                setTheme("light");
+                setOpen(false);
+              }}
             >
-              {NAV_ITEMS.filter((item) => hasPermission(item.permission)).map((item) => (
-                <Command.Item
-                  key={item.href}
-                  onSelect={() => go(item.href)}
-                  className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm data-[selected=true]:bg-accent"
-                >
-                  <item.icon className="h-4 w-4" />
-                  {t(`dashboard.nav.${item.labelKey}`)}
-                </Command.Item>
-              ))}
-            </Command.Group>
-            <Command.Group
-              heading={t("dashboard.commandPalette.actions")}
-              className="px-2 py-1 text-xs font-medium text-muted-foreground"
+              <Sun className="h-4 w-4" /> {t("dashboard.commandPalette.lightMode")}
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                setTheme("dark");
+                setOpen(false);
+              }}
             >
-              <Command.Item
-                onSelect={() => {
-                  setTheme("light");
-                  setOpen(false);
-                }}
-                className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm data-[selected=true]:bg-accent"
-              >
-                <Sun className="h-4 w-4" /> {t("dashboard.commandPalette.lightMode")}
-              </Command.Item>
-              <Command.Item
-                onSelect={() => {
-                  setTheme("dark");
-                  setOpen(false);
-                }}
-                className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm data-[selected=true]:bg-accent"
-              >
-                <Moon className="h-4 w-4" /> {t("dashboard.commandPalette.darkMode")}
-              </Command.Item>
-              <Command.Item
-                onSelect={() => {
-                  setOpen(false);
-                  logout();
-                }}
-                className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive data-[selected=true]:bg-accent"
-              >
-                <LogOut className="h-4 w-4" /> {t("dashboard.commandPalette.logout")}
-              </Command.Item>
-            </Command.Group>
-          </Command.List>
-        </Command>
-      </div>
-    </div>
+              <Moon className="h-4 w-4" /> {t("dashboard.commandPalette.darkMode")}
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                setOpen(false);
+                logout();
+              }}
+              className="text-destructive"
+            >
+              <LogOut className="h-4 w-4" /> {t("dashboard.commandPalette.logout")}
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </Command>
+    </CommandDialogOverlay>
   );
 }

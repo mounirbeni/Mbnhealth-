@@ -27,7 +27,7 @@ export default function BillingPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.billing.title")}</h1>
+          <h1 className="text-page-title">{t("dashboard.billing.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("dashboard.billing.subtitle")}</p>
         </div>
         {hasPermission("BILLING_WRITE") && <InvoiceFormDialog />}

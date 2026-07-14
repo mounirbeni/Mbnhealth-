@@ -113,7 +113,7 @@ export default function StaffPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("dashboard.staff.title")}</h1>
+          <h1 className="text-page-title">{t("dashboard.staff.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("dashboard.staff.subtitle")}</p>
         </div>
         <NewStaffDialog />

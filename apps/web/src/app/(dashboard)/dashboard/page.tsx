@@ -31,7 +31,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">
+        <h1 className="text-page-title">
           {t("dashboard.overview.welcomeBack", { name: user?.firstName ?? "" })} 👋
         </h1>
         <p className="text-sm text-muted-foreground">{t("dashboard.overview.subtitle")}</p>
@@ -40,53 +40,67 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label={t("dashboard.overview.todaysAppointments")}
-          value={isLoading ? "…" : overview?.todayAppointmentsTotal ?? 0}
+          value={overview?.todayAppointmentsTotal ?? 0}
+          isLoading={isLoading}
           icon={CalendarCheck}
           accent="primary"
+          className="animate-fade-in-up [animation-fill-mode:backwards] [animation-delay:0ms]"
         />
         <StatCard
           label={t("dashboard.overview.revenueThisMonth")}
-          value={isLoading ? "…" : formatCurrency(overview?.revenueThisMonth ?? 0)}
+          value={formatCurrency(overview?.revenueThisMonth ?? 0)}
+          isLoading={isLoading}
           icon={DollarSign}
           accent="success"
+          className="animate-fade-in-up [animation-fill-mode:backwards] [animation-delay:60ms]"
         />
         <StatCard
           label={t("dashboard.overview.activePatients")}
-          value={isLoading ? "…" : overview?.totalPatients ?? 0}
+          value={overview?.totalPatients ?? 0}
+          isLoading={isLoading}
           icon={Users}
           accent="primary"
+          className="animate-fade-in-up [animation-fill-mode:backwards] [animation-delay:120ms]"
         />
         <StatCard
           label={t("dashboard.overview.doctorsOnStaff")}
-          value={isLoading ? "…" : overview?.totalDoctors ?? 0}
+          value={overview?.totalDoctors ?? 0}
+          isLoading={isLoading}
           icon={Stethoscope}
           accent="primary"
+          className="animate-fade-in-up [animation-fill-mode:backwards] [animation-delay:180ms]"
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label={t("dashboard.overview.outstandingBalance")}
-          value={isLoading ? "…" : formatCurrency(overview?.outstandingBalance ?? 0)}
+          value={formatCurrency(overview?.outstandingBalance ?? 0)}
+          isLoading={isLoading}
           icon={DollarSign}
           accent="warning"
+          className="animate-fade-in-up [animation-fill-mode:backwards] [animation-delay:240ms]"
         />
         <StatCard
           label={t("dashboard.overview.pendingLabOrders")}
-          value={isLoading ? "…" : overview?.pendingLabOrders ?? 0}
+          value={overview?.pendingLabOrders ?? 0}
+          isLoading={isLoading}
           icon={FlaskConical}
           accent="warning"
+          className="animate-fade-in-up [animation-fill-mode:backwards] [animation-delay:300ms]"
         />
         <StatCard
           label={t("dashboard.overview.lowStockItems")}
-          value={isLoading ? "…" : overview?.lowStockItemsCount ?? 0}
+          value={overview?.lowStockItemsCount ?? 0}
+          isLoading={isLoading}
           icon={PackageX}
           accent="destructive"
+          className="animate-fade-in-up [animation-fill-mode:backwards] [animation-delay:360ms]"
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="surface-card-hover lg:col-span-2">
           <CardHeader>
             <CardTitle>{t("dashboard.overview.revenueTrend")}</CardTitle>
           </CardHeader>
@@ -112,7 +126,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="surface-card-hover">
           <CardHeader>
             <CardTitle>{t("dashboard.overview.upcomingAppointments")}</CardTitle>
           </CardHeader>
@@ -147,7 +161,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
+        <Card className="surface-card-hover">
           <CardHeader>
             <CardTitle>{t("dashboard.overview.appointmentsLast14")}</CardTitle>
           </CardHeader>
@@ -170,7 +184,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="surface-card-hover">
           <CardHeader>
             <CardTitle>{t("dashboard.overview.doctorPerformance")}</CardTitle>
           </CardHeader>

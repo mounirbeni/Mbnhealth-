@@ -11,9 +11,10 @@ const PATIENT_HOST = process.env.PATIENT_HOST ?? process.env.NEXT_PUBLIC_PATIENT
 
 const PATIENT_PATH_PREFIXES = ["/find-a-clinic", "/clinics", "/directory", "/patient"];
 
-// Legal pages make sense on both the clinic app and the patient portal, so
-// they're exempt from the host-based wall in both directions.
-const SHARED_PATH_PREFIXES = ["/privacy", "/terms"];
+// Legal pages (and the internal design-system reference) make sense on both
+// the clinic app and the patient portal, so they're exempt from the
+// host-based wall in both directions.
+const SHARED_PATH_PREFIXES = ["/privacy", "/terms", "/internal"];
 
 function isPatientOnlyPath(pathname: string): boolean {
   return PATIENT_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

@@ -77,9 +77,18 @@ const en = {
   patientPortal: {
     nav: {
       badge: "Patients",
+      home: "Home",
       findClinic: "Find a clinic",
       myAppointments: "My appointments",
+      appointmentsShort: "Bookings",
+      account: "Account",
       createAccount: "Create account",
+    },
+    account: {
+      title: "Account",
+      viewAppointments: "My appointments",
+      loggedOutTitle: "You're not signed in",
+      loggedOutSubtitle: "Sign in to view your appointments and book new ones faster.",
     },
     footer: {
       tagline: "MBN Health Patient Portal",

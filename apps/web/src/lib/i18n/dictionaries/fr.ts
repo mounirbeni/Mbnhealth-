@@ -77,9 +77,18 @@ const fr: Messages = {
   patientPortal: {
     nav: {
       badge: "Patients",
+      home: "Accueil",
       findClinic: "Trouver une clinique",
       myAppointments: "Mes rendez-vous",
+      appointmentsShort: "Rendez-vous",
+      account: "Compte",
       createAccount: "Créer un compte",
+    },
+    account: {
+      title: "Compte",
+      viewAppointments: "Mes rendez-vous",
+      loggedOutTitle: "Vous n'êtes pas connecté",
+      loggedOutSubtitle: "Connectez-vous pour voir vos rendez-vous et réserver plus rapidement.",
     },
     footer: {
       tagline: "Portail patient MBN Health",

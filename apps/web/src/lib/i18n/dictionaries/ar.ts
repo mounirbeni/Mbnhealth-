@@ -77,9 +77,18 @@ const ar: Messages = {
   patientPortal: {
     nav: {
       badge: "المرضى",
+      home: "الرئيسية",
       findClinic: "ابحث عن عيادة",
       myAppointments: "مواعيدي",
+      appointmentsShort: "المواعيد",
+      account: "الحساب",
       createAccount: "إنشاء حساب",
+    },
+    account: {
+      title: "الحساب",
+      viewAppointments: "مواعيدي",
+      loggedOutTitle: "لم تسجّل الدخول بعد",
+      loggedOutSubtitle: "سجّل الدخول لعرض مواعيدك وحجز مواعيد جديدة بشكل أسرع.",
     },
     footer: {
       tagline: "بوابة مرضى MBN Health",

@@ -26,6 +26,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#5457d5",
+  viewportFit: "cover",
 };
 
 // Deliberately NOT reading the locale cookie here via next/headers: doing so

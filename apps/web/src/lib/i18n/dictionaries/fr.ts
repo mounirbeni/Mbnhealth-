@@ -452,6 +452,9 @@ const fr: Messages = {
     footer: {
       copyright: "© {year} MBN Health. Tous droits réservés.",
       contact: "Contact",
+      about: "À propos",
+      cookies: "Cookies",
+      cancellation: "Annulation et remboursements",
     },
   },
   legal: {
@@ -518,6 +521,75 @@ const fr: Messages = {
         "La plateforme est fournie « telle quelle ». Dans toute la mesure permise par la loi, MBN Health n'est pas responsable des dommages indirects ou consécutifs résultant de l'utilisation de la plateforme.",
       contactHeading: "Contact",
       contactBodyBefore: "Les questions sur ces Conditions peuvent être envoyées à",
+    },
+    about: {
+      title: "À propos de nous",
+      intro:
+        "MBN Health est une plateforme de gestion de cliniques conçue pour les cliniques, groupes médicaux et hôpitaux à travers le Maroc, les connectant à leurs patients via un système unique, sécurisé et connecté.",
+      missionHeading: "Notre mission",
+      missionBody:
+        "Nous aidons les cliniques à remplacer les dossiers papier, les feuilles de calcul éparses et la planification manuelle par WhatsApp par un seul système connecté — rendez-vous, dossiers médicaux, facturation et communication avec les patients, le tout au même endroit.",
+      whyHeading: "Pourquoi MBN Health",
+      whyItem1: "Conçu autour de la façon dont les cliniques marocaines communiquent réellement avec leurs patients — rappels et confirmations par WhatsApp, pas seulement par e-mail.",
+      whyItem2: "Les données de chaque clinique sont strictement isolées — aucune clinique ne voit jamais les patients, dossiers ou personnel d'une autre clinique.",
+      whyItem3: "Disponible en arabe, français et anglais, avec une prise en charge complète de l'écriture de droite à gauche.",
+      whyItem4: "Un portail patient connecté permet aux patients de rechercher des cliniques, réserver des rendez-vous et échanger avec leurs praticiens en un seul endroit.",
+      contactHeading: "Contactez-nous",
+      contactBodyBefore: "Des questions sur MBN Health ? Contactez-nous à",
+      contactBodyMiddle: "ou par téléphone au",
+      contactBodyAfter: ".",
+    },
+    contact: {
+      title: "Contactez-nous",
+      intro:
+        "Vous avez une question, souhaitez une démonstration en direct, ou avez besoin d'aide pour configurer votre clinique ? Contactez-nous directement — nous répondons généralement sous un jour ouvré.",
+      emailHeading: "E-mail",
+      emailBody: "Pour les questions générales, le support ou la facturation.",
+      phoneHeading: "Téléphone / WhatsApp",
+      phoneBody: "Pour une réponse plus rapide, ou pour réserver une démonstration en direct.",
+      demoHeading: "Vous préférez d'abord regarder ?",
+      demoBodyBefore: "Vous pouvez",
+      demoLinkTrial: "démarrer un essai gratuit",
+      demoBodyMiddle: "sans carte bancaire requise, ou",
+      demoLinkDemo: "réserver une démonstration en direct",
+      demoBodyAfter: "avec notre équipe.",
+    },
+    cookies: {
+      title: "Politique relative aux cookies",
+      intro:
+        "Cette politique explique les cookies et technologies similaires (comme le stockage local) que MBN Health utilise, et pourquoi.",
+      essentialHeading: "Cookies essentiels",
+      essentialBody:
+        "Nous utilisons un petit nombre de cookies propriétaires nécessaires au bon fonctionnement de la plateforme : vous maintenir connecté et mémoriser votre préférence de langue (arabe, français ou anglais). Ils ne peuvent pas être désactivés sans altérer les fonctionnalités essentielles.",
+      localStorageHeading: "Stockage local",
+      localStorageBody:
+        "Vos jetons de session et le thème d'affichage (clair ou sombre) sont stockés dans le stockage local de votre navigateur plutôt que dans un cookie. Ces données restent sur votre appareil et ne sont jamais partagées avec des tiers.",
+      noTrackingHeading: "Aucun cookie publicitaire ou de suivi",
+      noTrackingBody: "MBN Health n'utilise aucun cookie publicitaire, analytique ou de suivi intersites tiers.",
+      controlHeading: "Gérer les cookies",
+      controlBody:
+        "La plupart des navigateurs vous permettent d'effacer ou de bloquer les cookies via leurs paramètres. Bloquer les cookies essentiels vous empêchera de rester connecté à MBN Health.",
+      contactHeading: "Contact",
+      contactBodyBefore: "Les questions sur cette politique peuvent être envoyées à",
+    },
+    cancellation: {
+      title: "Politique d'annulation et de remboursement",
+      intro: "Cette page explique le fonctionnement de la facturation, de l'annulation et des remboursements pour les abonnements MBN Health.",
+      trialHeading: "Essai gratuit",
+      trialBody:
+        "Les nouvelles cliniques peuvent essayer MBN Health sans carte bancaire. Aucun débit n'a lieu tant que vous ne souscrivez pas à un forfait payant.",
+      billingHeading: "Facturation",
+      billingBody:
+        "Les forfaits Starter et Professional sont facturés mensuellement à l'avance. Les forfaits Enterprise sont facturés selon un accord personnalisé conclu directement avec notre équipe.",
+      cancelHeading: "Annuler votre abonnement",
+      cancelBody:
+        "Vous pouvez annuler un abonnement mensuel à tout moment depuis la section Facturation des paramètres de votre clinique. Il n'y a aucun engagement de longue durée sur les forfaits Starter ou Professional — l'annulation prend effet à la fin de la période de facturation en cours, et vous ne serez plus débité par la suite.",
+      refundHeading: "Remboursements",
+      refundBodyBefore:
+        "Les forfaits étant facturés mensuellement et pouvant être annulés à tout moment, nous ne proposons pas de remboursement au prorata pour les périodes de facturation partielles. Si vous pensez avoir été débité par erreur, contactez-nous à",
+      refundBodyAfter: "et nous examinerons la situation.",
+      contactHeading: "Contact",
+      contactBodyBefore: "Les questions sur la facturation peuvent être envoyées à",
     },
   },
   auth: {

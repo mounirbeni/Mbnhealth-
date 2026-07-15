@@ -450,6 +450,9 @@ const en = {
   footer: {
     copyright: "© {year} MBN Health. All rights reserved.",
     contact: "Contact",
+    about: "About",
+    cookies: "Cookies",
+    cancellation: "Cancellation & Refunds",
   },
   },
   legal: {
@@ -516,6 +519,73 @@ const en = {
         "The platform is provided \"as is\". To the maximum extent permitted by law, MBN Health is not liable for indirect or consequential damages arising from use of the platform.",
       contactHeading: "Contact",
       contactBodyBefore: "Questions about these Terms can be sent to",
+    },
+    about: {
+      title: "About Us",
+      intro:
+        "MBN Health is a clinic management platform built for clinics, medical groups, and hospitals across Morocco, connecting them with their patients through one secure, connected system.",
+      missionHeading: "Our mission",
+      missionBody:
+        "We help clinics replace paper records, scattered spreadsheets, and manual WhatsApp scheduling with a single connected system — appointments, medical records, billing, and patient communication, all in one place.",
+      whyHeading: "Why MBN Health",
+      whyItem1: "Built around how Moroccan clinics actually communicate with patients — WhatsApp reminders and confirmations, not just email.",
+      whyItem2: "Each clinic's data is strictly isolated — no clinic ever sees another clinic's patients, records, or staff.",
+      whyItem3: "Available in Arabic, French, and English, with full right-to-left support.",
+      whyItem4: "A connected patient portal lets patients search for clinics, book appointments, and message their providers in one place.",
+      contactHeading: "Get in touch",
+      contactBodyBefore: "Questions about MBN Health? Reach us at",
+      contactBodyMiddle: "or by phone at",
+      contactBodyAfter: ".",
+    },
+    contact: {
+      title: "Contact Us",
+      intro:
+        "Have a question, want a live walkthrough, or need help setting up your clinic? Reach us directly — we typically respond within one business day.",
+      emailHeading: "Email",
+      emailBody: "For general questions, support, or billing.",
+      phoneHeading: "Phone / WhatsApp",
+      phoneBody: "For a quicker answer, or to book a live demo.",
+      demoHeading: "Prefer to look around first?",
+      demoBodyBefore: "You can",
+      demoLinkTrial: "start a free trial",
+      demoBodyMiddle: "with no credit card required, or",
+      demoLinkDemo: "book a live demo",
+      demoBodyAfter: "with our team.",
+    },
+    cookies: {
+      title: "Cookie Policy",
+      intro: "This policy explains the cookies and similar technologies (such as local storage) that MBN Health uses, and why.",
+      essentialHeading: "Essential cookies",
+      essentialBody:
+        "We use a small number of first-party cookies required for the platform to function correctly: keeping you signed in and remembering your language preference (Arabic, French, or English). These cannot be disabled without breaking core functionality.",
+      localStorageHeading: "Local storage",
+      localStorageBody:
+        "Your session tokens and display theme (light or dark) are stored in your browser's local storage rather than a cookie. This data stays on your device and is never shared with third parties.",
+      noTrackingHeading: "No advertising or tracking cookies",
+      noTrackingBody: "MBN Health does not use third-party advertising, analytics, or cross-site tracking cookies.",
+      controlHeading: "Managing cookies",
+      controlBody:
+        "Most browsers let you clear or block cookies through their settings. Blocking essential cookies will prevent you from staying signed in to MBN Health.",
+      contactHeading: "Contact",
+      contactBodyBefore: "Questions about this policy can be sent to",
+    },
+    cancellation: {
+      title: "Cancellation & Refund Policy",
+      intro: "This page explains how billing, cancellation, and refunds work for MBN Health subscriptions.",
+      trialHeading: "Free trial",
+      trialBody: "New clinics can try MBN Health without a credit card. No charge occurs unless and until you choose to subscribe to a paid plan.",
+      billingHeading: "Billing",
+      billingBody:
+        "Starter and Professional plans are billed monthly in advance. Enterprise plans are billed under a custom agreement arranged directly with our team.",
+      cancelHeading: "Cancelling your subscription",
+      cancelBody:
+        "You can cancel a monthly subscription at any time from the Billing section of your clinic settings. There is no long-term contract on Starter or Professional — cancellation takes effect at the end of the current billing period, and you will not be charged again.",
+      refundHeading: "Refunds",
+      refundBodyBefore:
+        "Because plans are billed monthly and can be cancelled at any time, we do not provide prorated refunds for partial billing periods. If you believe you were charged in error, contact us at",
+      refundBodyAfter: "and we will review it.",
+      contactHeading: "Contact",
+      contactBodyBefore: "Questions about billing can be sent to",
     },
   },
   auth: {

@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Check,
   ClipboardList,
+  Mail,
   MessageCircle,
   Phone,
   Pill,
@@ -363,13 +364,18 @@ export default function LandingPage() {
             <div>
               <h2 className="text-3xl font-bold tracking-tight">{t("marketing.contact.title")}</h2>
               <p className="mt-3 text-muted-foreground">{t("marketing.contact.subtitle")}</p>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Button size="lg" asChild>
                   <Link href="/register">{t("marketing.contact.tryDemo")}</Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
                   <a href="mailto:contact@mbndev.ma?subject=Book%20a%20demo">
-                    <Phone className="h-4 w-4" /> contact@mbndev.ma
+                    <Mail className="h-4 w-4" /> contact@mbndev.ma
+                  </a>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <a href="tel:+212601439975">
+                    <Phone className="h-4 w-4" /> +212 601 439 975
                   </a>
                 </Button>
               </div>
@@ -406,10 +412,13 @@ export default function LandingPage() {
             <span className="font-medium text-foreground">MBN Health</span>
           </div>
           <p>{t("marketing.footer.copyright", { year: new Date().getFullYear() })}</p>
-          <div className="flex items-center gap-4">
-            <a href="mailto:contact@mbndev.ma" className="hover:text-foreground">{t("marketing.footer.contact")}</a>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Link href="/about" className="hover:text-foreground">{t("marketing.footer.about")}</Link>
+            <Link href="/contact" className="hover:text-foreground">{t("marketing.footer.contact")}</Link>
             <Link href="/privacy" className="hover:text-foreground">{t("patientPortal.footer.privacy")}</Link>
             <Link href="/terms" className="hover:text-foreground">{t("patientPortal.footer.terms")}</Link>
+            <Link href="/cookies" className="hover:text-foreground">{t("marketing.footer.cookies")}</Link>
+            <Link href="/cancellation-policy" className="hover:text-foreground">{t("marketing.footer.cancellation")}</Link>
             <Link href="/login" className="hover:text-foreground">{t("marketing.nav.login")}</Link>
           </div>
         </div>

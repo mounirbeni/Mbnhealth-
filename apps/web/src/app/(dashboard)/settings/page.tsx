@@ -18,7 +18,7 @@ import { useTenant, useUpdateTenant } from "@/hooks/use-tenant";
 import { useUpsertWhatsAppConfig, useWhatsAppConfig } from "@/hooks/use-whatsapp";
 import { api } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-client";
-import { formatDateTime } from "@/lib/utils";
+import { cn, formatDateTime } from "@/lib/utils";
 import { PRICING_PLANS } from "@/lib/pricing";
 import { useLocale } from "@/lib/i18n/locale-context";
 
@@ -440,7 +440,7 @@ function BillingTab() {
                 const isCurrent = tenant?.subscription?.plan === plan.id;
                 const planName = t(`marketing.pricing.${PLAN_NAME_KEYS[plan.id]}`);
                 return (
-                  <Card key={plan.id} className={plan.highlighted ? "border-primary shadow-sm" : undefined}>
+                  <Card key={plan.id} className={cn("surface-card", plan.highlighted && "border-primary shadow-sm")}>
                     <CardHeader className="pb-2">
                       <CardTitle className="flex items-center justify-between text-base">
                         {planName}

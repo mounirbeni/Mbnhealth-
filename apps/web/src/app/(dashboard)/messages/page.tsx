@@ -206,7 +206,7 @@ function TemplatesTab() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {templates?.map((tpl) => (
-          <Card key={tpl.id}>
+          <Card key={tpl.id} className="surface-card">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <p className="font-medium">{tpl.name}</p>

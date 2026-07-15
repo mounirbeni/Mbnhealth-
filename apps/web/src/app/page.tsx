@@ -412,10 +412,13 @@ export default function LandingPage() {
             <span className="font-medium text-foreground">MBN Health</span>
           </div>
           <p>{t("marketing.footer.copyright", { year: new Date().getFullYear() })}</p>
-          <div className="flex items-center gap-4">
-            <a href="mailto:contact@mbndev.ma" className="hover:text-foreground">{t("marketing.footer.contact")}</a>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Link href="/about" className="hover:text-foreground">{t("marketing.footer.about")}</Link>
+            <Link href="/contact" className="hover:text-foreground">{t("marketing.footer.contact")}</Link>
             <Link href="/privacy" className="hover:text-foreground">{t("patientPortal.footer.privacy")}</Link>
             <Link href="/terms" className="hover:text-foreground">{t("patientPortal.footer.terms")}</Link>
+            <Link href="/cookies" className="hover:text-foreground">{t("marketing.footer.cookies")}</Link>
+            <Link href="/cancellation-policy" className="hover:text-foreground">{t("marketing.footer.cancellation")}</Link>
             <Link href="/login" className="hover:text-foreground">{t("marketing.nav.login")}</Link>
           </div>
         </div>

@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Check,
   ClipboardList,
+  Mail,
   MessageCircle,
   Phone,
   Pill,
@@ -363,13 +364,18 @@ export default function LandingPage() {
             <div>
               <h2 className="text-3xl font-bold tracking-tight">{t("marketing.contact.title")}</h2>
               <p className="mt-3 text-muted-foreground">{t("marketing.contact.subtitle")}</p>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Button size="lg" asChild>
                   <Link href="/register">{t("marketing.contact.tryDemo")}</Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
                   <a href="mailto:contact@mbndev.ma?subject=Book%20a%20demo">
-                    <Phone className="h-4 w-4" /> contact@mbndev.ma
+                    <Mail className="h-4 w-4" /> contact@mbndev.ma
+                  </a>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <a href="tel:+212601439975">
+                    <Phone className="h-4 w-4" /> +212 601 439 975
                   </a>
                 </Button>
               </div>

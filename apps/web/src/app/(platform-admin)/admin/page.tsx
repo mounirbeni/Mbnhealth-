@@ -14,6 +14,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useAdminTenants, useSetTenantStatus, type TenantStatus } from "@/hooks/use-admin-tenants";
 import { ApiError } from "@/lib/api-client";
 import { useLocale } from "@/lib/i18n/locale-context";
@@ -58,7 +60,7 @@ export default function PlatformAdminPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t("admin.title")}</h1>
+        <h1 className="text-page-title">{t("admin.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("admin.subtitle")}</p>
       </div>
 
@@ -75,7 +77,7 @@ export default function PlatformAdminPage() {
         />
       </div>
 
-      <Card>
+      <Card className="surface-card">
         <CardHeader>
           <CardTitle className="text-base">
             {data
@@ -90,14 +92,11 @@ export default function PlatformAdminPage() {
           {isLoading ? (
             <div className="space-y-2">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-12 animate-pulse rounded-md bg-muted" />
+                <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
           ) : !data?.items.length ? (
-            <div className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
-              <Building2 className="h-8 w-8" />
-              <p>{t("admin.noResults")}</p>
-            </div>
+            <EmptyState icon={Building2} title={t("admin.noResults")} />
           ) : (
             <Table>
               <TableHeader>

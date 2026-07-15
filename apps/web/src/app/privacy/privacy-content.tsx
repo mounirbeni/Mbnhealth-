@@ -68,8 +68,8 @@ export default function PrivacyPolicyContent() {
           <h2>{t("legal.privacy.rightsHeading")}</h2>
           <p>
             {t("legal.privacy.rightsBodyBefore")}{" "}
-            <a href="mailto:privacy@mbnhealth.com" className="text-primary hover:underline">
-              privacy@mbnhealth.com
+            <a href="mailto:contact@mbndev.ma" className="text-primary hover:underline">
+              contact@mbndev.ma
             </a>{" "}
             {t("legal.privacy.rightsBodyAfter")}
           </p>
@@ -77,8 +77,8 @@ export default function PrivacyPolicyContent() {
           <h2>{t("legal.privacy.contactHeading")}</h2>
           <p>
             {t("legal.privacy.contactBodyBefore")}{" "}
-            <a href="mailto:privacy@mbnhealth.com" className="text-primary hover:underline">
-              privacy@mbnhealth.com
+            <a href="mailto:contact@mbndev.ma" className="text-primary hover:underline">
+              contact@mbndev.ma
             </a>
             .
           </p>

@@ -68,8 +68,8 @@ export default function TermsOfServiceContent() {
           <h2>{t("legal.terms.contactHeading")}</h2>
           <p>
             {t("legal.terms.contactBodyBefore")}{" "}
-            <a href="mailto:legal@mbnhealth.com" className="text-primary hover:underline">
-              legal@mbnhealth.com
+            <a href="mailto:contact@mbndev.ma" className="text-primary hover:underline">
+              contact@mbndev.ma
             </a>
             .
           </p>

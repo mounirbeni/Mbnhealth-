@@ -467,7 +467,7 @@ function BillingTab() {
                           {isCurrent ? (
                             t("dashboard.settings.billing.currentPlanButton")
                           ) : (
-                            <a href="mailto:sales@mbnhealth.com?subject=Enterprise%20plan%20inquiry">
+                            <a href="mailto:contact@mbndev.ma?subject=Enterprise%20plan%20inquiry">
                               <CreditCard className="h-3.5 w-3.5" /> {t("dashboard.settings.billing.contactSales")}
                             </a>
                           )}

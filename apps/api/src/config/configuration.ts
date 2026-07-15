@@ -44,7 +44,7 @@ export default () => ({
   },
   messaging: {
     emailProvider: process.env.EMAIL_PROVIDER ?? "console",
-    emailFrom: process.env.EMAIL_FROM ?? "MBN Health <no-reply@mbnhealth.com>",
+    emailFrom: process.env.EMAIL_FROM ?? "MBN Health <contact@mbndev.ma>",
   },
   // Transactional email (password resets, account notices) — reuses the same
   // SMTP_* vars as `messaging.*` above so there's one email config, not two.
@@ -56,7 +56,7 @@ export default () => ({
     secure: process.env.SMTP_SECURE === "true",
     user: process.env.SMTP_USER ?? "",
     pass: process.env.SMTP_PASSWORD ?? "",
-    from: process.env.EMAIL_FROM ?? "MBN Health <no-reply@mbnhealth.com>",
+    from: process.env.EMAIL_FROM ?? "MBN Health <contact@mbndev.ma>",
   },
   appUrls: {
     // Where password-reset / account links should point the user back to.

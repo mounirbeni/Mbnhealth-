@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { usePatient, usePatientTimeline, useAddAllergy, useAddMedication, useAddVital } from "@/hooks/use-patients";
 import { formatDate, formatDateTime, initials } from "@/lib/utils";
 import { ApiError } from "@/lib/api-client";
@@ -191,12 +192,24 @@ export default function PatientDetailPage() {
   const { t } = useLocale();
 
   if (isLoading || !patient) {
-    return <div className="text-sm text-muted-foreground">{t("dashboard.patientDetail.loadingRecord")}</div>;
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <Skeleton className="h-14 w-14 rounded-full" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+        <Skeleton className="h-9 w-full max-w-md" />
+        <Skeleton className="h-48 w-full" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="surface-elevated flex flex-wrap items-center gap-4 rounded-xl p-4">
         <Avatar className="h-14 w-14">
           <AvatarFallback className="text-lg">{initials(patient.firstName, patient.lastName)}</AvatarFallback>
         </Avatar>
@@ -224,7 +237,7 @@ export default function PatientDetailPage() {
 
         <TabsContent value="overview">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Card>
+            <Card className="surface-card">
               <CardHeader>
                 <CardTitle>{t("dashboard.patientDetail.contactInfo")}</CardTitle>
               </CardHeader>
@@ -244,7 +257,7 @@ export default function PatientDetailPage() {
                 </p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="surface-card">
               <CardHeader>
                 <CardTitle>{t("dashboard.patientDetail.insurance")}</CardTitle>
               </CardHeader>
@@ -265,7 +278,7 @@ export default function PatientDetailPage() {
         </TabsContent>
 
         <TabsContent value="allergies">
-          <Card>
+          <Card className="surface-card">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>{t("dashboard.patientDetail.allergies")}</CardTitle>
               <AddAllergyDialog patientId={patient.id} />
@@ -273,7 +286,7 @@ export default function PatientDetailPage() {
             <CardContent className="space-y-2">
               {patient.allergies && patient.allergies.length > 0 ? (
                 patient.allergies.map((a) => (
-                  <div key={a.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                  <div key={a.id} className="flex items-center gap-3 rounded-lg border border-border bg-background/60 p-3 transition-colors hover:bg-accent/40">
                     <AlertTriangle className="h-4 w-4 text-warning" />
                     <div>
                       <p className="text-sm font-medium">{a.substance}</p>
@@ -292,7 +305,7 @@ export default function PatientDetailPage() {
         </TabsContent>
 
         <TabsContent value="medications">
-          <Card>
+          <Card className="surface-card">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>{t("dashboard.patientDetail.medications")}</CardTitle>
               <AddMedicationDialog patientId={patient.id} />
@@ -300,7 +313,7 @@ export default function PatientDetailPage() {
             <CardContent className="space-y-2">
               {patient.medications && patient.medications.length > 0 ? (
                 patient.medications.map((m) => (
-                  <div key={m.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                  <div key={m.id} className="flex items-center gap-3 rounded-lg border border-border bg-background/60 p-3 transition-colors hover:bg-accent/40">
                     <Pill className="h-4 w-4 text-primary" />
                     <div>
                       <p className="text-sm font-medium">{m.name}</p>
@@ -321,7 +334,7 @@ export default function PatientDetailPage() {
         </TabsContent>
 
         <TabsContent value="vitals">
-          <Card>
+          <Card className="surface-card">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>{t("dashboard.patientDetail.vitalSigns")}</CardTitle>
               <AddVitalDialog patientId={patient.id} />
@@ -329,7 +342,7 @@ export default function PatientDetailPage() {
             <CardContent className="space-y-2">
               {patient.vitals && patient.vitals.length > 0 ? (
                 patient.vitals.map((v) => (
-                  <div key={v.id} className="flex items-center gap-4 rounded-lg border border-border p-3 text-sm">
+                  <div key={v.id} className="flex items-center gap-4 rounded-lg border border-border bg-background/60 p-3 text-sm transition-colors hover:bg-accent/40">
                     <ActivityIcon className="h-4 w-4 text-primary" />
                     <span>{formatDateTime(v.recordedAt)}</span>
                     <span className="text-muted-foreground">·</span>
@@ -351,7 +364,7 @@ export default function PatientDetailPage() {
         </TabsContent>
 
         <TabsContent value="timeline">
-          <Card>
+          <Card className="surface-card">
             <CardHeader>
               <CardTitle>{t("dashboard.patientDetail.patientTimeline")}</CardTitle>
             </CardHeader>

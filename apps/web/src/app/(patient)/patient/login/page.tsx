@@ -4,7 +4,8 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,7 +46,7 @@ function PatientLoginForm() {
 
   return (
     <div className="mx-auto max-w-sm">
-      <Card>
+      <AuthCard>
         <CardHeader>
           <CardTitle>{t("patientPortal.login.title")}</CardTitle>
           <CardDescription>{t("patientPortal.login.subtitle")}</CardDescription>
@@ -82,7 +83,7 @@ function PatientLoginForm() {
             </Link>
           </p>
         </CardContent>
-      </Card>
+      </AuthCard>
     </div>
   );
 }

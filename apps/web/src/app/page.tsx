@@ -125,7 +125,7 @@ export default function LandingPage() {
             <p className="mx-auto mt-5 max-w-xl text-balance text-lg text-muted-foreground">{t("marketing.hero.subtitle")}</p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button size="lg" asChild>
-                <Link href="/login?clinic=demo-clinic">{t("marketing.hero.tryDemo")}</Link>
+                <Link href="/register">{t("marketing.hero.tryDemo")}</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <a href="#contact">{t("marketing.hero.bookDemo")}</a>
@@ -301,7 +301,7 @@ export default function LandingPage() {
                 </ul>
                 <Button className="w-full" variant={plan.highlighted ? "default" : "outline"} asChild>
                   {plan.priceMad === null ? (
-                    <a href="mailto:sales@mbnhealth.com?subject=Enterprise%20plan%20inquiry">{t("marketing.pricing.contactSales")}</a>
+                    <a href="mailto:contact@mbndev.ma?subject=Enterprise%20plan%20inquiry">{t("marketing.pricing.contactSales")}</a>
                   ) : (
                     <a href="#contact">{t("marketing.pricing.getStarted")}</a>
                   )}
@@ -365,11 +365,11 @@ export default function LandingPage() {
               <p className="mt-3 text-muted-foreground">{t("marketing.contact.subtitle")}</p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <Button size="lg" asChild>
-                  <Link href="/login?clinic=demo-clinic">{t("marketing.contact.tryDemo")}</Link>
+                  <Link href="/register">{t("marketing.contact.tryDemo")}</Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
-                  <a href="mailto:sales@mbnhealth.com?subject=Book%20a%20demo">
-                    <Phone className="h-4 w-4" /> sales@mbnhealth.com
+                  <a href="mailto:contact@mbndev.ma?subject=Book%20a%20demo">
+                    <Phone className="h-4 w-4" /> contact@mbndev.ma
                   </a>
                 </Button>
               </div>
@@ -407,7 +407,7 @@ export default function LandingPage() {
           </div>
           <p>{t("marketing.footer.copyright", { year: new Date().getFullYear() })}</p>
           <div className="flex items-center gap-4">
-            <a href="mailto:sales@mbnhealth.com" className="hover:text-foreground">{t("marketing.footer.contact")}</a>
+            <a href="mailto:contact@mbndev.ma" className="hover:text-foreground">{t("marketing.footer.contact")}</a>
             <Link href="/privacy" className="hover:text-foreground">{t("patientPortal.footer.privacy")}</Link>
             <Link href="/terms" className="hover:text-foreground">{t("patientPortal.footer.terms")}</Link>
             <Link href="/login" className="hover:text-foreground">{t("marketing.nav.login")}</Link>

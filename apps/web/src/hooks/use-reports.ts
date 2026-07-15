@@ -1,12 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
 import { api, getAccessToken } from "@/lib/api-client";
 
-export function useRevenueReport() {
-  return useQuery({ queryKey: ["reports", "revenue"], queryFn: () => api.get<any>("/reports/revenue") });
+export interface ReportDateRange {
+  from?: string;
+  to?: string;
 }
 
-export function useAppointmentsReport() {
-  return useQuery({ queryKey: ["reports", "appointments"], queryFn: () => api.get<any>("/reports/appointments") });
+function rangeQuery(range?: ReportDateRange) {
+  const query = new URLSearchParams();
+  if (range?.from) query.set("from", range.from);
+  if (range?.to) query.set("to", range.to);
+  const qs = query.toString();
+  return qs ? `?${qs}` : "";
+}
+
+export function useRevenueReport(range?: ReportDateRange) {
+  return useQuery({
+    queryKey: ["reports", "revenue", range],
+    queryFn: () => api.get<any>(`/reports/revenue${rangeQuery(range)}`),
+  });
+}
+
+export function useAppointmentsReport(range?: ReportDateRange) {
+  return useQuery({
+    queryKey: ["reports", "appointments", range],
+    queryFn: () => api.get<any>(`/reports/appointments${rangeQuery(range)}`),
+  });
 }
 
 export function usePatientsReport() {
@@ -17,8 +36,11 @@ export function useDoctorsReport() {
   return useQuery({ queryKey: ["reports", "doctors"], queryFn: () => api.get<any[]>("/reports/doctors") });
 }
 
-export function useFinancialReport() {
-  return useQuery({ queryKey: ["reports", "financial"], queryFn: () => api.get<any>("/reports/financial") });
+export function useFinancialReport(range?: ReportDateRange) {
+  return useQuery({
+    queryKey: ["reports", "financial", range],
+    queryFn: () => api.get<any>(`/reports/financial${rangeQuery(range)}`),
+  });
 }
 
 export function useInventoryReport() {

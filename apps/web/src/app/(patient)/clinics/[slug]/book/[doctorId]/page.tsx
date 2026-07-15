@@ -11,6 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { patientApi, ApiError } from "@/lib/patient-api-client";
 import { usePatientAuth } from "@/lib/patient-auth-context";
 import { useLocale } from "@/lib/i18n/locale-context";
@@ -150,7 +153,7 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
         </div>
       )}
 
-      <Card>
+      <Card className="surface-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
@@ -174,14 +177,11 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
           {isLoading ? (
             <div className="grid grid-cols-3 gap-2">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-8 animate-pulse rounded-md bg-muted" />
+                <Skeleton key={i} className="h-8 w-full" />
               ))}
             </div>
           ) : !data || data.slots.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-8 text-center">
-              <CalendarX2 className="h-6 w-6 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{t("patientPortal.booking.noAvailability")}</p>
-            </div>
+            <EmptyState icon={CalendarX2} title={t("patientPortal.booking.noAvailability")} size="sm" />
           ) : (
             <div className="grid grid-cols-3 gap-2">
               {data.slots.map((slot) => {
@@ -204,7 +204,7 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
       </Card>
 
       {selectedSlot && (
-        <Card className="border-primary/40">
+        <Card className="surface-card border-primary/40">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
@@ -226,21 +226,23 @@ function BookAppointmentForm({ params }: { params: { slug: string; doctorId: str
           </CardHeader>
           <CardContent className="space-y-4">
             {!authLoading && !patient && (
-              <div className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
-                {t("patientPortal.booking.signInPrompt")}
-                <div className="mt-2 flex gap-2">
-                  <Button size="sm" asChild>
-                    <Link href={`/patient/login?next=${encodeURIComponent(returnUrl)}`}>
-                      {t("patientPortal.booking.signInButton")}
-                    </Link>
-                  </Button>
-                  <Button size="sm" variant="outline" asChild>
-                    <Link href={`/patient/register?next=${encodeURIComponent(returnUrl)}`}>
-                      {t("patientPortal.booking.createAccountButton")}
-                    </Link>
-                  </Button>
-                </div>
-              </div>
+              <Alert variant="warning">
+                <AlertDescription>
+                  {t("patientPortal.booking.signInPrompt")}
+                  <div className="mt-2 flex gap-2">
+                    <Button size="sm" asChild>
+                      <Link href={`/patient/login?next=${encodeURIComponent(returnUrl)}`}>
+                        {t("patientPortal.booking.signInButton")}
+                      </Link>
+                    </Button>
+                    <Button size="sm" variant="outline" asChild>
+                      <Link href={`/patient/register?next=${encodeURIComponent(returnUrl)}`}>
+                        {t("patientPortal.booking.createAccountButton")}
+                      </Link>
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
             )}
 
             <div className="space-y-2">

@@ -39,7 +39,7 @@ export default function AppointmentsPage() {
           <CalendarView />
         </TabsContent>
         <TabsContent value="waitlist">
-          <Card>
+          <Card className="surface-card">
             <CardContent className="divide-y divide-border p-0">
               {waitlist && waitlist.length > 0 ? (
                 waitlist.map((w) => (

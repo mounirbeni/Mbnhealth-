@@ -10,18 +10,25 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthCard } from "@/components/auth/auth-card";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api-client";
 import { useLocale } from "@/lib/i18n/locale-context";
 
-const DEMO_ACCOUNTS = [
-  { roleKey: "demoRoleOwner", email: "owner@demo-clinic.com" },
-  { roleKey: "demoRoleManager", email: "manager@demo-clinic.com" },
-  { roleKey: "demoRoleReceptionist", email: "reception@demo-clinic.com" },
-  { roleKey: "demoRoleDoctor", email: "dr.hicham@demo-clinic.com" },
-] as const;
+// Demo credentials must never ship in the production bundle — gating on this
+// static check lets Next.js dead-code-eliminate the whole block at build time.
+const DEMO_ACCOUNTS =
+  process.env.NODE_ENV === "production"
+    ? []
+    : ([
+        { roleKey: "demoRoleOwner", email: "owner@demo-clinic.com" },
+        { roleKey: "demoRoleManager", email: "manager@demo-clinic.com" },
+        { roleKey: "demoRoleReceptionist", email: "reception@demo-clinic.com" },
+        { roleKey: "demoRoleDoctor", email: "dr.hicham@demo-clinic.com" },
+      ] as const);
 const DEMO_PASSWORD = "Passw0rd!123";
+const DEMO_LOGIN_ENABLED = process.env.NODE_ENV !== "production";
 
 function useLoginSchemas() {
   const { t } = useLocale();
@@ -99,7 +106,7 @@ function LoginForm() {
 
   if (challengeToken) {
     return (
-      <Card>
+      <AuthCard>
         <CardHeader>
           <CardTitle>{t("auth.mfa.title")}</CardTitle>
           <CardDescription>{t("auth.mfa.subtitle")}</CardDescription>
@@ -121,18 +128,18 @@ function LoginForm() {
             </Button>
           </form>
         </CardContent>
-      </Card>
+      </AuthCard>
     );
   }
 
   return (
-    <Card>
+    <AuthCard>
       <CardHeader>
         <CardTitle>{t("auth.login.title")}</CardTitle>
         <CardDescription>{t("auth.login.subtitle")}</CardDescription>
       </CardHeader>
       <CardContent>
-        {clinicParam === "demo-clinic" && (
+        {DEMO_LOGIN_ENABLED && clinicParam === "demo-clinic" && (
           <div className="mb-4 space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
             <p className="text-xs font-medium text-foreground">{t("auth.login.demoBanner")}</p>
             <div className="flex flex-wrap gap-1.5">
@@ -187,6 +194,6 @@ function LoginForm() {
           </Link>
         </p>
       </CardContent>
-    </Card>
+    </AuthCard>
   );
 }

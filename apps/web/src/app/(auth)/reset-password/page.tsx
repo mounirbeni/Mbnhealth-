@@ -11,7 +11,8 @@ import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { AuthCard } from "@/components/auth/auth-card";
 import { api, ApiError } from "@/lib/api-client";
 import { useLocale } from "@/lib/i18n/locale-context";
 
@@ -59,7 +60,7 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <Card>
+      <AuthCard>
         <CardHeader>
           <CardTitle>{t("auth.resetPassword.invalidTitle")}</CardTitle>
           <CardDescription>{t("auth.resetPassword.invalidDesc")}</CardDescription>
@@ -69,24 +70,24 @@ function ResetPasswordForm() {
             <Link href="/forgot-password">{t("auth.resetPassword.requestNewLink")}</Link>
           </Button>
         </CardContent>
-      </Card>
+      </AuthCard>
     );
   }
 
   if (done) {
     return (
-      <Card>
+      <AuthCard>
         <CardHeader className="items-center text-center">
           <CheckCircle2 className="h-10 w-10 text-primary" />
           <CardTitle>{t("auth.resetPassword.updatedTitle")}</CardTitle>
           <CardDescription>{t("auth.resetPassword.redirecting")}</CardDescription>
         </CardHeader>
-      </Card>
+      </AuthCard>
     );
   }
 
   return (
-    <Card>
+    <AuthCard>
       <CardHeader>
         <CardTitle>{t("auth.resetPassword.title")}</CardTitle>
         <CardDescription>{t("auth.resetPassword.subtitle")}</CardDescription>
@@ -117,6 +118,6 @@ function ResetPasswordForm() {
           </Button>
         </form>
       </CardContent>
-    </Card>
+    </AuthCard>
   );
 }

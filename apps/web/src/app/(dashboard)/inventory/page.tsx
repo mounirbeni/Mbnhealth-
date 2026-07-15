@@ -3,14 +3,17 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Package, Plus, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
+import { Package, Plus, ArrowDownCircle, ArrowUpCircle, DollarSign, PackageX } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { StatCard } from "@/components/dashboard/stat-card";
 import { useAdjustStock, useCreateInventoryItem, useInventory } from "@/hooks/use-inventory";
+import { useInventoryReport } from "@/hooks/use-reports";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api-client";
 import { formatCurrency } from "@/lib/utils";
@@ -91,9 +94,66 @@ function NewItemDialog() {
   );
 }
 
+function AdjustStockDialog({
+  itemId,
+  itemName,
+  type,
+}: {
+  itemId: string;
+  itemName: string;
+  type: "RESTOCK" | "CONSUMPTION";
+}) {
+  const { t } = useLocale();
+  const [open, setOpen] = useState(false);
+  const adjustStock = useAdjustStock();
+  const { register, handleSubmit, reset } = useForm<{ quantity: string; reason?: string }>({ defaultValues: { quantity: "1" } });
+  const isRestock = type === "RESTOCK";
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="icon" variant="ghost" title={isRestock ? t("dashboard.inventory.restockTitle") : t("dashboard.inventory.useTitle")}>
+          {isRestock ? <ArrowUpCircle className="h-4 w-4 text-success" /> : <ArrowDownCircle className="h-4 w-4 text-warning" />}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {isRestock ? t("dashboard.inventory.restockTitle") : t("dashboard.inventory.useTitle")} — {itemName}
+          </DialogTitle>
+        </DialogHeader>
+        <form
+          onSubmit={handleSubmit(async (v) => {
+            try {
+              await adjustStock.mutateAsync({ id: itemId, data: { type, quantity: Number(v.quantity), reason: v.reason } });
+              reset();
+              setOpen(false);
+            } catch (e) {
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.inventory.addFailedToast"));
+            }
+          })}
+          className="space-y-4"
+        >
+          <div className="space-y-1.5">
+            <Label>{t("dashboard.inventory.quantityLabel")}</Label>
+            <Input type="number" min={1} {...register("quantity", { required: true, min: 1 })} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t("dashboard.inventory.reasonLabel")}</Label>
+            <Input {...register("reason")} placeholder={t("dashboard.inventory.reasonPlaceholder")} />
+          </div>
+          <DialogFooter>
+            <Button type="submit">{t("common.save")}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function InventoryPage() {
   const { data: items, isLoading } = useInventory();
-  const adjustStock = useAdjustStock();
+  const { data: report } = useInventoryReport();
   const { hasPermission } = useAuth();
   const { t } = useLocale();
 
@@ -107,7 +167,13 @@ export default function InventoryPage() {
         {hasPermission("INVENTORY_WRITE") && <NewItemDialog />}
       </div>
 
-      <div className="rounded-xl border border-border">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label={t("dashboard.reports.totalItems")} value={report?.totalItems ?? 0} icon={Package} />
+        <StatCard label={t("dashboard.reports.lowStockItems")} value={report?.lowStockCount ?? 0} icon={PackageX} accent="warning" />
+        <StatCard label={t("dashboard.reports.totalValue")} value={formatCurrency(report?.totalValue ?? 0)} icon={DollarSign} accent="success" />
+      </div>
+
+      <div className="surface-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -121,11 +187,15 @@ export default function InventoryPage() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  {t("dashboard.inventory.loading")}
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  {Array.from({ length: 6 }).map((_, j) => (
+                    <TableCell key={j}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : items && items.length > 0 ? (
               items.map((item) => {
                 const low = item.quantity <= item.reorderLevel;
@@ -144,25 +214,11 @@ export default function InventoryPage() {
                         {low ? t("dashboard.inventory.lowStock") : t("dashboard.inventory.inStock")}
                       </Badge>
                     </TableCell>
-                    <TableCell className="space-x-1">
+                    <TableCell className="whitespace-nowrap">
                       {hasPermission("INVENTORY_WRITE") && (
                         <>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => adjustStock.mutate({ id: item.id, data: { type: "RESTOCK", quantity: 10 } })}
-                            title={t("dashboard.inventory.restockTitle")}
-                          >
-                            <ArrowUpCircle className="h-4 w-4 text-success" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => adjustStock.mutate({ id: item.id, data: { type: "CONSUMPTION", quantity: 1 } })}
-                            title={t("dashboard.inventory.useOneTitle")}
-                          >
-                            <ArrowDownCircle className="h-4 w-4 text-warning" />
-                          </Button>
+                          <AdjustStockDialog itemId={item.id} itemName={item.name} type="RESTOCK" />
+                          <AdjustStockDialog itemId={item.id} itemName={item.name} type="CONSUMPTION" />
                         </>
                       )}
                     </TableCell>

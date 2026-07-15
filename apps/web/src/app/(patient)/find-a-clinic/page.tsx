@@ -478,7 +478,7 @@ function FindClinicContent() {
         <div className="grid gap-5 grid-cols-1 sm:grid-cols-2">
           {data.map((clinic) => (
             <Link key={clinic.slug} href={`/clinics/${clinic.slug}`} className="group block h-full">
-              <Card className="h-full overflow-hidden transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-lg">
+              <Card className="surface-card surface-card-hover h-full overflow-hidden">
                 <div className="h-1.5" style={{ backgroundColor: clinic.primaryColor ?? "#0EA5E9" }} />
                 <CardHeader className="pb-3">
                   <div className="flex items-start gap-3.5">

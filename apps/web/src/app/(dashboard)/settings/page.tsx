@@ -18,7 +18,7 @@ import { useTenant, useUpdateTenant } from "@/hooks/use-tenant";
 import { useUpsertWhatsAppConfig, useWhatsAppConfig } from "@/hooks/use-whatsapp";
 import { api } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-client";
-import { formatDateTime } from "@/lib/utils";
+import { cn, formatDateTime } from "@/lib/utils";
 import { PRICING_PLANS } from "@/lib/pricing";
 import { useLocale } from "@/lib/i18n/locale-context";
 
@@ -52,7 +52,7 @@ function ProfileTab() {
   const { user } = useAuth();
   const { t } = useLocale();
   return (
-    <Card>
+    <Card className="surface-card">
       <CardHeader>
         <CardTitle>{t("dashboard.settings.profile.title")}</CardTitle>
         <CardDescription>{t("dashboard.settings.profile.subtitle")}</CardDescription>
@@ -97,7 +97,7 @@ function ClinicTab() {
   });
 
   return (
-    <Card>
+    <Card className="surface-card">
       <CardHeader>
         <CardTitle>{t("dashboard.settings.clinic.title")}</CardTitle>
         <CardDescription>
@@ -202,7 +202,7 @@ function SecurityTab() {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="surface-card">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>{t("dashboard.settings.security.twoFactorTitle")}</CardTitle>
@@ -213,12 +213,14 @@ function SecurityTab() {
         <CardContent>
           {setupData ? (
             <div className="space-y-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={setupData.qrCodeDataUrl}
-                alt={t("dashboard.settings.security.qrAlt")}
-                className="h-40 w-40 rounded-lg border border-border"
-              />
+              <div className="inline-flex rounded-xl border border-border bg-muted/30 p-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={setupData.qrCodeDataUrl}
+                  alt={t("dashboard.settings.security.qrAlt")}
+                  className="h-40 w-40 rounded-lg"
+                />
+              </div>
               <p className="text-xs text-muted-foreground">
                 {t("dashboard.settings.security.manualCodeLabel", { secret: setupData.secret })}
               </p>
@@ -245,7 +247,7 @@ function SecurityTab() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="surface-card">
         <CardHeader>
           <CardTitle>{t("dashboard.settings.security.activeSessionsTitle")}</CardTitle>
           <CardDescription>{t("dashboard.settings.security.activeSessionsDesc")}</CardDescription>
@@ -301,7 +303,7 @@ function WhatsAppTab() {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="surface-card">
         <CardHeader>
           <CardTitle>{t("dashboard.settings.whatsapp.title")}</CardTitle>
           <CardDescription>
@@ -420,7 +422,7 @@ function BillingTab() {
   };
 
   return (
-    <Card>
+    <Card className="surface-card">
       <CardHeader>
         <CardTitle>{t("dashboard.settings.billing.title")}</CardTitle>
         <CardDescription>
@@ -438,7 +440,7 @@ function BillingTab() {
                 const isCurrent = tenant?.subscription?.plan === plan.id;
                 const planName = t(`marketing.pricing.${PLAN_NAME_KEYS[plan.id]}`);
                 return (
-                  <Card key={plan.id} className={plan.highlighted ? "border-primary shadow-sm" : undefined}>
+                  <Card key={plan.id} className={cn("surface-card", plan.highlighted && "border-primary shadow-sm")}>
                     <CardHeader className="pb-2">
                       <CardTitle className="flex items-center justify-between text-base">
                         {planName}
@@ -465,7 +467,7 @@ function BillingTab() {
                           {isCurrent ? (
                             t("dashboard.settings.billing.currentPlanButton")
                           ) : (
-                            <a href="mailto:sales@mbnhealth.com?subject=Enterprise%20plan%20inquiry">
+                            <a href="mailto:contact@mbndev.ma?subject=Enterprise%20plan%20inquiry">
                               <CreditCard className="h-3.5 w-3.5" /> {t("dashboard.settings.billing.contactSales")}
                             </a>
                           )}
@@ -512,31 +514,41 @@ export default function SettingsPage() {
         <h1 className="text-page-title">{t("dashboard.settings.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("dashboard.settings.subtitle")}</p>
       </div>
-      <Tabs defaultValue={defaultTab}>
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="profile">{t("dashboard.settings.profileTab")}</TabsTrigger>
-          <TabsTrigger value="clinic">{t("dashboard.settings.clinicTab")}</TabsTrigger>
-          <TabsTrigger value="whatsapp">
+      <Tabs defaultValue={defaultTab} orientation="vertical" className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        <TabsList className="h-auto w-full shrink-0 justify-start overflow-x-auto bg-transparent p-0 lg:w-56 lg:flex-col lg:items-stretch">
+          <TabsTrigger value="profile" className="justify-start data-[state=active]:bg-accent lg:w-full">
+            {t("dashboard.settings.profileTab")}
+          </TabsTrigger>
+          <TabsTrigger value="clinic" className="justify-start data-[state=active]:bg-accent lg:w-full">
+            {t("dashboard.settings.clinicTab")}
+          </TabsTrigger>
+          <TabsTrigger value="whatsapp" className="justify-start data-[state=active]:bg-accent lg:w-full">
             <MessageCircle className="h-3.5 w-3.5" /> {t("dashboard.settings.whatsappTab")}
           </TabsTrigger>
-          <TabsTrigger value="billing">{t("dashboard.settings.billingTab")}</TabsTrigger>
-          <TabsTrigger value="security">{t("dashboard.settings.securityTab")}</TabsTrigger>
+          <TabsTrigger value="billing" className="justify-start data-[state=active]:bg-accent lg:w-full">
+            {t("dashboard.settings.billingTab")}
+          </TabsTrigger>
+          <TabsTrigger value="security" className="justify-start data-[state=active]:bg-accent lg:w-full">
+            {t("dashboard.settings.securityTab")}
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="profile">
-          <ProfileTab />
-        </TabsContent>
-        <TabsContent value="clinic">
-          <ClinicTab />
-        </TabsContent>
-        <TabsContent value="whatsapp">
-          <WhatsAppTab />
-        </TabsContent>
-        <TabsContent value="billing">
-          <BillingTab />
-        </TabsContent>
-        <TabsContent value="security">
-          <SecurityTab />
-        </TabsContent>
+        <div className="min-w-0 flex-1">
+          <TabsContent value="profile" className="mt-0">
+            <ProfileTab />
+          </TabsContent>
+          <TabsContent value="clinic" className="mt-0">
+            <ClinicTab />
+          </TabsContent>
+          <TabsContent value="whatsapp" className="mt-0">
+            <WhatsAppTab />
+          </TabsContent>
+          <TabsContent value="billing" className="mt-0">
+            <BillingTab />
+          </TabsContent>
+          <TabsContent value="security" className="mt-0">
+            <SecurityTab />
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );

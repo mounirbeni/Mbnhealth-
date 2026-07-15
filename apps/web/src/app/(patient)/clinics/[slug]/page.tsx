@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, CalendarCheck, Globe, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarCheck, Globe, Mail, MapPin, Phone, Stethoscope } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ClinicLogo } from "@/components/patient/clinic-logo";
 import { patientApi } from "@/lib/patient-api-client";
 import { useLocale } from "@/lib/i18n/locale-context";
@@ -36,18 +38,18 @@ interface ClinicProfile {
 
 function DoctorCardSkeleton() {
   return (
-    <Card className="animate-pulse">
+    <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-full bg-muted" />
+          <Skeleton className="h-12 w-12 rounded-full" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-1/2 rounded bg-muted" />
-            <div className="h-3 w-1/3 rounded bg-muted" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-3 w-1/3" />
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-8 w-full rounded bg-muted" />
+        <Skeleton className="h-8 w-full" />
       </CardContent>
     </Card>
   );
@@ -63,7 +65,7 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-32 animate-pulse rounded-2xl bg-muted" />
+        <Skeleton className="h-32 w-full rounded-2xl" />
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
           <DoctorCardSkeleton />
           <DoctorCardSkeleton />
@@ -74,14 +76,11 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
 
   if (!clinic) {
     return (
-      <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="font-medium">{t("patientPortal.clinicProfile.notFound")}</p>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/find-a-clinic">
-            <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" /> {t("patientPortal.clinicProfile.backToSearch")}
-          </Link>
-        </Button>
-      </div>
+      <EmptyState
+        icon={Stethoscope}
+        title={t("patientPortal.clinicProfile.notFound")}
+        action={{ label: t("patientPortal.clinicProfile.backToSearch"), href: "/find-a-clinic" }}
+      />
     );
   }
 
@@ -153,7 +152,7 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
               doctor.department && doctor.department.name.toLowerCase() !== doctor.specialization.toLowerCase();
 
             return (
-              <Card key={doctor.id} className="flex flex-col transition-shadow hover:shadow-md">
+              <Card key={doctor.id} className="surface-card surface-card-hover flex flex-col">
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12">
@@ -193,7 +192,9 @@ export default function ClinicProfilePage({ params }: { params: { slug: string }
             );
           })}
           {clinic.doctors.length === 0 && (
-            <p className="text-sm text-muted-foreground">{t("patientPortal.clinicProfile.noDoctors")}</p>
+            <div className="col-span-full">
+              <EmptyState icon={Stethoscope} title={t("patientPortal.clinicProfile.noDoctors")} />
+            </div>
           )}
         </div>
       </div>

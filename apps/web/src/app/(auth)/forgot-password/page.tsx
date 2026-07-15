@@ -8,7 +8,8 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { AuthCard } from "@/components/auth/auth-card";
 import { api } from "@/lib/api-client";
 import { useLocale } from "@/lib/i18n/locale-context";
 
@@ -41,7 +42,7 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <Card>
+      <AuthCard>
         <CardHeader>
           <CardTitle>{t("auth.forgotPassword.checkEmailTitle")}</CardTitle>
           <CardDescription>{t("auth.forgotPassword.checkEmailDesc")}</CardDescription>
@@ -51,12 +52,12 @@ export default function ForgotPasswordPage() {
             <Link href="/login">{t("auth.forgotPassword.backToSignIn")}</Link>
           </Button>
         </CardContent>
-      </Card>
+      </AuthCard>
     );
   }
 
   return (
-    <Card>
+    <AuthCard>
       <CardHeader>
         <CardTitle>{t("auth.forgotPassword.title")}</CardTitle>
         <CardDescription>{t("auth.forgotPassword.subtitle")}</CardDescription>
@@ -84,6 +85,6 @@ export default function ForgotPasswordPage() {
           </Link>
         </p>
       </CardContent>
-    </Card>
+    </AuthCard>
   );
 }

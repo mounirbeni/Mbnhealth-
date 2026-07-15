@@ -12,6 +12,7 @@ import { PatientCombobox } from "@/components/patients/patient-combobox";
 import { useCreateInvoice } from "@/hooks/use-billing";
 import { ApiError } from "@/lib/api-client";
 import { formatCurrency } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 interface FormValues {
   patientId: string;
@@ -21,6 +22,7 @@ interface FormValues {
 }
 
 export function InvoiceFormDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const createInvoice = useCreateInvoice();
   const { register, handleSubmit, control, watch, reset } = useForm<FormValues>({
@@ -47,11 +49,11 @@ export function InvoiceFormDialog() {
         taxAmount: Number(values.taxAmount) || 0,
         discountAmount: Number(values.discountAmount) || 0,
       });
-      toast.success("Invoice created");
+      toast.success(t("dashboard.billing.invoiceDialog.invoiceCreated"));
       reset();
       setOpen(false);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Failed to create invoice");
+      toast.error(err instanceof ApiError ? err.message : t("dashboard.billing.invoiceDialog.invoiceCreateFailed"));
     }
   };
 
@@ -59,16 +61,16 @@ export function InvoiceFormDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> New Invoice
+          <Plus /> {t("dashboard.billing.invoiceDialog.newInvoice")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Create invoice</DialogTitle>
+          <DialogTitle>{t("dashboard.billing.invoiceDialog.createInvoice")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Patient</Label>
+            <Label>{t("dashboard.billing.invoiceDialog.patient")}</Label>
             <Controller
               control={control}
               name="patientId"
@@ -78,12 +80,26 @@ export function InvoiceFormDialog() {
           </div>
 
           <div className="space-y-2">
-            <Label>Line items</Label>
+            <Label>{t("dashboard.billing.invoiceDialog.lineItems")}</Label>
             {fields.map((field, index) => (
               <div key={field.id} className="flex items-center gap-2">
-                <Input placeholder="Description" className="flex-1" {...register(`items.${index}.description`, { required: true })} />
-                <Input type="number" placeholder="Qty" className="w-16" {...register(`items.${index}.quantity`, { required: true })} />
-                <Input type="number" placeholder="Price" className="w-24" {...register(`items.${index}.unitPrice`, { required: true })} />
+                <Input
+                  placeholder={t("dashboard.billing.invoiceDialog.description")}
+                  className="flex-1"
+                  {...register(`items.${index}.description`, { required: true })}
+                />
+                <Input
+                  type="number"
+                  placeholder={t("dashboard.billing.invoiceDialog.qty")}
+                  className="w-16"
+                  {...register(`items.${index}.quantity`, { required: true })}
+                />
+                <Input
+                  type="number"
+                  placeholder={t("dashboard.billing.invoiceDialog.price")}
+                  className="w-24"
+                  {...register(`items.${index}.unitPrice`, { required: true })}
+                />
                 <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length === 1}>
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
@@ -95,25 +111,27 @@ export function InvoiceFormDialog() {
               size="sm"
               onClick={() => append({ description: "", quantity: "1", unitPrice: "" })}
             >
-              <Plus className="h-3 w-3" /> Add line item
+              <Plus className="h-3 w-3" /> {t("dashboard.billing.invoiceDialog.addLineItem")}
             </Button>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Tax amount</Label>
+              <Label>{t("dashboard.billing.invoiceDialog.taxAmount")}</Label>
               <Input type="number" {...register("taxAmount")} />
             </div>
             <div className="space-y-1.5">
-              <Label>Discount amount</Label>
+              <Label>{t("dashboard.billing.invoiceDialog.discountAmount")}</Label>
               <Input type="number" {...register("discountAmount")} />
             </div>
           </div>
 
-          <p className="text-right text-sm font-medium">Subtotal: {formatCurrency(subtotal)}</p>
+          <p className="text-right text-sm font-medium">
+            {t("dashboard.billing.invoiceDialog.subtotal", { amount: formatCurrency(subtotal) })}
+          </p>
 
           <DialogFooter>
-            <Button type="submit">Create invoice</Button>
+            <Button type="submit">{t("dashboard.billing.invoiceDialog.createInvoice")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

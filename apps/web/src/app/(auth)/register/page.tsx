@@ -10,7 +10,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthCard } from "@/components/auth/auth-card";
 import { api, setTokens } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
@@ -63,7 +64,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <Card>
+    <AuthCard>
       <CardHeader>
         <CardTitle>{t("auth.register.title")}</CardTitle>
         <CardDescription>{t("auth.register.subtitle")}</CardDescription>
@@ -117,6 +118,6 @@ export default function RegisterPage() {
           </Link>
         </p>
       </CardContent>
-    </Card>
+    </AuthCard>
   );
 }

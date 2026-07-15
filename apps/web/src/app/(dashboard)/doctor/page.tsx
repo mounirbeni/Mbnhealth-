@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PatientCombobox } from "@/components/patients/patient-combobox";
@@ -175,14 +176,11 @@ export default function DoctorWorkspacePage() {
 
         <div className="hidden lg:block lg:flex-1">
           {selected ? (
-            <Card className="p-5">
+            <Card className="surface-card p-5">
               <PatientDetailPanel patientId={selected.patientId} patientLabel={selected.label} defaultDoctorId={myDoctor?.id} />
             </Card>
           ) : (
-            <div className="flex h-full min-h-[240px] flex-col items-center justify-center rounded-xl border border-dashed border-border p-8 text-center">
-              <Stethoscope className="h-6 w-6 text-muted-foreground" />
-              <p className="mt-2 text-sm text-muted-foreground">{t("dashboard.doctorWorkspace.selectPatientHint")}</p>
-            </div>
+            <EmptyState icon={Stethoscope} title={t("dashboard.doctorWorkspace.selectPatientHint")} className="h-full min-h-[240px]" />
           )}
         </div>
       </div>

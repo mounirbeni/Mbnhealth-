@@ -15,6 +15,7 @@ import {
   Settings,
   FileText,
   ClipboardList,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 import type { Permission } from "@/types";
@@ -33,6 +34,7 @@ export const NAV_SECTIONS: NavSection[] = ["overview", "care", "operations", "ad
 
 export const NAV_ITEMS: NavItem[] = [
   { labelKey: "dashboard", href: "/dashboard", icon: LayoutDashboard, permission: "DASHBOARD_VIEW", section: "overview" },
+  { labelKey: "notifications", href: "/notifications", icon: Bell, permission: "DASHBOARD_VIEW", section: "overview" },
   { labelKey: "doctorWorkspace", href: "/doctor", icon: ClipboardList, permission: "MEDICAL_RECORDS_WRITE", section: "care" },
   { labelKey: "appointments", href: "/appointments", icon: CalendarDays, permission: "APPOINTMENTS_READ", section: "care" },
   { labelKey: "patients", href: "/patients", icon: Users, permission: "PATIENTS_READ", section: "care" },

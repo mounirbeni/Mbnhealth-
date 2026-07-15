@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Activity } from "lucide-react";
+import { Activity, ArrowLeft } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { INTL_LOCALE_TAGS } from "@/lib/i18n/locales";
@@ -29,6 +29,9 @@ export default function PrivacyPolicyContent() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+        <Link href="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t("common.back")}
+        </Link>
         <h1 className="text-3xl font-bold tracking-tight">{t("legal.privacy.title")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{t("legal.lastUpdated", { date: updatedDate })}</p>
 
@@ -65,8 +68,8 @@ export default function PrivacyPolicyContent() {
           <h2>{t("legal.privacy.rightsHeading")}</h2>
           <p>
             {t("legal.privacy.rightsBodyBefore")}{" "}
-            <a href="mailto:privacy@mbnhealth.com" className="text-primary hover:underline">
-              privacy@mbnhealth.com
+            <a href="mailto:contact@mbndev.ma" className="text-primary hover:underline">
+              contact@mbndev.ma
             </a>{" "}
             {t("legal.privacy.rightsBodyAfter")}
           </p>
@@ -74,8 +77,8 @@ export default function PrivacyPolicyContent() {
           <h2>{t("legal.privacy.contactHeading")}</h2>
           <p>
             {t("legal.privacy.contactBodyBefore")}{" "}
-            <a href="mailto:privacy@mbnhealth.com" className="text-primary hover:underline">
-              privacy@mbnhealth.com
+            <a href="mailto:contact@mbndev.ma" className="text-primary hover:underline">
+              contact@mbndev.ma
             </a>
             .
           </p>

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,7 +56,7 @@ function PatientResetPasswordForm() {
 
   return (
     <div className="mx-auto max-w-sm">
-      <Card>
+      <AuthCard>
         {!token ? (
           <>
             <CardHeader>
@@ -109,7 +110,7 @@ function PatientResetPasswordForm() {
             </CardContent>
           </>
         )}
-      </Card>
+      </AuthCard>
     </div>
   );
 }

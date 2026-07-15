@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import { Bell, Menu, Moon, Search, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -19,18 +18,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useAuth } from "@/lib/auth-context";
-import { api } from "@/lib/api-client";
 import { initials, formatDateTime } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { useCommandPalette } from "@/components/layout/command-palette-context";
-
-interface Notification {
-  id: string;
-  title: string;
-  body?: string;
-  isRead: boolean;
-  createdAt: string;
-}
+import { useNotifications, useUnreadNotificationCount } from "@/hooks/use-notifications";
 
 export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { user, logout } = useAuth();
@@ -39,16 +30,8 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { t } = useLocale();
   const { setOpen: setCommandPaletteOpen } = useCommandPalette();
 
-  const { data: unread } = useQuery({
-    queryKey: ["notifications", "unread-count"],
-    queryFn: () => api.get<{ count: number }>("/notifications/unread-count"),
-    refetchInterval: 30_000,
-  });
-
-  const { data: notifications } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: () => api.get<Notification[]>("/notifications"),
-  });
+  const { data: unread } = useUnreadNotificationCount();
+  const { data: notifications } = useNotifications();
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/95 px-4 backdrop-blur">
@@ -102,6 +85,12 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 <p className="px-4 py-6 text-center text-sm text-muted-foreground">{t("dashboard.topbar.allCaughtUp")}</p>
               )}
             </div>
+            <button
+              onClick={() => router.push("/notifications")}
+              className="w-full border-t border-border px-4 py-2.5 text-center text-sm font-medium text-primary hover:bg-accent"
+            >
+              {t("dashboard.topbar.viewAll")}
+            </button>
           </PopoverContent>
         </Popover>
 

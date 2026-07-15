@@ -5,6 +5,7 @@ import { LogOut } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { usePatientAuth } from "@/lib/patient-auth-context";
 import { useLocale } from "@/lib/i18n/locale-context";
 
@@ -12,7 +13,26 @@ export default function PatientAccountPage() {
   const { patient, isLoading, logout } = usePatientAuth();
   const { t } = useLocale();
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-sm space-y-6 py-4">
+        <Skeleton className="h-8 w-40" />
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-40" />
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 border-t border-border/60 pt-4">
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!patient) {
     return (

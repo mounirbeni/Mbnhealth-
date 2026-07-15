@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
-import { Plus, Stethoscope } from "lucide-react";
+import { Plus, Search, Stethoscope } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -127,6 +128,18 @@ export default function DoctorsPage() {
   const { data: doctors, isLoading } = useDoctors();
   const { hasPermission } = useAuth();
   const { t } = useLocale();
+  const [search, setSearch] = useState("");
+
+  const filteredDoctors = useMemo(() => {
+    if (!search.trim()) return doctors;
+    const q = search.trim().toLowerCase();
+    return doctors?.filter(
+      (d) =>
+        `${d.user.firstName} ${d.user.lastName}`.toLowerCase().includes(q) ||
+        d.specialization?.toLowerCase().includes(q) ||
+        d.department?.name.toLowerCase().includes(q),
+    );
+  }, [doctors, search]);
 
   return (
     <div className="space-y-4">
@@ -140,12 +153,25 @@ export default function DoctorsPage() {
         {hasPermission("DOCTORS_WRITE") && <NewDoctorDialog />}
       </div>
 
+      <div className="relative max-w-sm">
+        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("common.search")} className="ps-9" />
+      </div>
+
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">{t("dashboard.doctors.loading")}</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-28 rounded-xl" />
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {doctors?.map((doctor) => (
-            <Card key={doctor.id}>
+          {filteredDoctors?.map((doctor, index) => (
+            <Card
+              key={doctor.id}
+              className="surface-card-hover animate-fade-in-up [animation-fill-mode:backwards]"
+              style={{ animationDelay: `${index * 60}ms` }}
+            >
               <CardContent className="flex items-start gap-3 p-5">
                 <Avatar className="h-12 w-12">
                   <AvatarFallback>{initials(doctor.user.firstName, doctor.user.lastName)}</AvatarFallback>

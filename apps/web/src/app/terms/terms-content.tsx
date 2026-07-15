@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Activity } from "lucide-react";
+import { Activity, ArrowLeft } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { INTL_LOCALE_TAGS } from "@/lib/i18n/locales";
@@ -29,6 +29,9 @@ export default function TermsOfServiceContent() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+        <Link href="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t("common.back")}
+        </Link>
         <h1 className="text-3xl font-bold tracking-tight">{t("legal.terms.title")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{t("legal.lastUpdated", { date: updatedDate })}</p>
 

@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -23,28 +25,58 @@ import {
   useCommunicationLogs,
 } from "@/hooks/use-messages";
 import { useWhatsAppConfig, useWhatsAppConversations } from "@/hooks/use-whatsapp";
-import { formatDateTime } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
+import { formatDateTime, initials } from "@/lib/utils";
 import { ApiError } from "@/lib/api-client";
 import { useLocale } from "@/lib/i18n/locale-context";
 
+interface PendingMessage {
+  id: string;
+  body: string;
+  createdAt: string;
+  pending: true;
+}
+
 function ThreadsTab() {
   const { t } = useLocale();
+  const { user } = useAuth();
   const { data: threads } = useThreads();
   const [activeThread, setActiveThread] = useState<string | null>(null);
   const { data: messages } = useThreadMessages(activeThread ?? undefined);
   const sendMessage = useSendMessage();
   const [body, setBody] = useState("");
+  const [pending, setPending] = useState<PendingMessage[]>([]);
+
+  const selectThread = (id: string) => {
+    setActiveThread(id);
+    setPending([]);
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!body.trim() || !activeThread) return;
+    const optimistic: PendingMessage = { id: `pending-${Date.now()}`, body, createdAt: new Date().toISOString(), pending: true };
+    setPending((p) => [...p, optimistic]);
+    setBody("");
+    try {
+      await sendMessage.mutateAsync({ threadId: activeThread, body: optimistic.body });
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : t("dashboard.messages.sendFailedToast"));
+    } finally {
+      setPending((p) => p.filter((m) => m.id !== optimistic.id));
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-      <Card className="md:col-span-1">
+      <Card className="surface-card md:col-span-1">
         <CardContent className="max-h-[28rem] divide-y divide-border overflow-y-auto p-0">
           {threads && threads.length > 0 ? (
             threads.map((t2) => (
               <button
                 key={t2.id}
-                onClick={() => setActiveThread(t2.id)}
-                className={`w-full p-3 text-left text-sm hover:bg-accent ${activeThread === t2.id ? "bg-accent" : ""}`}
+                onClick={() => selectThread(t2.id)}
+                className={`w-full p-3 text-left text-sm transition-colors hover:bg-accent ${activeThread === t2.id ? "bg-accent" : ""}`}
               >
                 <p className="font-medium">{t2.subject ?? t("dashboard.messages.untitledThread")}</p>
                 <p className="truncate text-xs text-muted-foreground">
@@ -53,35 +85,41 @@ function ThreadsTab() {
               </button>
             ))
           ) : (
-            <p className="p-4 text-sm text-muted-foreground">{t("dashboard.messages.noConversations")}</p>
+            <EmptyState icon={MessageSquare} title={t("dashboard.messages.noConversations")} size="sm" className="m-3" />
           )}
         </CardContent>
       </Card>
-      <Card className="md:col-span-2">
+      <Card className="surface-card md:col-span-2">
         <CardContent className="flex h-[28rem] flex-col p-4">
           {!activeThread ? (
             <p className="m-auto text-sm text-muted-foreground">{t("dashboard.messages.selectConversation")}</p>
           ) : (
             <>
               <div className="flex-1 space-y-3 overflow-y-auto">
-                {messages?.map((m) => (
-                  <div key={m.id} className="rounded-lg border border-border p-2.5 text-sm">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      {m.sender.firstName} {m.sender.lastName} · {formatDateTime(m.createdAt)}
-                    </p>
-                    <p>{m.body}</p>
-                  </div>
-                ))}
+                {[...(messages ?? []), ...pending].map((m: any) => {
+                  const isMine = m.pending || m.sender?.id === user?.userId;
+                  return (
+                    <div key={m.id} className={`flex items-end gap-2 ${isMine ? "justify-end" : "justify-start"}`}>
+                      {!isMine && (
+                        <Avatar className="h-6 w-6 shrink-0">
+                          <AvatarFallback className="text-[10px]">{initials(m.sender.firstName, m.sender.lastName)}</AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div className={`max-w-[75%] space-y-0.5 ${isMine ? "items-end" : "items-start"} flex flex-col`}>
+                        <div
+                          className={`rounded-2xl px-3 py-2 text-sm ${
+                            isMine ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm bg-muted"
+                          } ${m.pending ? "opacity-60" : ""}`}
+                        >
+                          {m.body}
+                        </div>
+                        <p className="px-1 text-[10px] text-muted-foreground">{formatDateTime(m.createdAt)}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <form
-                className="mt-3 flex gap-2"
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  if (!body.trim()) return;
-                  await sendMessage.mutateAsync({ threadId: activeThread, body });
-                  setBody("");
-                }}
-              >
+              <form className="mt-3 flex gap-2" onSubmit={handleSend}>
                 <Input value={body} onChange={(e) => setBody(e.target.value)} placeholder={t("dashboard.messages.typeMessagePlaceholder")} />
                 <Button type="submit" size="icon">
                   <Send className="h-4 w-4" />
@@ -190,7 +228,7 @@ function WhatsAppTab() {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="surface-card">
         <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
           <div className="flex items-center gap-3">
             <div
@@ -218,7 +256,7 @@ function WhatsAppTab() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="surface-card">
         <CardContent className="divide-y divide-border p-0">
           {conversations && conversations.length > 0 ? (
             conversations.map((c) => (
@@ -260,7 +298,7 @@ function LogsTab() {
   const { t } = useLocale();
   const { data: logs } = useCommunicationLogs();
   return (
-    <Card>
+    <Card className="surface-card">
       <CardContent className="divide-y divide-border p-0">
         {logs && logs.length > 0 ? (
           logs.map((l) => (

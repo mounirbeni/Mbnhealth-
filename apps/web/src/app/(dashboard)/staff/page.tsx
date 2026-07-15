@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
-import { Plus, UserX } from "lucide-react";
+import { Plus, UserCheck, UserX } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useCreateStaff, useDeactivateStaff, useRoles, useStaff } from "@/hooks/use-users";
+import { useCreateStaff, useDeactivateStaff, useRoles, useStaff, useUpdateStaff } from "@/hooks/use-users";
 import { ApiError } from "@/lib/api-client";
 import { initials } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
@@ -103,11 +104,79 @@ function NewStaffDialog() {
   );
 }
 
+function EditRoleDialog({ staffMember }: { staffMember: any }) {
+  const { t } = useLocale();
+  const [open, setOpen] = useState(false);
+  const { data: roles } = useRoles();
+  const updateStaff = useUpdateStaff();
+  const { control, handleSubmit } = useForm<{ roleId: string }>({ defaultValues: { roleId: staffMember.role?.id } });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="ghost">
+          {t("dashboard.staff.editRole")}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("dashboard.staff.editRoleTitle", { name: `${staffMember.firstName} ${staffMember.lastName}` })}</DialogTitle>
+        </DialogHeader>
+        <form
+          onSubmit={handleSubmit(async (v) => {
+            try {
+              await updateStaff.mutateAsync({ id: staffMember.id, data: { roleId: v.roleId } });
+              toast.success(t("dashboard.staff.roleUpdatedToast"));
+              setOpen(false);
+            } catch (e) {
+              toast.error(e instanceof ApiError ? e.message : t("dashboard.staff.addFailedToast"));
+            }
+          })}
+          className="space-y-4"
+        >
+          <div className="space-y-1.5">
+            <Label>{t("dashboard.staff.roleLabel")}</Label>
+            <Controller
+              control={control}
+              name="roleId"
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("dashboard.staff.selectRolePlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles?.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+          <DialogFooter>
+            <Button type="submit">{t("common.save")}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function StaffPage() {
   const [search, setSearch] = useState("");
   const { data: staff, isLoading } = useStaff(search);
   const deactivate = useDeactivateStaff();
+  const updateStaff = useUpdateStaff();
   const { t } = useLocale();
+
+  const counts = useMemo(() => {
+    const active = staff?.filter((s) => s.isActive).length ?? 0;
+    const total = staff?.length ?? 0;
+    return { total, active, inactive: total - active };
+  }, [staff]);
 
   return (
     <div className="space-y-4">
@@ -119,6 +188,21 @@ export default function StaffPage() {
         <NewStaffDialog />
       </div>
 
+      <div className="grid grid-cols-3 gap-4">
+        <div className="surface-card p-4">
+          <p className="text-2xl font-semibold tracking-tight">{counts.total}</p>
+          <p className="text-sm text-muted-foreground">{t("dashboard.staff.totalStaff")}</p>
+        </div>
+        <div className="surface-card p-4">
+          <p className="text-2xl font-semibold tracking-tight">{counts.active}</p>
+          <p className="text-sm text-muted-foreground">{t("common.active")}</p>
+        </div>
+        <div className="surface-card p-4">
+          <p className="text-2xl font-semibold tracking-tight">{counts.inactive}</p>
+          <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
+        </div>
+      </div>
+
       <Input
         placeholder={t("dashboard.staff.searchPlaceholder")}
         value={search}
@@ -126,7 +210,7 @@ export default function StaffPage() {
         className="max-w-sm"
       />
 
-      <div className="rounded-xl border border-border">
+      <div className="surface-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -139,11 +223,15 @@ export default function StaffPage() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
-                  {t("dashboard.staff.loading")}
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 4 }).map((_, i) => (
+                <TableRow key={i}>
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <TableCell key={j}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : staff && staff.length > 0 ? (
               staff.map((s) => (
                 <TableRow key={s.id}>
@@ -162,8 +250,9 @@ export default function StaffPage() {
                       {s.isActive ? t("common.active") : t("common.inactive")}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    {s.isActive && (
+                  <TableCell className="whitespace-nowrap">
+                    <EditRoleDialog staffMember={s} />
+                    {s.isActive ? (
                       <Button
                         size="icon"
                         variant="ghost"
@@ -171,6 +260,15 @@ export default function StaffPage() {
                         title={t("dashboard.staff.deactivateTitle")}
                       >
                         <UserX className="h-4 w-4 text-destructive" />
+                      </Button>
+                    ) : (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => updateStaff.mutate({ id: s.id, data: { isActive: true } })}
+                        title={t("dashboard.staff.reactivateTitle")}
+                      >
+                        <UserCheck className="h-4 w-4 text-success" />
                       </Button>
                     )}
                   </TableCell>

@@ -1,21 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
-import { FlaskConical, Plus } from "lucide-react";
+import { Eye, FlaskConical, Plus } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PatientCombobox } from "@/components/patients/patient-combobox";
+import { OrderStatusBadge } from "@/components/orders/order-status-badge";
+import { OrderDetailSheet } from "@/components/orders/order-detail-sheet";
 import { useDoctors } from "@/hooks/use-doctors";
 import { useCreateLabOrder, useLabOrders, useUpdateLabOrder } from "@/hooks/use-lab-radiology";
 import { useAuth } from "@/lib/auth-context";
-import { STATUS_BADGE_VARIANT } from "@/lib/status-styles";
 import { ApiError } from "@/lib/api-client";
 import { formatDateTime } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
@@ -95,6 +96,13 @@ export default function LabPage() {
   const updateOrder = useUpdateLabOrder();
   const { hasPermission } = useAuth();
   const { t } = useLocale();
+  const [detailOrder, setDetailOrder] = useState<any | null>(null);
+
+  const counts = useMemo(() => {
+    const acc: Record<string, number> = { ORDERED: 0, IN_PROGRESS: 0, COMPLETED: 0 };
+    for (const o of orders ?? []) acc[o.status] = (acc[o.status] ?? 0) + 1;
+    return acc;
+  }, [orders]);
 
   return (
     <div className="space-y-4">
@@ -106,7 +114,16 @@ export default function LabPage() {
         {hasPermission("LAB_WRITE") && <NewLabOrderDialog />}
       </div>
 
-      <div className="rounded-xl border border-border">
+      <div className="grid grid-cols-3 gap-4">
+        {(["ORDERED", "IN_PROGRESS", "COMPLETED"] as const).map((status) => (
+          <div key={status} className="surface-card p-4">
+            <p className="text-2xl font-semibold tracking-tight">{counts[status] ?? 0}</p>
+            <p className="text-sm text-muted-foreground">{t(`workflowStatus.${status}`)}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="surface-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -120,11 +137,15 @@ export default function LabPage() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  {t("dashboard.lab.loading")}
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 4 }).map((_, i) => (
+                <TableRow key={i}>
+                  {Array.from({ length: 6 }).map((_, j) => (
+                    <TableCell key={j}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : orders && orders.length > 0 ? (
               orders.map((o) => (
                 <TableRow key={o.id}>
@@ -139,9 +160,9 @@ export default function LabPage() {
                   </TableCell>
                   <TableCell>{formatDateTime(o.orderedAt)}</TableCell>
                   <TableCell>
-                    <Badge variant={STATUS_BADGE_VARIANT[o.status] ?? "secondary"}>{t(`workflowStatus.${o.status}`)}</Badge>
+                    <OrderStatusBadge status={o.status} />
                   </TableCell>
-                  <TableCell className="space-x-2">
+                  <TableCell className="space-x-2 whitespace-nowrap">
                     {hasPermission("LAB_WRITE") && o.status === "ORDERED" && (
                       <Button size="sm" variant="outline" onClick={() => updateOrder.mutate({ id: o.id, action: "start" })}>
                         {t("dashboard.lab.start")}
@@ -156,6 +177,9 @@ export default function LabPage() {
                         {t("dashboard.lab.complete")}
                       </Button>
                     )}
+                    <Button size="sm" variant="ghost" onClick={() => setDetailOrder(o)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -169,6 +193,27 @@ export default function LabPage() {
           </TableBody>
         </Table>
       </div>
+
+      {detailOrder && (
+        <OrderDetailSheet
+          open={!!detailOrder}
+          onOpenChange={(open) => !open && setDetailOrder(null)}
+          title={detailOrder.testName}
+          status={detailOrder.status}
+          notesLabel={t("dashboard.lab.resultNotes")}
+          notes={detailOrder.resultNotes}
+          rows={[
+            { label: t("dashboard.lab.colPatient"), value: `${detailOrder.patient.firstName} ${detailOrder.patient.lastName}` },
+            {
+              label: t("dashboard.lab.colDoctor"),
+              value: t("patientPortal.clinicProfile.doctorTitle", {
+                name: `${detailOrder.doctor.user.firstName} ${detailOrder.doctor.user.lastName}`,
+              }),
+            },
+            { label: t("dashboard.lab.colOrdered"), value: formatDateTime(detailOrder.orderedAt) },
+          ]}
+        />
+      )}
     </div>
   );
 }

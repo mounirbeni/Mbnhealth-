@@ -10,7 +10,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthCard } from "@/components/auth/auth-card";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api-client";
 import { useLocale } from "@/lib/i18n/locale-context";
@@ -99,7 +100,7 @@ function LoginForm() {
 
   if (challengeToken) {
     return (
-      <Card>
+      <AuthCard>
         <CardHeader>
           <CardTitle>{t("auth.mfa.title")}</CardTitle>
           <CardDescription>{t("auth.mfa.subtitle")}</CardDescription>
@@ -121,12 +122,12 @@ function LoginForm() {
             </Button>
           </form>
         </CardContent>
-      </Card>
+      </AuthCard>
     );
   }
 
   return (
-    <Card>
+    <AuthCard>
       <CardHeader>
         <CardTitle>{t("auth.login.title")}</CardTitle>
         <CardDescription>{t("auth.login.subtitle")}</CardDescription>
@@ -187,6 +188,6 @@ function LoginForm() {
           </Link>
         </p>
       </CardContent>
-    </Card>
+    </AuthCard>
   );
 }

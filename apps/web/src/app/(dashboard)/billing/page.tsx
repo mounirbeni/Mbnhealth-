@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { InvoiceFormDialog } from "@/components/billing/invoice-form-dialog";
 import { PaymentDialog } from "@/components/billing/payment-dialog";
@@ -19,7 +19,7 @@ export default function BillingPage() {
   const [page, setPage] = useState(1);
   const { data: invoices, isLoading } = useInvoices({ page, pageSize: 20 });
   const { data: outstanding } = useOutstandingBalance();
-  const { data: claims } = useInsuranceClaims();
+  const { data: claims, isLoading: isLoadingClaims } = useInsuranceClaims();
   const { hasPermission } = useAuth();
   const { t } = useLocale();
 
@@ -56,7 +56,7 @@ export default function BillingPage() {
         </TabsList>
 
         <TabsContent value="invoices">
-          <div className="rounded-xl border border-border">
+          <div className="surface-card overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -71,11 +71,15 @@ export default function BillingPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
-                      {t("dashboard.billing.loadingInvoices")}
-                    </TableCell>
-                  </TableRow>
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      {Array.from({ length: 7 }).map((_, j) => (
+                        <TableCell key={j}>
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
                 ) : invoices && invoices.items.length > 0 ? (
                   invoices.items.map((invoice) => (
                     <TableRow key={invoice.id}>
@@ -111,30 +115,54 @@ export default function BillingPage() {
         </TabsContent>
 
         <TabsContent value="claims">
-          <Card>
-            <CardContent className="divide-y divide-border p-0">
-              {claims && claims.length > 0 ? (
-                claims.map((claim) => (
-                  <div key={claim.id} className="flex items-center justify-between p-4">
-                    <div>
-                      <p className="text-sm font-medium">
-                        {claim.patient.firstName} {claim.patient.lastName} · {claim.provider}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("dashboard.billing.claimedAmount", { amount: formatCurrency(Number(claim.claimAmount)) })} ·{" "}
-                        {formatDate(claim.submittedAt)}
-                      </p>
-                    </div>
-                    <Badge variant={STATUS_BADGE_VARIANT[claim.status] ?? "secondary"}>
-                      {t(`workflowStatus.${claim.status}`)}
-                    </Badge>
-                  </div>
-                ))
-              ) : (
-                <p className="p-6 text-center text-sm text-muted-foreground">{t("dashboard.billing.noClaims")}</p>
-              )}
-            </CardContent>
-          </Card>
+          <div className="surface-card overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("dashboard.billing.colPatient")}</TableHead>
+                  <TableHead>{t("dashboard.billing.colProvider")}</TableHead>
+                  <TableHead>{t("dashboard.billing.colClaimAmount")}</TableHead>
+                  <TableHead>{t("dashboard.billing.colSubmitted")}</TableHead>
+                  <TableHead>{t("dashboard.billing.colStatus")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoadingClaims ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <TableRow key={i}>
+                      {Array.from({ length: 5 }).map((_, j) => (
+                        <TableCell key={j}>
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : claims && claims.length > 0 ? (
+                  claims.map((claim) => (
+                    <TableRow key={claim.id}>
+                      <TableCell className="font-medium">
+                        {claim.patient.firstName} {claim.patient.lastName}
+                      </TableCell>
+                      <TableCell>{claim.provider}</TableCell>
+                      <TableCell>{formatCurrency(Number(claim.claimAmount))}</TableCell>
+                      <TableCell>{formatDate(claim.submittedAt)}</TableCell>
+                      <TableCell>
+                        <Badge variant={STATUS_BADGE_VARIANT[claim.status] ?? "secondary"}>
+                          {t(`workflowStatus.${claim.status}`)}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                      {t("dashboard.billing.noClaims")}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

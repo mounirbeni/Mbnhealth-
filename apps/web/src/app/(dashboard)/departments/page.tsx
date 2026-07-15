@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useCreateDepartment, useDeleteDepartment, useDepartments } from "@/hooks/use-departments";
 import { useAuth } from "@/lib/auth-context";
@@ -83,11 +84,19 @@ export default function DepartmentsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">{t("dashboard.departments.loading")}</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-28 rounded-xl" />
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {departments?.map((dept) => (
-            <Card key={dept.id}>
+          {departments?.map((dept, index) => (
+            <Card
+              key={dept.id}
+              className="surface-card-hover animate-fade-in-up [animation-fill-mode:backwards]"
+              style={{ animationDelay: `${index * 60}ms` }}
+            >
               <CardContent className="flex items-start gap-3 p-5">
                 <div
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"

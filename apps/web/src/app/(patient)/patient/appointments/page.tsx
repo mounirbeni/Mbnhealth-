@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { CalendarX } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { patientApi } from "@/lib/patient-api-client";
 import { usePatientAuth } from "@/lib/patient-auth-context";
 import { formatDateTime } from "@/lib/utils";
@@ -49,15 +51,17 @@ export default function PatientAppointmentsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+        <div className="space-y-2">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
       ) : !data || data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          {t("patientPortal.appointments.empty")}{" "}
-          <Link href="/find-a-clinic" className="text-primary hover:underline">
-            {t("patientPortal.appointments.findClinicLink")}
-          </Link>{" "}
-          {t("patientPortal.appointments.findFirstSuffix")}
-        </p>
+        <EmptyState
+          icon={CalendarX}
+          title={t("patientPortal.appointments.empty")}
+          description={t("patientPortal.appointments.findFirstSuffix")}
+          action={{ label: t("patientPortal.appointments.findClinicLink"), href: "/find-a-clinic" }}
+        />
       ) : (
         <div className="space-y-6">
           {data.map((group) => (
@@ -65,7 +69,7 @@ export default function PatientAppointmentsPage() {
               <h2 className="mb-2 text-sm font-semibold text-muted-foreground">{group.clinic.name}</h2>
               <div className="space-y-2">
                 {group.appointments.map((appt) => (
-                  <Card key={appt.id}>
+                  <Card key={appt.id} className="surface-card-hover">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <div>
                         <CardTitle className="text-base">

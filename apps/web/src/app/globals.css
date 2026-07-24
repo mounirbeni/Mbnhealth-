@@ -91,6 +91,13 @@
     font-feature-settings: "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Suppress the grey tap flash so touch interactions read as native;
+       interactive elements provide their own pressed states. */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.2);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -101,6 +108,20 @@
      font ahead of it in the stack instead of falling through to the OS default. */
   [dir="rtl"] body {
     font-family: var(--font-arabic), var(--font-sans), system-ui, sans-serif;
+  }
+
+  /* Honor the OS-level motion preference everywhere: collapse every
+     animation and transition to a single frame instead of removing them,
+     so end states still apply. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

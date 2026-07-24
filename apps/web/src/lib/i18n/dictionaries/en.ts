@@ -658,6 +658,8 @@ const en = {
       staff: "Staff",
       auditLogs: "Audit Logs",
       settings: "Settings",
+      more: "More",
+      moreSheetTitle: "All destinations",
     },
     navSections: {
       overview: "Overview",
@@ -1018,6 +1020,9 @@ const en = {
       reasonPlaceholder: "e.g. expired, damaged...",
     },
     overview: {
+      needsAttention: "Needs attention",
+      review: "Review",
+      allClear: "All clear — nothing needs your attention right now.",
       welcomeBack: "Welcome back, {name}",
       subtitle: "Here's what's happening at your clinic today.",
       todaysAppointments: "Today's Appointments",

@@ -655,6 +655,8 @@ const ar: Messages = {
       staff: "الموظفون",
       auditLogs: "سجلات التدقيق",
       settings: "الإعدادات",
+      more: "المزيد",
+      moreSheetTitle: "كل الوجهات",
     },
     navSections: {
       overview: "نظرة عامة",
@@ -1015,6 +1017,9 @@ const ar: Messages = {
       reasonPlaceholder: "مثال: منتهي الصلاحية، تالف...",
     },
     overview: {
+      needsAttention: "يتطلب انتباهك",
+      review: "مراجعة",
+      allClear: "كل شيء على ما يرام — لا يوجد ما يتطلب انتباهك الآن.",
       welcomeBack: "مرحبًا بعودتك، {name}",
       subtitle: "إليك ما يحدث في عيادتك اليوم.",
       todaysAppointments: "مواعيد اليوم",

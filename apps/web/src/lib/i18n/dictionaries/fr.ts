@@ -660,6 +660,8 @@ const fr: Messages = {
       staff: "Personnel",
       auditLogs: "Journaux d'audit",
       settings: "Paramètres",
+      more: "Plus",
+      moreSheetTitle: "Toutes les destinations",
     },
     navSections: {
       overview: "Aperçu",
@@ -1020,6 +1022,9 @@ const fr: Messages = {
       reasonPlaceholder: "ex. expiré, endommagé...",
     },
     overview: {
+      needsAttention: "À traiter",
+      review: "Examiner",
+      allClear: "Tout est en ordre — rien ne requiert votre attention pour le moment.",
       welcomeBack: "Content de vous revoir, {name}",
       subtitle: "Voici ce qui se passe dans votre clinique aujourd'hui.",
       todaysAppointments: "Rendez-vous du jour",

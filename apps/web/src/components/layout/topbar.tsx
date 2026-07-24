@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Menu, Moon, Search, Sun } from "lucide-react";
+import { Bell, Moon, Search, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -23,7 +23,7 @@ import { useLocale } from "@/lib/i18n/locale-context";
 import { useCommandPalette } from "@/components/layout/command-palette-context";
 import { useNotifications, useUnreadNotificationCount } from "@/hooks/use-notifications";
 
-export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
+export function Topbar() {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
@@ -36,12 +36,18 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/95 px-4 backdrop-blur">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
-          <Menu className="h-5 w-5" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="sm:hidden"
+          aria-label={t("dashboard.topbar.searchPlaceholder")}
+          onClick={() => setCommandPaletteOpen(true)}
+        >
+          <Search className="h-4 w-4" />
         </Button>
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="hidden items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent sm:flex"
+          className="hidden items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent sm:flex"
         >
           <Search className="h-4 w-4" />
           <span>{t("dashboard.topbar.searchPlaceholder")}</span>

@@ -13,6 +13,23 @@ const nextConfig = {
   // Required on Next 14 for src/instrumentation.ts (sentry.server/edge.config)
   // to load; stable by default from Next 15 onward.
   experimental: { instrumentationHook: true },
+  // The API already ships helmet's defaults; these cover the web app's own
+  // responses. CSP is deliberately omitted — Next's inline runtime scripts
+  // need a nonce-based policy, which belongs in middleware if added later.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+        ],
+      },
+    ];
+  },
 };
 
 // No-op without SENTRY_DSN (see sentry.*.config.ts / instrumentation-client.ts)

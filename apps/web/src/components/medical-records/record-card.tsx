@@ -74,7 +74,7 @@ export function RecordCard({
           <div className="col-span-2 flex flex-wrap gap-1.5">
             {record.diagnoses.map((d) => (
               <Badge key={d.id} variant="outline">
-                <FileText className="mr-1 h-3 w-3" /> {d.description}
+                <FileText className="me-1 h-3 w-3" /> {d.description}
               </Badge>
             ))}
           </div>

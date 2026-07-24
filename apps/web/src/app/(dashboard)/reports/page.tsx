@@ -199,7 +199,7 @@ export default function ReportsPage() {
                     <p className="font-medium">{d.name}</p>
                     <p className="text-xs text-muted-foreground">{d.department ?? t("dashboard.reports.generalDept")}</p>
                   </div>
-                  <div className="text-right text-xs text-muted-foreground">
+                  <div className="text-end text-xs text-muted-foreground">
                     <p>{t("dashboard.reports.appointmentsCount", { count: d.appointments })}</p>
                     <p>{t("dashboard.reports.consultationsCount", { count: d.consultations })}</p>
                   </div>

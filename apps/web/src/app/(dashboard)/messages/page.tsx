@@ -76,7 +76,7 @@ function ThreadsTab() {
               <button
                 key={t2.id}
                 onClick={() => selectThread(t2.id)}
-                className={`w-full p-3 text-left text-sm transition-colors hover:bg-accent ${activeThread === t2.id ? "bg-accent" : ""}`}
+                className={`w-full p-3 text-start text-sm transition-colors hover:bg-accent ${activeThread === t2.id ? "bg-accent" : ""}`}
               >
                 <p className="font-medium">{t2.subject ?? t("dashboard.messages.untitledThread")}</p>
                 <p className="truncate text-xs text-muted-foreground">
@@ -108,7 +108,7 @@ function ThreadsTab() {
                       <div className={`max-w-[75%] space-y-0.5 ${isMine ? "items-end" : "items-start"} flex flex-col`}>
                         <div
                           className={`rounded-2xl px-3 py-2 text-sm ${
-                            isMine ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm bg-muted"
+                            isMine ? "rounded-ee-sm bg-primary text-primary-foreground" : "rounded-es-sm bg-muted"
                           } ${m.pending ? "opacity-60" : ""}`}
                         >
                           {m.body}
@@ -268,12 +268,12 @@ function WhatsAppTab() {
                       {c.patient ? `${c.patient.firstName} ${c.patient.lastName}` : c.contact}
                     </p>
                     <p className="line-clamp-1 max-w-md text-xs text-muted-foreground">
-                      {c.lastMessage.direction === "OUTBOUND" ? "You: " : ""}
+                      {c.lastMessage.direction === "OUTBOUND" ? t("dashboard.messages.youPrefix") : ""}
                       {c.lastMessage.content ?? "—"}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-right">
+                <div className="flex items-center gap-2 text-end">
                   {c.lastMessage.respondedByAi && (
                     <Badge variant="secondary" className="gap-1">
                       <Bot className="h-3 w-3" /> {t("dashboard.messages.aiBadge")}

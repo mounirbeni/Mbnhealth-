@@ -70,7 +70,7 @@ function MockBrowserFrame({ children, label }: { children: React.ReactNode; labe
         <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
         <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
         <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
-        <span className="ml-3 truncate text-xs text-muted-foreground">{label}</span>
+        <span className="ms-3 truncate text-xs text-muted-foreground">{label}</span>
       </div>
       <div className="p-5">{children}</div>
     </div>
@@ -220,13 +220,13 @@ export default function LandingPage() {
               <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-muted px-3 py-2 text-sm">
                 {t("marketing.screenshots.msg1")}
               </div>
-              <div className="ml-auto max-w-[80%] rounded-2xl rounded-tr-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
+              <div className="ms-auto max-w-[80%] rounded-2xl rounded-se-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
                 {t("marketing.screenshots.msg2")}
               </div>
               <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-muted px-3 py-2 text-sm">
                 {t("marketing.screenshots.msg3")}
               </div>
-              <div className="ml-auto max-w-[80%] rounded-2xl rounded-tr-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
+              <div className="ms-auto max-w-[80%] rounded-2xl rounded-se-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
                 {t("marketing.screenshots.msg4")}
               </div>
             </div>
@@ -347,7 +347,7 @@ export default function LandingPage() {
               <summary className="cursor-pointer list-none text-sm font-medium">
                 <span className="flex items-center justify-between">
                   {t(`marketing.faq.${key}`)}
-                  <span className="ml-4 text-muted-foreground transition-transform group-open:rotate-45">+</span>
+                  <span className="ms-4 text-muted-foreground transition-transform group-open:rotate-45">+</span>
                 </span>
               </summary>
               <p className="mt-3 text-sm text-muted-foreground">{t(`marketing.faq.a${key.slice(1)}`)}</p>

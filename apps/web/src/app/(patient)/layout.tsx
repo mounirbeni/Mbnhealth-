@@ -40,7 +40,7 @@ function PatientNav() {
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/patient/appointments">{t("patientPortal.nav.myAppointments")}</Link>
                 </Button>
-                <div className="flex items-center gap-2 pl-1">
+                <div className="flex items-center gap-2 ps-1">
                   <Avatar className="h-7 w-7">
                     <AvatarFallback className="text-xs">
                       {patient.firstName[0]}

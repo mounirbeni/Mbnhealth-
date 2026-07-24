@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { DEFAULT_LOCALE, isLocale, isRtl, LOCALE_COOKIE, type Locale } from "./locales";
+import { setFormatLocale } from "@/lib/utils";
 import en from "./dictionaries/en";
 import ar from "./dictionaries/ar";
 import fr from "./dictionaries/fr";
@@ -27,6 +28,7 @@ function readCookieLocale(): Locale | null {
 function applyDomLocale(locale: Locale) {
   document.documentElement.lang = locale;
   document.documentElement.dir = isRtl(locale) ? "rtl" : "ltr";
+  setFormatLocale(locale);
 }
 
 interface LocaleContextValue {

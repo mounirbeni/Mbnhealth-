@@ -89,10 +89,10 @@ export default function PatientsPage() {
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground rtl:left-auto rtl:right-3" />
+        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={t("dashboard.patients.searchPlaceholder")}
-          className="pl-9 rtl:pl-3 rtl:pr-9"
+          className="ps-9"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);

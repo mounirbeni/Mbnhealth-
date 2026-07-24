@@ -40,7 +40,7 @@ export default function PrivacyPolicyContent() {
 
           <h2>{t("legal.privacy.collectHeading")}</h2>
           <p>{t("legal.privacy.collectIntro")}</p>
-          <ul className="ml-5 list-disc space-y-1">
+          <ul className="ms-5 list-disc space-y-1">
             <li>{t("legal.privacy.collectItem1")}</li>
             <li>{t("legal.privacy.collectItem2")}</li>
             <li>{t("legal.privacy.collectItem3")}</li>
@@ -52,7 +52,7 @@ export default function PrivacyPolicyContent() {
 
           <h2>{t("legal.privacy.useHeading")}</h2>
           <p>{t("legal.privacy.useIntro")}</p>
-          <ul className="ml-5 list-disc space-y-1">
+          <ul className="ms-5 list-disc space-y-1">
             <li>{t("legal.privacy.useItem1")}</li>
             <li>{t("legal.privacy.useItem2")}</li>
             <li>{t("legal.privacy.useItem3")}</li>

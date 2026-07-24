@@ -65,10 +65,10 @@ export default function PlatformAdminPage() {
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground rtl:left-auto rtl:right-3" />
+        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={t("admin.searchPlaceholder")}
-          className="pl-9 rtl:pl-3 rtl:pr-9"
+          className="ps-9"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -107,7 +107,7 @@ export default function PlatformAdminPage() {
                   <TableHead>{t("admin.colStaff")}</TableHead>
                   <TableHead>{t("admin.colPatients")}</TableHead>
                   <TableHead>{t("admin.colCreated")}</TableHead>
-                  <TableHead className="text-right">{t("admin.colActions")}</TableHead>
+                  <TableHead className="text-end">{t("admin.colActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -132,7 +132,7 @@ export default function PlatformAdminPage() {
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(tenant.createdAt).toLocaleDateString(INTL_LOCALE_TAGS[locale])}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-end">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline" size="sm">

@@ -74,14 +74,14 @@ export default function RegisterPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 space-y-2">
               <Label htmlFor="clinicName">{t("auth.register.clinicNameLabel")}</Label>
-              <Input id="clinicName" placeholder="Sunrise Medical Center" {...register("clinicName")} />
+              <Input id="clinicName" placeholder={t("auth.register.clinicNamePlaceholder")} {...register("clinicName")} />
               {formState.errors.clinicName && (
                 <p className="text-xs text-destructive">{formState.errors.clinicName.message}</p>
               )}
             </div>
             <div className="col-span-2 space-y-2">
               <Label htmlFor="slug">{t("auth.register.clinicUrlLabel")}</Label>
-              <Input id="slug" placeholder="sunrise-medical" {...register("slug")} />
+              <Input id="slug" placeholder={t("auth.register.clinicUrlPlaceholder")} {...register("slug")} />
               {formState.errors.slug && <p className="text-xs text-destructive">{formState.errors.slug.message}</p>}
             </div>
             <div className="space-y-2">

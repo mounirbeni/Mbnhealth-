@@ -14,6 +14,7 @@ import { PatientCombobox } from "@/components/patients/patient-combobox";
 import { useDoctors } from "@/hooks/use-doctors";
 import { useCreateAppointment } from "@/hooks/use-appointments";
 import { ApiError } from "@/lib/api-client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 interface FormValues {
   patientId: string;
@@ -28,10 +29,11 @@ interface FormValues {
 const APPOINTMENT_TYPES = ["CONSULTATION", "FOLLOW_UP", "PROCEDURE", "CHECKUP", "EMERGENCY", "TELEHEALTH"];
 
 export function AppointmentFormDialog({ defaultDate }: { defaultDate?: Date }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const { data: doctors } = useDoctors();
   const createAppointment = useCreateAppointment();
-  const { register, handleSubmit, control, reset } = useForm<FormValues>({
+  const { register, handleSubmit, control, reset, formState } = useForm<FormValues>({
     defaultValues: {
       type: "CONSULTATION",
       durationMinutes: "30",
@@ -52,11 +54,11 @@ export function AppointmentFormDialog({ defaultDate }: { defaultDate?: Date }) {
         endTime: end.toISOString(),
         reason: values.reason,
       });
-      toast.success("Appointment booked");
+      toast.success(t("dashboard.appointments.form.bookedToast"));
       reset();
       setOpen(false);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Failed to book appointment");
+      toast.error(err instanceof ApiError ? err.message : t("dashboard.appointments.form.bookFailedToast"));
     }
   };
 
@@ -64,16 +66,16 @@ export function AppointmentFormDialog({ defaultDate }: { defaultDate?: Date }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> New Appointment
+          <Plus /> {t("dashboard.appointments.form.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Book appointment</DialogTitle>
+          <DialogTitle>{t("dashboard.appointments.form.dialogTitle")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Patient</Label>
+            <Label>{t("dashboard.appointments.form.patientLabel")}</Label>
             <Controller
               control={control}
               name="patientId"
@@ -83,7 +85,7 @@ export function AppointmentFormDialog({ defaultDate }: { defaultDate?: Date }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Doctor</Label>
+            <Label>{t("dashboard.appointments.form.doctorLabel")}</Label>
             <Controller
               control={control}
               name="doctorId"
@@ -91,7 +93,7 @@ export function AppointmentFormDialog({ defaultDate }: { defaultDate?: Date }) {
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select doctor" />
+                    <SelectValue placeholder={t("dashboard.appointments.form.selectDoctorPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {doctors?.map((d) => (
@@ -107,21 +109,21 @@ export function AppointmentFormDialog({ defaultDate }: { defaultDate?: Date }) {
 
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label>Date</Label>
+              <Label>{t("dashboard.appointments.form.dateLabel")}</Label>
               <Input type="date" {...register("date", { required: true })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Time</Label>
+              <Label>{t("dashboard.appointments.form.timeLabel")}</Label>
               <Input type="time" {...register("time", { required: true })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Duration (min)</Label>
+              <Label>{t("dashboard.appointments.form.durationLabel")}</Label>
               <Input type="number" step="5" {...register("durationMinutes", { required: true })} />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label>Type</Label>
+            <Label>{t("dashboard.appointments.form.typeLabel")}</Label>
             <Controller
               control={control}
               name="type"
@@ -131,9 +133,9 @@ export function AppointmentFormDialog({ defaultDate }: { defaultDate?: Date }) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {APPOINTMENT_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t.replace("_", " ")}
+                    {APPOINTMENT_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {t(`appointmentType.${type}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -143,12 +145,14 @@ export function AppointmentFormDialog({ defaultDate }: { defaultDate?: Date }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Reason for visit</Label>
+            <Label>{t("dashboard.appointments.form.reasonLabel")}</Label>
             <Textarea rows={2} {...register("reason")} />
           </div>
 
           <DialogFooter>
-            <Button type="submit">Book appointment</Button>
+            <Button type="submit" disabled={formState.isSubmitting}>
+              {t("dashboard.appointments.form.submit")}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -7,8 +7,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePatients } from "@/hooks/use-patients";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function PatientCombobox({ value, onChange }: { value?: string; onChange: (id: string, label: string) => void }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const { data } = usePatients({ search, pageSize: 20 });
@@ -18,8 +20,10 @@ export function PatientCombobox({ value, onChange }: { value?: string; onChange:
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
-          {selected ? `${selected.firstName} ${selected.lastName} (${selected.mrn})` : "Select patient..."}
+        <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between font-normal">
+          {selected
+            ? `${selected.firstName} ${selected.lastName} (${selected.mrn})`
+            : t("dashboard.patients.combobox.selectPatient")}
           <ChevronsUpDown className="h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -28,11 +32,13 @@ export function PatientCombobox({ value, onChange }: { value?: string; onChange:
           <Command.Input
             value={search}
             onValueChange={setSearch}
-            placeholder="Search patients..."
+            placeholder={t("dashboard.patients.combobox.searchPlaceholder")}
             className="w-full border-b border-border px-3 py-2 text-sm outline-none"
           />
           <Command.List className="max-h-64 overflow-y-auto p-1">
-            <Command.Empty className="py-4 text-center text-sm text-muted-foreground">No patients found.</Command.Empty>
+            <Command.Empty className="py-4 text-center text-sm text-muted-foreground">
+              {t("dashboard.patients.combobox.empty")}
+            </Command.Empty>
             {data?.items.map((p) => (
               <Command.Item
                 key={p.id}

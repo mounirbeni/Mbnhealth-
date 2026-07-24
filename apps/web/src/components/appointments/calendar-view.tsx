@@ -19,7 +19,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, intlLocale } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { STATUS_BADGE_VARIANT } from "@/lib/status-styles";
 import { useAppointments, useUpdateAppointment } from "@/hooks/use-appointments";
 import { AppointmentDetailSheet } from "./appointment-detail-sheet";
@@ -35,6 +36,7 @@ const HOUR_HEIGHT = 56;
 type ViewMode = "day" | "week" | "month";
 
 export function CalendarView() {
+  const { t } = useLocale();
   const [view, setView] = useState<ViewMode>("week");
   const [cursor, setCursor] = useState(new Date());
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -77,43 +79,48 @@ export function CalendarView() {
         id: dragged.id,
         data: { startTime: newStart.toISOString(), endTime: newEnd.toISOString() },
       });
-      toast.success("Appointment rescheduled");
+      toast.success(t("dashboard.appointments.calendar.rescheduledToast"));
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Could not reschedule");
+      toast.error(err instanceof ApiError ? err.message : t("dashboard.appointments.calendar.rescheduleFailedToast"));
     }
   };
+
+  const fmt = (date: Date, options: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat(intlLocale(), options).format(date);
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-            <ChevronLeft className="h-4 w-4" />
+          <Button variant="outline" size="icon" aria-label={t("dashboard.appointments.calendar.previousPeriod")} onClick={() => navigate(-1)}>
+            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
           </Button>
           <Button variant="outline" size="sm" onClick={() => setCursor(new Date())}>
-            Today
+            {t("dashboard.appointments.calendar.today")}
           </Button>
-          <Button variant="outline" size="icon" onClick={() => navigate(1)}>
-            <ChevronRight className="h-4 w-4" />
+          <Button variant="outline" size="icon" aria-label={t("dashboard.appointments.calendar.nextPeriod")} onClick={() => navigate(1)}>
+            <ChevronRight className="h-4 w-4 rtl:rotate-180" />
           </Button>
-          <span className="ml-2 text-sm font-medium">
-            {view === "month" ? format(cursor, "MMMM yyyy") : `${format(range.from, "MMM d")} – ${format(range.to, "MMM d, yyyy")}`}
+          <span className="ms-2 text-sm font-medium">
+            {view === "month"
+              ? fmt(cursor, { month: "long", year: "numeric" })
+              : `${fmt(range.from, { month: "short", day: "numeric" })} – ${fmt(range.to, { month: "short", day: "numeric", year: "numeric" })}`}
           </span>
         </div>
         <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
           <TabsList>
-            <TabsTrigger value="day">Day</TabsTrigger>
-            <TabsTrigger value="week">Week</TabsTrigger>
-            <TabsTrigger value="month">Month</TabsTrigger>
+            <TabsTrigger value="day">{t("dashboard.appointments.calendar.dayView")}</TabsTrigger>
+            <TabsTrigger value="week">{t("dashboard.appointments.calendar.weekView")}</TabsTrigger>
+            <TabsTrigger value="month">{t("dashboard.appointments.calendar.monthView")}</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
       {view === "month" ? (
         <div className="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-border bg-border">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-            <div key={d} className="bg-muted px-2 py-1.5 text-center text-xs font-medium text-muted-foreground">
-              {d}
+          {days.slice(0, 7).map((d) => (
+            <div key={d.toISOString()} className="bg-muted px-2 py-1.5 text-center text-xs font-medium text-muted-foreground">
+              {fmt(d, { weekday: "short" })}
             </div>
           ))}
           {days.map((day) => {
@@ -126,7 +133,7 @@ export function CalendarView() {
                   setView("day");
                 }}
                 className={cn(
-                  "min-h-24 bg-card p-2 text-left align-top hover:bg-accent/50",
+                  "min-h-24 bg-card p-2 text-start align-top hover:bg-accent/50",
                   !isSameMonth(day, cursor) && "opacity-40",
                 )}
               >
@@ -140,7 +147,9 @@ export function CalendarView() {
                     </div>
                   ))}
                   {dayAppointments.length > 3 && (
-                    <p className="text-[10px] text-muted-foreground">+{dayAppointments.length - 3} more</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {t("dashboard.appointments.calendar.more", { count: dayAppointments.length - 3 })}
+                    </p>
                   )}
                 </div>
               </button>
@@ -150,19 +159,19 @@ export function CalendarView() {
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border">
           <div className="flex min-w-[640px]">
-            <div className="w-14 shrink-0 border-r border-border">
+            <div className="w-14 shrink-0 border-e border-border">
               <div className="h-10 border-b border-border" />
               {Array.from({ length: END_HOUR - START_HOUR }).map((_, i) => (
-                <div key={i} style={{ height: HOUR_HEIGHT }} className="border-b border-border px-1 pt-0.5 text-right text-[10px] text-muted-foreground">
+                <div key={i} style={{ height: HOUR_HEIGHT }} className="border-b border-border px-1 pt-0.5 text-end text-[10px] text-muted-foreground">
                   {String(START_HOUR + i).padStart(2, "0")}:00
                 </div>
               ))}
             </div>
             {days.map((day) => (
-              <div key={day.toISOString()} className="min-w-[140px] flex-1 border-r border-border last:border-r-0">
+              <div key={day.toISOString()} className="min-w-[140px] flex-1 border-e border-border last:border-e-0">
                 <div className={cn("flex h-10 flex-col items-center justify-center border-b border-border text-xs font-medium", isSameDay(day, new Date()) && "bg-primary/5 text-primary")}>
-                  <span>{format(day, "EEE")}</span>
-                  <span className="text-[10px] text-muted-foreground">{format(day, "MMM d")}</span>
+                  <span>{fmt(day, { weekday: "short" })}</span>
+                  <span className="text-[10px] text-muted-foreground">{fmt(day, { month: "short", day: "numeric" })}</span>
                 </div>
                 <div className="relative" style={{ height: (END_HOUR - START_HOUR) * HOUR_HEIGHT }}>
                   {Array.from({ length: (END_HOUR - START_HOUR) * 2 }).map((_, i) => (
@@ -193,14 +202,14 @@ export function CalendarView() {
                         }}
                         onClick={() => setSelectedAppointment(a)}
                         style={{ top, height }}
-                        className="absolute left-1 right-1 cursor-pointer overflow-hidden rounded-md border border-primary/20 bg-primary/10 px-1.5 py-1 text-[11px] leading-tight text-primary shadow-sm"
+                        className="absolute inset-x-1 cursor-pointer overflow-hidden rounded-md border border-primary/20 bg-primary/10 px-1.5 py-1 text-[11px] leading-tight text-primary shadow-sm"
                       >
                         <p className="truncate font-medium">
                           {format(start, "HH:mm")} {a.patient.firstName} {a.patient.lastName}
                         </p>
                         <p className="truncate opacity-80">Dr. {a.doctor.user.firstName}</p>
                         <Badge variant={STATUS_BADGE_VARIANT[a.status] ?? "secondary"} className="mt-0.5 px-1 py-0 text-[9px]">
-                          {a.status}
+                          {t(`appointmentStatus.${a.status}`)}
                         </Badge>
                       </motion.div>
                     );

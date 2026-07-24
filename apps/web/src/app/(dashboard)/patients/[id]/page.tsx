@@ -292,7 +292,7 @@ export default function PatientDetailPage() {
                       <p className="text-sm font-medium">{a.substance}</p>
                       <p className="text-xs text-muted-foreground">{a.reaction ?? t("dashboard.patientDetail.noReactionNoted")}</p>
                     </div>
-                    <Badge className="ml-auto" variant={a.severity === "SEVERE" ? "destructive" : "warning"}>
+                    <Badge className="ms-auto" variant={a.severity === "SEVERE" ? "destructive" : "warning"}>
                       {a.severity}
                     </Badge>
                   </div>
@@ -321,7 +321,7 @@ export default function PatientDetailPage() {
                         {m.dosage} · {m.frequency}
                       </p>
                     </div>
-                    <Badge className="ml-auto" variant={m.isActive ? "success" : "secondary"}>
+                    <Badge className="ms-auto" variant={m.isActive ? "success" : "secondary"}>
                       {m.isActive ? t("common.active") : t("dashboard.patientDetail.stopped")}
                     </Badge>
                   </div>
@@ -369,7 +369,7 @@ export default function PatientDetailPage() {
               <CardTitle>{t("dashboard.patientDetail.patientTimeline")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4 border-l border-border pl-4">
+              <div className="space-y-4 border-s border-border ps-4">
                 {timeline && timeline.length > 0 ? (
                   timeline.map((event, i) => (
                     <div key={i} className="relative">
@@ -377,7 +377,7 @@ export default function PatientDetailPage() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {formatDateTime(event.date)}
-                        <Badge variant="outline" className="ml-1">
+                        <Badge variant="outline" className="ms-1">
                           {t(`dashboard.patientDetail.eventType.${event.type}`)}
                         </Badge>
                       </div>

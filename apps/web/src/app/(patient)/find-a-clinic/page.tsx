@@ -229,9 +229,9 @@ function FindClinicContent() {
 
         <div className="mt-6 grid gap-3 grid-cols-1 sm:grid-cols-3">
           <div className="relative sm:col-span-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground rtl:left-auto rtl:right-3" />
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              className="bg-background pl-9 rtl:pl-3 rtl:pr-9"
+              className="bg-background ps-9"
               placeholder={t("patientPortal.findClinic.searchPlaceholder")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -353,7 +353,7 @@ function FindClinicContent() {
                 { count: (tab === "platform" ? data : directoryData)?.length ?? 0 },
               )}
           {(tab === "platform" ? isFetching && !isLoading : directoryFetching && !directoryLoading) && (
-            <span className="ml-1 text-muted-foreground/60">{t("patientPortal.findClinic.updating")}</span>
+            <span className="ms-1 text-muted-foreground/60">{t("patientPortal.findClinic.updating")}</span>
           )}
         </p>
         {hasActiveFilters && (

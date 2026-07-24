@@ -45,7 +45,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
         >
           <Search className="h-4 w-4" />
           <span>{t("dashboard.topbar.searchPlaceholder")}</span>
-          <kbd className="ml-6 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px]">⌘K</kbd>
+          <kbd className="ms-6 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px]">⌘K</kbd>
         </button>
       </div>
 
@@ -96,7 +96,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="ml-1 flex items-center gap-2 rounded-md p-1 hover:bg-accent">
+            <button className="ms-1 flex items-center gap-2 rounded-md p-1 hover:bg-accent">
               <Avatar className="h-7 w-7">
                 <AvatarFallback>{initials(user?.firstName, user?.lastName)}</AvatarFallback>
               </Avatar>

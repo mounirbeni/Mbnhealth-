@@ -5,11 +5,17 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 const Sheet = DialogPrimitive.Root;
 const SheetTrigger = DialogPrimitive.Trigger;
 const SheetPortal = DialogPrimitive.Portal;
 const SheetClose = DialogPrimitive.Close;
+
+function CloseLabel() {
+  const { t } = useLocale();
+  return <span className="sr-only">{t("common.close")}</span>;
+}
 
 const SheetOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
@@ -58,7 +64,7 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.Co
         {children}
         <DialogPrimitive.Close className="absolute end-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none">
           <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
+          <CloseLabel />
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </SheetPortal>

@@ -46,7 +46,7 @@ export default function TermsOfServiceContent() {
 
           <h2>{t("legal.terms.useHeading")}</h2>
           <p>{t("legal.terms.useIntro")}</p>
-          <ul className="ml-5 list-disc space-y-1">
+          <ul className="ms-5 list-disc space-y-1">
             <li>{t("legal.terms.useItem1")}</li>
             <li>{t("legal.terms.useItem2")}</li>
             <li>{t("legal.terms.useItem3")}</li>

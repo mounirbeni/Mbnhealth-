@@ -126,7 +126,7 @@ export function InvoiceFormDialog() {
             </div>
           </div>
 
-          <p className="text-right text-sm font-medium">
+          <p className="text-end text-sm font-medium">
             {t("dashboard.billing.invoiceDialog.subtotal", { amount: formatCurrency(subtotal) })}
           </p>
 

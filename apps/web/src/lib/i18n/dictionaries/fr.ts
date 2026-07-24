@@ -1120,6 +1120,8 @@ const fr: Messages = {
       aiBadge: "IA",
       youPrefix: "Vous : ",
       noCommunications: "Aucune communication envoyée pour le moment.",
+      noTemplates: "Aucun modèle pour l'instant",
+      noTemplatesDesc: "Créez un modèle pour envoyer des rappels et des suivis cohérents.",
       whatsappChannel: "WhatsApp",
       emailChannel: "E-mail",
     },

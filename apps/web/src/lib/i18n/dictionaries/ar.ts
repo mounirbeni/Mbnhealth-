@@ -1115,6 +1115,8 @@ const ar: Messages = {
       aiBadge: "ذكاء اصطناعي",
       youPrefix: "أنت: ",
       noCommunications: "لم يتم إرسال أي اتصالات بعد.",
+      noTemplates: "لا توجد قوالب بعد",
+      noTemplatesDesc: "أنشئ قالبًا لإرسال تذكيرات ومتابعات موحّدة.",
       whatsappChannel: "واتساب",
       emailChannel: "البريد الإلكتروني",
     },

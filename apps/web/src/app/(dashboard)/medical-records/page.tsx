@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PatientCombobox } from "@/components/patients/patient-combobox";
 import { RecordCard } from "@/components/medical-records/record-card";
 import { SoapNoteForm } from "@/components/medical-records/soap-note-form";
@@ -55,7 +56,7 @@ function NewPrescriptionDialog({ patientId }: { patientId: string }) {
 
 export default function MedicalRecordsPage() {
   const [patientId, setPatientId] = useState<string | undefined>();
-  const { data: records } = useMedicalRecords(patientId);
+  const { data: records, isLoading } = useMedicalRecords(patientId);
   const finalizeRecord = useFinalizeMedicalRecord();
   const { t } = useLocale();
 
@@ -80,6 +81,12 @@ export default function MedicalRecordsPage() {
 
       {!patientId ? (
         <p className="text-sm text-muted-foreground">{t("dashboard.medicalRecords.selectPatientPrompt")}</p>
+      ) : isLoading ? (
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-28 w-full rounded-xl" />
+          ))}
+        </div>
       ) : records && records.length > 0 ? (
         <div className="space-y-3">
           {records.map((record) => (

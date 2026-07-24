@@ -1118,6 +1118,8 @@ const en = {
       aiBadge: "AI",
       youPrefix: "You: ",
       noCommunications: "No communications sent yet.",
+      noTemplates: "No templates yet",
+      noTemplatesDesc: "Create a template to send consistent reminders and follow-ups.",
       whatsappChannel: "WhatsApp",
       emailChannel: "Email",
     },

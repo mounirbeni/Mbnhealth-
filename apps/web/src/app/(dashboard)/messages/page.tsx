@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
-import { Bot, MessageSquare, Plus, Send, Settings as SettingsIcon, User } from "lucide-react";
+import { Bot, FileText, MessageSquare, Plus, Send, Settings as SettingsIcon, User } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,12 +41,19 @@ interface PendingMessage {
 function ThreadsTab() {
   const { t } = useLocale();
   const { user } = useAuth();
-  const { data: threads } = useThreads();
+  const { data: threads, isLoading: threadsLoading } = useThreads();
   const [activeThread, setActiveThread] = useState<string | null>(null);
-  const { data: messages } = useThreadMessages(activeThread ?? undefined);
+  const { data: messages, isLoading: messagesLoading } = useThreadMessages(activeThread ?? undefined);
   const sendMessage = useSendMessage();
   const [body, setBody] = useState("");
   const [pending, setPending] = useState<PendingMessage[]>([]);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Keep the newest message in view without scrolling the whole page.
+  useEffect(() => {
+    const el = listRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages, pending]);
 
   const selectThread = (id: string) => {
     setActiveThread(id);
@@ -71,7 +79,13 @@ function ThreadsTab() {
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       <Card className="surface-card md:col-span-1">
         <CardContent className="max-h-[28rem] divide-y divide-border overflow-y-auto p-0">
-          {threads && threads.length > 0 ? (
+          {threadsLoading ? (
+            <div className="space-y-2 p-3">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-12 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : threads && threads.length > 0 ? (
             threads.map((t2) => (
               <button
                 key={t2.id}
@@ -95,7 +109,14 @@ function ThreadsTab() {
             <p className="m-auto text-sm text-muted-foreground">{t("dashboard.messages.selectConversation")}</p>
           ) : (
             <>
-              <div className="flex-1 space-y-3 overflow-y-auto">
+              <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto">
+                {messagesLoading && (
+                  <div className="space-y-3">
+                    <Skeleton className="h-10 w-3/5 rounded-2xl" />
+                    <Skeleton className="ms-auto h-10 w-2/5 rounded-2xl" />
+                    <Skeleton className="h-10 w-1/2 rounded-2xl" />
+                  </div>
+                )}
                 {[...(messages ?? []), ...pending].map((m: any) => {
                   const isMine = m.pending || m.sender?.id === user?.userId;
                   return (
@@ -135,7 +156,7 @@ function ThreadsTab() {
 
 function TemplatesTab() {
   const { t } = useLocale();
-  const { data: templates } = useMessageTemplates();
+  const { data: templates, isLoading } = useMessageTemplates();
   const createTemplate = useCreateTemplate();
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<{ name: string; channel: string; subject?: string; body: string }>({
@@ -204,27 +225,50 @@ function TemplatesTab() {
         </DialogContent>
       </Dialog>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {templates?.map((tpl) => (
-          <Card key={tpl.id} className="surface-card">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <p className="font-medium">{tpl.name}</p>
-                <Badge variant="secondary">{tpl.channel}</Badge>
-              </div>
-              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{tpl.body}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : templates && templates.length > 0 ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {templates.map((tpl) => (
+            <Card key={tpl.id} className="surface-card">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium">{tpl.name}</p>
+                  <Badge variant="secondary">{tpl.channel}</Badge>
+                </div>
+                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{tpl.body}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={FileText}
+          title={t("dashboard.messages.noTemplates")}
+          description={t("dashboard.messages.noTemplatesDesc")}
+        />
+      )}
     </div>
   );
 }
 
 function WhatsAppTab() {
   const { t } = useLocale();
-  const { data: config } = useWhatsAppConfig();
-  const { data: conversations } = useWhatsAppConversations();
+  const { data: config, isLoading: configLoading } = useWhatsAppConfig();
+  const { data: conversations, isLoading: conversationsLoading } = useWhatsAppConversations();
+
+  if (configLoading || conversationsLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-[4.5rem] w-full rounded-xl" />
+        <Skeleton className="h-48 w-full rounded-xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -296,7 +340,18 @@ function WhatsAppTab() {
 
 function LogsTab() {
   const { t } = useLocale();
-  const { data: logs } = useCommunicationLogs();
+  const { data: logs, isLoading } = useCommunicationLogs();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-12 w-full rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <Card className="surface-card">
       <CardContent className="divide-y divide-border p-0">
